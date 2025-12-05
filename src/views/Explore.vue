@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="page-container wuxia-explore">
     <div class="landscape-viewport">
       <div
@@ -392,6 +392,364 @@ onMounted(() => charStore.fetchCharacter());
   to {
     height: auto;
     opacity: 1;
+  }
+}
+</style> -->
+
+<!-- ========================================================= -->
+
+<!-- code test -->
+<template>
+  <div class="page-container explore-page">
+    <div class="status-bar-container">
+      <div class="status-bar">
+        <div class="level-badge">Lv.{{ charStore.character?.lv }}</div>
+        <div class="stat-item">❤️ {{ charStore.character?.hp }}/{{ charStore.character?.maxHp }}</div>
+        <div class="stat-item">⚡ {{ charStore.character?.energy }}/{{ charStore.character?.maxEnergy }}</div>
+      </div>
+      <div class="exp-bar-wrapper">
+        <div class="exp-bar" :style="{ width: charStore.xpPercent + '%' }"></div>
+      </div>
+    </div>
+
+    <div class="game-layout">
+      <div class="stage-area">
+        <div class="stage-background">
+          <div class="actor player"
+            :style="{ left: charStore.explorationState.playerPos + '%', transform: `scaleX(${charStore.explorationState.moveDir})` }">
+            <div class="avatar-circle" :class="{ 'bounce': isMoving }">
+              <img :src="authStore.user?.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/9408/9408175.png'"
+                class="avatar-img" />
+            </div>
+            <div class="label">Bạn</div>
+          </div>
+
+          <div class="actor target" v-if="showTarget"
+            :style="{ left: (charStore.explorationState.playerPos + (10 * charStore.explorationState.moveDir)) + '%' }">
+            <div class="avatar-target">
+              <img v-if="targetImage" :src="targetImage" class="avatar-img" />
+              <div v-else class="text-3xl">🎁</div>
+            </div>
+            <div class="label">{{ targetName }}</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <template v-if="!isEncounter">
+            <button class="btn-explore" @click="startExploration"
+              :disabled="isMoving || charStore.character?.energy < 2">
+              <span v-if="!isMoving">👣 ĐI TIẾP (-2⚡)</span>
+              <span v-else>🔍 Đang tìm... ({{ countdown }}s)</span>
+            </button>
+            <button class="btn-back" @click="$router.push('/village')" :disabled="isMoving">
+              🏘️ Về Làng
+            </button>
+          </template>
+          <template v-else>
+            <button class="btn-fight" @click="$router.push('/battle')">⚔️ CHIẾN ĐẤU</button>
+          </template>
+        </div>
+      </div>
+
+      <div class="log-area custom-scroll">
+        <div v-for="(log, i) in logs" :key="i" class="log-item">
+          <span class="time">[{{ log.time }}]</span> <span v-html="log.msg"></span>
+        </div>
+      </div>
+    </div>
+    <CaptchaModal ref="captchaModal" />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useCharacterStore } from '@/stores/characterStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
+import CaptchaModal from "@/components/CaptchaModal.vue";
+
+const charStore = useCharacterStore();
+const authStore = useAuthStore();
+const router = useRouter();
+const captchaModal = ref(null);
+
+const isMoving = ref(false);
+const isEncounter = ref(false);
+const showTarget = ref(false);
+const countdown = ref(0);
+const logs = ref([]);
+const targetImage = ref('');
+const targetName = ref('');
+let moveInterval = null;
+
+const enemyPool = [
+  { name: "Yêu Tinh", img: "/src/assets/enemy/idle_goblin.png" },
+  { name: "Bộ Xương", img: "/src/assets/enemy/idle_skeleton.png" },
+  { name: "Nấm Độc", img: "/src/assets/enemy/idle_mushroom.png" }
+];
+
+const addLog = (msg) => logs.value.unshift({ time: new Date().toLocaleTimeString(), msg });
+
+const startMoving = () => {
+  if (moveInterval) clearInterval(moveInterval);
+  moveInterval = setInterval(() => {
+    charStore.explorationState.playerPos += 0.5 * charStore.explorationState.moveDir;
+    if (charStore.explorationState.playerPos >= 85) charStore.explorationState.moveDir = -1;
+    else if (charStore.explorationState.playerPos <= 5) charStore.explorationState.moveDir = 1;
+  }, 16);
+};
+
+const startExploration = () => {
+  if (isMoving.value) return;
+  isMoving.value = true;
+  showTarget.value = false;
+  isEncounter.value = false;
+  countdown.value = 2;
+  startMoving();
+  addLog("Đang thám thính...");
+
+  const timer = setInterval(async () => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(timer);
+      await handleResult();
+    }
+  }, 1000);
+};
+
+const handleResult = async () => {
+  clearInterval(moveInterval);
+  isMoving.value = false;
+  try {
+    const res = await charStore.explore();
+    if (res.type === 'GOLD') {
+      showTarget.value = true;
+      targetName.value = "Vàng";
+      targetImage.value = "https://cdn-icons-png.flaticon.com/512/2535/2535079.png";
+      addLog(`<span style="color:gold">${res.message}</span>`);
+    } else if (res.type === 'ENEMY') {
+      isEncounter.value = true;
+      showTarget.value = true;
+      const rnd = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+      targetName.value = rnd.name;
+      targetImage.value = rnd.img;
+      addLog(`<span style="color:red">${res.message}</span>`);
+    } else {
+      addLog(res.message);
+    }
+  } catch (e) {
+    const msg = typeof e === 'string' ? e : (e.message || "Lỗi không xác định");
+    if (msg === "CAPTCHA" || msg === "CAPTCHA_REQUIRED") captchaModal.value.open();
+    else addLog("Lỗi: " + msg);
+  }
+};
+
+onMounted(() => { charStore.fetchCharacter(); authStore.fetchProfile(); });
+onUnmounted(() => clearInterval(moveInterval));
+</script>
+
+<style scoped>
+/* CSS GIỮ NGUYÊN */
+.explore-page {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #eee;
+  font-family: "Noto Serif TC";
+}
+
+.status-bar-container {
+  background: #3e2723;
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #5d4037;
+  margin-bottom: 20px;
+}
+
+.status-bar {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.level-badge {
+  background: #fbc02d;
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.exp-bar-wrapper {
+  height: 5px;
+  background: #000;
+  margin-top: 8px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.exp-bar {
+  height: 100%;
+  background: #fbc02d;
+  transition: width 0.3s;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+  height: 400px;
+}
+
+.stage-background {
+  background: #261815;
+  border: 2px solid #5d4037;
+  flex: 1;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000");
+  background-size: cover;
+}
+
+.stage-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.actor {
+  position: absolute;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  transition: 0.1s;
+}
+
+.avatar-circle,
+.avatar-target {
+  width: 60px;
+  height: 60px;
+  background: #000;
+  border: 2px solid #fbc02d;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-target {
+  border-radius: 10px;
+  border-color: #b71c1c;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bounce {
+  animation: bounce 0.4s infinite alternate;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  height: 50px;
+}
+
+.btn-explore {
+  flex: 2;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-explore:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  flex: 1;
+  background: #4e342e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-fight {
+  width: 100%;
+  background: #c62828;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.2em;
+  cursor: pointer;
+  animation: pulse 1s infinite;
+}
+
+.btn-ignore {
+  flex: 1;
+  background: #f9a825;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.log-area {
+  background: #261815;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #5d4037;
+  overflow-y: auto;
+}
+
+.log-item {
+  border-bottom: 1px dashed #5d4037;
+  padding: 4px 0;
+  font-size: 0.9em;
+}
+
+.time {
+  color: #a1887f;
+  margin-right: 5px;
+  font-size: 0.8em;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 </style>

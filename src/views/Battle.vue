@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="page-container battle-ancient">
     <div class="battle-wrapper">
       <div
@@ -330,6 +330,386 @@ onMounted(() => {
   }
   75% {
     transform: translateX(5px);
+  }
+}
+</style> -->
+
+<!-- ========================================================= -->
+
+<!-- code test -->
+<template>
+  <div class="page-container battle-page">
+    <div class="battle-container" v-if="battleStore.enemy">
+
+      <transition name="bounce">
+        <div v-if="battleStore.status === 'VICTORY' && battleStore.expEarned > 0" class="levelup-popup">
+          🎉 CHIẾN THẮNG! +{{ battleStore.expEarned }} EXP
+        </div>
+      </transition>
+
+      <div class="combat-log-text"
+        :class="{ 'text-red': battleStore.status === 'DEFEAT', 'text-green': battleStore.status === 'VICTORY' }">
+        {{ lastLog }}
+      </div>
+
+      <div v-if="showParryBtn" class="parry-overlay">
+        <button class="btn-parry" @click="doParry">🛡️ ĐỠ ĐÒN!</button>
+        <div class="parry-bar"></div>
+      </div>
+
+      <div class="battlefield">
+        <div class="fighter enemy" :class="{ 'hit': isEnemyHit }">
+          <div class="avatar-box">
+            <img :src="battleStore.enemy.imageUrl || '/src/assets/enemy/idle_goblin.png'" class="fighter-img" />
+          </div>
+          <div class="name">{{ battleStore.enemy.name }} (Lv.{{ battleStore.enemy.level }})</div>
+          <div class="hp-bar-frame">
+            <div class="hp-bar red" :style="{ width: enemyHpPercent + '%' }"></div>
+          </div>
+          <div class="hp-text">{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</div>
+        </div>
+
+        <div class="vs">VS</div>
+
+        <div class="fighter player" :class="{ 'hit': isPlayerHit }">
+          <div class="avatar-box">
+            <img :src="authStore.user?.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/9408/9408175.png'"
+              class="fighter-img" />
+          </div>
+          <div class="name">{{ authStore.user?.username }}</div>
+          <div class="hp-bar-frame">
+            <div class="hp-bar green" :style="{ width: playerHpPercent + '%' }"></div>
+          </div>
+          <div class="hp-text">{{ battleStore.playerHp }} / {{ battleStore.playerMaxHp }}</div>
+          <div class="energy text-yellow">⚡ {{ charStore.character?.energy }}</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div v-if="battleStore.status === 'ONGOING'">
+          <button class="btn-action atk" @click="playerAttack('normal')" :disabled="isBusy">⚔️ TẤN CÔNG</button>
+          <button class="btn-action skill" @click="playerAttack('strong')"
+            :disabled="isBusy || charStore.character?.energy < 5">💥 MẠNH (5⚡)</button>
+        </div>
+        <div v-else class="result-actions">
+          <button class="btn-back" @click="$router.push('/explore')">🌲 Quay lại rừng</button>
+          <button class="btn-back" @click="$router.push('/village')">🏘️ Về làng</button>
+        </div>
+      </div>
+    </div>
+    <div v-else class="loading">Đang tìm đối thủ...</div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useBattleStore } from '@/stores/battleStore';
+import { useCharacterStore } from '@/stores/characterStore';
+import { useAuthStore } from '@/stores/authStore';
+
+const battleStore = useBattleStore();
+const charStore = useCharacterStore();
+const authStore = useAuthStore();
+
+const isBusy = ref(false);
+const isPlayerHit = ref(false);
+const isEnemyHit = ref(false);
+const showParryBtn = ref(false);
+let parrySuccess = ref(false);
+
+const enemyHpPercent = computed(() => (battleStore.enemyHp / battleStore.enemyMaxHp) * 100);
+const playerHpPercent = computed(() => (battleStore.playerHp / battleStore.playerMaxHp) * 100);
+const lastLog = computed(() => battleStore.combatLogs.length ? battleStore.combatLogs[battleStore.combatLogs.length - 1] : '...');
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+const playerAttack = async (type) => {
+  if (isBusy.value) return;
+  isBusy.value = true;
+  isEnemyHit.value = true;
+  setTimeout(() => isEnemyHit.value = false, 300);
+
+  await battleStore.attack(type, parrySuccess.value);
+  parrySuccess.value = false;
+
+  if (battleStore.status === 'ONGOING') {
+    await delay(500);
+    isPlayerHit.value = true;
+    setTimeout(() => isPlayerHit.value = false, 300);
+    if (Math.random() < 0.3) triggerParry();
+  }
+  isBusy.value = false;
+};
+
+const triggerParry = () => {
+  showParryBtn.value = true;
+  setTimeout(() => showParryBtn.value = false, 800);
+};
+
+const doParry = () => {
+  parrySuccess.value = true;
+  showParryBtn.value = false;
+};
+
+onMounted(async () => {
+  await charStore.fetchCharacter();
+  await battleStore.startBattle();
+});
+</script>
+
+<style scoped>
+.battle-page {
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.combat-container {
+  background: #261815;
+  border: 4px solid #5d4037;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  color: #eee;
+  font-family: "Noto Serif TC";
+}
+
+.combat-log-text {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+  min-height: 24px;
+  color: #fbc02d;
+}
+
+.text-red {
+  color: #ef5350;
+}
+
+.text-green {
+  color: #66bb6a;
+}
+
+.battlefield {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.fighter {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.fighter.hit {
+  animation: shake 0.3s;
+  filter: brightness(2) sepia(1) hue-rotate(-50deg);
+}
+
+.avatar-box {
+  width: 100px;
+  height: 100px;
+  border: 3px solid #8d6e63;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 10px;
+}
+
+.fighter-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hp-bar-frame {
+  width: 100%;
+  height: 10px;
+  background: #4e342e;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+  border: 1px solid #333;
+}
+
+.hp-bar {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.red {
+  background: #e53935;
+}
+
+.green {
+  background: #43a047;
+}
+
+.vs {
+  font-size: 2em;
+  font-weight: 900;
+  color: #8d6e63;
+  font-family: "Cinzel";
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: "Noto Serif TC";
+  color: #fff;
+  transition: 0.2s;
+}
+
+.atk {
+  background: #c62828;
+  border-bottom: 4px solid #8e0000;
+}
+
+.skill {
+  background: #fbc02d;
+  color: #000;
+  border-bottom: 4px solid #c49000;
+}
+
+.btn-action:disabled {
+  background: #555;
+  border-bottom-color: #333;
+  cursor: not-allowed;
+  color: #aaa;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-back {
+  background: #5d4037;
+  color: #fff;
+  padding: 10px 20px;
+  border: 2px solid #3e2723;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.parry-overlay {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+}
+
+.btn-parry {
+  background: #ffd700;
+  color: #000;
+  font-size: 1.5em;
+  font-weight: 900;
+  padding: 15px 30px;
+  border: 4px solid #fff;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 20px #ffd700;
+  animation: popIn 0.1s;
+}
+
+.parry-bar {
+  width: 100%;
+  height: 6px;
+  background: red;
+  margin-top: 5px;
+  animation: shrink 0.8s linear forwards;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.levelup-popup {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #ffd700, #ff6f00);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  animation: floatUp 2s forwards;
+  z-index: 100;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -10px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -30px);
   }
 }
 </style>
