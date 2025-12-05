@@ -1,0 +1,283 @@
+/* --- 1. FONTS IMPORT --- */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");
+@import "@fortawesome/fontawesome-free/css/all.css";
+
+/* --- 2. GLOBAL VARIABLES (CYBERPALETTE) --- */
+:root {
+  /* Colors */
+  --bg-void: #020617; /* Màu nền chính (Đen thẳm) */
+  --bg-panel: rgba(10, 15, 30, 0.85); /* Màu nền các bảng (Kính mờ) */
+
+  --primary: #00f3ff; /* Cyan - Màu chủ đạo */
+  --primary-glow: rgba(0, 243, 255, 0.5);
+
+  --secondary: #7000ff; /* Tím - Phụ trợ */
+  --accent: #ff0055; /* Đỏ hồng - Điểm nhấn/Cảnh báo */
+
+  --success: #00ff9d; /* Xanh lá - Thành công */
+  --warning: #ffbe0b; /* Vàng - Cảnh báo/Vàng gold */
+
+  --text-main: #e2e8f0; /* Màu chữ chính */
+  --text-dim: #94a3b8; /* Màu chữ mờ */
+
+  /* Borders & Spacing */
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --neon-border: 1px solid var(--primary);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* Fonts */
+  --font-display: "Orbitron", sans-serif; /* Tiêu đề, Số liệu */
+  --font-body: "Rajdhani", sans-serif; /* Nội dung văn bản */
+  --font-code: "JetBrains Mono", monospace; /* Chat, Log, Code */
+
+  /* Animation Settings */
+  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --sidebar-width: 280px;
+  --header-height: 80px;
+}
+
+/* --- 3. BASE RESET --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-void);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  line-height: 1.6;
+  overflow: hidden; /* App.vue sẽ handle scroll */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tắt chế độ Light Mode mặc định của trình duyệt */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--text-main);
+    background-color: var(--bg-void);
+  }
+}
+
+/* Link Styles */
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s;
+}
+
+/* Button Reset */
+button {
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+}
+
+/* --- 4. GLOBAL UTILITY CLASSES --- */
+
+/* Glass Panel (Hiệu ứng kính) */
+.glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+}
+
+/* Text Gradient (Chữ màu neon chuyển sắc) */
+.text-gradient {
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, #fff 20%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
+}
+
+/* Page Container (Khung trang chuẩn) */
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  /* Padding top để tránh bị Header che */
+  padding-top: 20px;
+}
+
+/* Custom Scrollbar (Thanh cuộn đẹp) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Selection Color (Màu khi bôi đen chữ) */
+::selection {
+  background: var(--primary);
+  color: #000;
+}
+
+/* --- 5. GLOBAL ANIMATIONS --- */
+
+/* Glitch Animation */
+@keyframes glitch-skew {
+  0% {
+    transform: skew(0deg);
+  }
+  20% {
+    transform: skew(-2deg);
+  }
+  40% {
+    transform: skew(2deg);
+  }
+  60% {
+    transform: skew(-1deg);
+  }
+  80% {
+    transform: skew(1deg);
+  }
+  100% {
+    transform: skew(0deg);
+  }
+}
+
+/* Pulse (Nhịp đập) */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Float (Lơ lửng) */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Fade In Up (Hiệu ứng xuất hiện) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Vue Transitions Global */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active {
+  transition: all 0.4s ease-out;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* --- 6. BUTTON STYLES (Cyber Buttons) --- */
+
+/* Nút chuẩn (Cyan) */
+.btn-3d {
+  padding: 12px 24px;
+  background: rgba(0, 243, 255, 0.05);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 1px solid var(--primary);
+  /* Cắt góc nút */
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-3d:hover:not(:disabled) {
+  background: var(--primary);
+  color: #000;
+  box-shadow: 0 0 20px var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+.btn-3d:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* Nút nguy hiểm/Hủy (Đỏ) */
+.btn-danger-3d {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 0, 85, 0.05);
+}
+.btn-danger-3d:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+}
+
+/* --- 7. RESPONSIVE HELPERS --- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --header-height: 60px;
+  }
+  .mobile-hide {
+    display: none !important;
+  }
+}
