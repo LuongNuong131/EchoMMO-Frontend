@@ -31,7 +31,7 @@
             ></div>
           </div>
           <div class="res-val small">
-            {{ charStore.character?.energy || 0 }}
+            {{ formatNumber(charStore.character?.energy || 0) }}
           </div>
         </div>
       </div>
@@ -41,11 +41,9 @@
         class="noti-node"
         :class="{ 'has-signal': notiStore.unreadCount > 0 }"
       >
-        <div class="noti-icon">
-          <i class="fas fa-bell"></i>
-        </div>
+        <div class="noti-icon"><i class="fas fa-bell"></i></div>
         <div class="noti-badge" v-if="notiStore.unreadCount > 0">
-          {{ notiStore.unreadCount }}
+          {{ notiStore.unreadCount > 99 ? '99+' : notiStore.unreadCount }}
         </div>
       </router-link>
 
@@ -69,7 +67,7 @@
               @error="$event.target.style.display = 'none'"
             />
             <div v-else class="fallback-avatar">
-              {{ charStore.character.name.charAt(0) }}
+              {{ charStore.character.name.charAt(0).toUpperCase() }}
             </div>
           </div>
           <div class="level-badge">{{ charStore.character.level }}</div>
@@ -91,7 +89,6 @@ const notiStore = useNotificationStore();
 
 const xpPercent = computed(() => {
   if (!charStore.character) return 0;
-  // Giả sử max exp là level * 100
   const needed = charStore.character.level * 100;
   return Math.min((charStore.character.currentExp / needed) * 100, 100);
 });
@@ -104,10 +101,12 @@ const energyPercent = computed(() => {
   );
 });
 
-const formatNumber = (n) => {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return (n / 1000).toFixed(1) + "K";
-  return n;
+// Hàm format số gọn gàng (1.2k, 1.5M)
+const formatNumber = (num) => {
+  if (!num) return '0';
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toString();
 };
 
 onMounted(() => {
@@ -122,23 +121,20 @@ onMounted(() => {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&display=swap");
 
-/* --- VARIABLES --- */
 :root {
   --wood-dark: #3e2723;
   --wood-light: #5d4037;
   --gold-accent: #fbc02d;
   --red-seal: #b71c1c;
-  --text-light: #fdf5e6;
 }
 
-/* --- MAIN HEADER --- */
 .game-header {
   position: sticky;
   top: 0;
   z-index: 900;
   width: 100%;
-  height: 60px; /* Gọn hơn chút so với bản cũ */
-  background: #3e2723; /* Màu gỗ tối */
+  height: 60px;
+  background: #3e2723;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -148,7 +144,6 @@ onMounted(() => {
   border-bottom: 2px solid #5d4037;
 }
 
-/* Viền vàng dưới cùng tạo cảm giác sang trọng */
 .header-border-bot {
   position: absolute;
   bottom: 0;
@@ -159,212 +154,48 @@ onMounted(() => {
 }
 
 .spacer { flex: 1; }
+.hud-container { display: flex; align-items: center; gap: 15px; }
 
-.hud-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
+/* Resource */
+.resource-bank { display: flex; gap: 8px; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 4px 8px; border-radius: 4px; border: 1px solid #5d4037; }
+.res-module { display: flex; align-items: center; gap: 5px; padding: 2px 6px; }
+.res-icon { font-size: 0.9em; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+.res-val { font-weight: bold; font-size: 0.9em; color: #fdf5e6; font-family: "Cinzel", serif; }
+.res-val.small { font-size: 0.8em; color: #d7ccc8; min-width: 25px; text-align: right; }
 
-/* --- RESOURCES --- */
-.resource-bank {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #5d4037;
-}
-
-.res-module {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 6px;
-}
-
-.res-icon {
-  font-size: 0.9em;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
-}
-
-.res-val {
-  font-weight: bold;
-  font-size: 0.9em;
-  color: #fdf5e6;
-  font-family: "Cinzel", serif;
-}
-
-.res-val.small {
-  font-size: 0.8em;
-  color: #d7ccc8;
-  min-width: 25px;
-  text-align: right;
-}
-
-/* Colors */
-.gold .res-icon { color: #ffd700; }
-.gold .res-val { color: #ffd700; }
-
-.jade .res-icon { color: #00e676; } /* Ngọc màu xanh */
+.gold .res-icon, .gold .res-val { color: #ffd700; }
+.jade .res-icon { color: #00e676; } 
 .jade .res-val { color: #b9f6ca; }
+.energy .res-icon { color: #29b6f6; }
 
-.energy .res-icon { color: #29b6f6; } /* Khí màu xanh dương hoặc vàng */
+.energy-track { width: 50px; height: 6px; background: #261815; border: 1px solid #5d4037; border-radius: 2px; overflow: hidden; }
+.energy-bar { height: 100%; background: #29b6f6; transition: width 0.3s ease; }
 
-/* Energy Bar (Thanh Khí) */
-.energy-track {
-  width: 50px;
-  height: 6px;
-  background: #261815;
-  border: 1px solid #5d4037;
-  border-radius: 2px;
-  overflow: hidden;
-}
-.energy-bar {
-  height: 100%;
-  background: #29b6f6;
-  transition: width 0.3s ease;
-}
+/* Noti */
+.noti-node { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #d7ccc8; transition: 0.3s; cursor: pointer; border-radius: 50%; }
+.noti-node:hover { color: #fbc02d; background: rgba(255,255,255,0.05); }
+.noti-node.has-signal .noti-icon { animation: shake 2s infinite; }
+@keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
+.noti-badge { position: absolute; top: -2px; right: -2px; background: #b71c1c; color: #fff; font-size: 0.65em; font-weight: bold; padding: 1px 4px; border-radius: 4px; border: 1px solid #3e2723; }
 
-/* --- NOTIFICATIONS --- */
-.noti-node {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #d7ccc8;
-  transition: 0.3s;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-radius: 50%;
-}
-
-.noti-node:hover {
-  color: #fbc02d;
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(251, 192, 45, 0.3);
-}
-
-.noti-node.has-signal .noti-icon {
-  animation: shake 2s infinite;
-}
-
-@keyframes shake {
-  0%, 100% { transform: rotate(0); }
-  10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
-  20%, 40%, 60%, 80% { transform: rotate(10deg); }
-}
-
-.noti-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  background: #b71c1c; /* Đỏ chu sa */
-  color: #fff;
-  font-size: 0.65em;
-  font-weight: bold;
-  padding: 1px 4px;
-  border-radius: 4px;
-  border: 1px solid #3e2723;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-
-/* --- PROFILE LINK --- */
-.profile-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  padding-left: 10px;
-  border-left: 1px solid #5d4037;
-  transition: 0.3s;
-}
-.profile-link:hover .char-name {
-  color: #fbc02d;
-}
-
+/* Profile */
+.profile-link { display: flex; align-items: center; gap: 10px; text-decoration: none; padding-left: 10px; border-left: 1px solid #5d4037; transition: 0.3s; }
+.profile-link:hover .char-name { color: #fbc02d; }
 .profile-info { text-align: right; }
-.char-name {
-  font-weight: bold;
-  font-size: 0.95em;
-  color: #fdf5e6;
-  font-family: "Playfair Display", serif;
-}
+.char-name { font-weight: bold; font-size: 0.95em; color: #fdf5e6; font-family: "Playfair Display", serif; }
+.xp-track { width: 70px; height: 3px; background: #261815; margin-top: 3px; margin-left: auto; border-radius: 1px; }
+.xp-fill { height: 100%; background: #fbc02d; transition: width 0.5s; }
 
-.xp-track {
-  width: 70px;
-  height: 3px;
-  background: #261815;
-  margin-top: 3px;
-  margin-left: auto;
-  border-radius: 1px;
-}
-.xp-fill {
-  height: 100%;
-  background: #fbc02d; /* Exp màu vàng kim */
-  transition: width 0.5s;
-}
+.avatar-frame { width: 40px; height: 40px; position: relative; border-radius: 50%; border: 2px solid #fbc02d; box-shadow: 0 0 5px rgba(0,0,0,0.5); background: #1a1510; }
+.frame-content { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.frame-content img { width: 100%; height: 100%; object-fit: cover; }
+.fallback-avatar { font-weight: bold; font-size: 1.2em; color: #fbc02d; font-family: "Cinzel", serif; }
+.level-badge { position: absolute; bottom: -4px; right: -4px; background: #b71c1c; color: #fff; font-size: 0.7em; font-weight: bold; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; border: 1px solid #fbc02d; font-family: "Cinzel", serif; }
 
-/* Avatar Frame (Tròn) */
-.avatar-frame {
-  width: 40px;
-  height: 40px;
-  position: relative;
-  border-radius: 50%;
-  border: 2px solid #fbc02d; /* Viền vàng */
-  box-shadow: 0 0 5px rgba(0,0,0,0.5);
-  background: #1a1510;
-}
-
-.frame-content {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.frame-content img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.fallback-avatar {
-  font-weight: bold;
-  font-size: 1.2em;
-  color: #fbc02d;
-  font-family: "Cinzel", serif;
-}
-
-.level-badge {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  background: #b71c1c; /* Con dấu cấp độ màu đỏ */
-  color: #fff;
-  font-size: 0.7em;
-  font-weight: bold;
-  width: 18px;
-  height: 18px;
-  line-height: 18px;
-  text-align: center;
-  border-radius: 50%;
-  border: 1px solid #fbc02d;
-  font-family: "Cinzel", serif;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-
-/* Responsive */
 @media (max-width: 600px) {
   .mobile-hide { display: none; }
   .resource-bank { gap: 5px; padding: 4px; }
   .energy-track { width: 30px; }
   .game-header { padding: 0 10px; }
 }
-</style>
+</style>  

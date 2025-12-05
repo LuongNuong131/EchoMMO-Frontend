@@ -5,124 +5,70 @@ import { useAuthStore } from "./authStore";
 
 export const useBattleStore = defineStore("battle", {
   state: () => ({
-    enemy: null,
-    enemyHp: 0,
-    enemyMaxHp: 0,
-    playerHp: 0,
-    playerMaxHp: 0,
-    combatLogs: [],
-    status: "IDLE", // IDLE, ONGOING, VICTORY, DEFEAT
-    isLoading: false,
-    skills: [], // Danh sách kỹ năng
+    enemy: null, enemyHp: 0, enemyMaxHp: 0,
+    playerHp: 0, playerMaxHp: 0, playerEnergy: 0, playerMaxEnergy: 0,
+    combatLogs: [], status: "IDLE", isLoading: false, skills: [],
+    levelUp: false, goldEarned: 0, expEarned: 0
   }),
-
   actions: {
-    // Bắt đầu trận đấu (Tìm quái)
     async startBattle() {
-      this.isLoading = true;
-      this.combatLogs = [];
+      this.isLoading = true; this.combatLogs = []; this.levelUp = false;
       try {
-        // Gọi song song: Tạo trận + Lấy skill
         const [resBattle, resSkills] = await Promise.all([
-          axiosClient.post("/battle/start"),
-          axiosClient.get("/battle/skills"),
+          axiosClient.post("/battle/start"), axiosClient.get("/battle/skills")
         ]);
-
         this.handleResult(resBattle.data);
         this.skills = resSkills.data;
-
-        // Refresh nhân vật để cập nhật Energy (nếu server có trừ/hồi)
-        const charStore = useCharacterStore();
-        charStore.fetchCharacter();
-      } catch (e) {
-        alert(e.response?.data || "Không thể tìm thấy đối thủ!");
-      } finally {
-        this.isLoading = false;
-      }
+        useCharacterStore().fetchCharacter();
+      } catch (e) { alert(e.response?.data || "Lỗi tìm trận"); }
+      finally { this.isLoading = false; }
     },
-
-    // Tấn công (Logic mới: Đỡ đòn & Đánh mạnh)
-    // attackType: 'normal' | 'strong'
-    // isParried: true | false (Từ QTE Frontend)
     async attack(attackType = "normal", isParried = false) {
       if (this.status !== "ONGOING") return;
       this.isLoading = true;
-
       try {
         const res = await axiosClient.post("/battle/attack", {
-          enemyId: this.enemy.enemyId,
-          enemyHp: this.enemyHp,
-          attackType: attackType,
-          isParried: isParried,
+          enemyId: this.enemy.enemyId, enemyHp: this.enemyHp,
+          attackType, isParried
         });
-
         this.handleResult(res.data);
-      } catch (e) {
-        alert(e.response?.data || "Lỗi tấn công");
-      } finally {
-        this.isLoading = false;
-      }
+      } catch (e) { alert(e.response?.data); }
+      finally { this.isLoading = false; }
     },
-
-    // Dùng Skill
     async useSkill(skillId) {
       if (this.status !== "ONGOING") return;
       this.isLoading = true;
       try {
         const res = await axiosClient.post("/battle/skill", {
-          enemyId: this.enemy.enemyId,
-          enemyHp: this.enemyHp,
-          skillId: skillId,
+          enemyId: this.enemy.enemyId, enemyHp: this.enemyHp, skillId
         });
         this.handleResult(res.data);
-      } catch (e) {
-        alert("⚠️ " + (e.response?.data || "Không thể dùng kỹ năng"));
-      } finally {
-        this.isLoading = false;
-      }
+      } catch (e) { alert(e.response?.data); }
+      finally { this.isLoading = false; }
     },
-
-    // Xử lý kết quả trả về từ Backend
     handleResult(data) {
-      this.enemy = data.enemy;
-      this.enemyHp = data.enemyHp;
-      this.enemyMaxHp = data.enemyMaxHp;
-      this.playerHp = data.playerHp;
-      this.playerMaxHp = data.playerMaxHp;
-      this.status = data.status;
+      Object.assign(this, {
+        enemy: data.enemy, enemyHp: data.enemyHp, enemyMaxHp: data.enemyMaxHp,
+        playerHp: data.playerHp, playerMaxHp: data.playerMaxHp,
+        playerEnergy: data.playerEnergy, playerMaxEnergy: data.playerMaxEnergy,
+        status: data.status, levelUp: data.levelUp || false,
+        goldEarned: data.goldEarned, expEarned: data.expEarned
+      });
+      if (data.combatLog) this.combatLogs.push(...data.combatLog);
 
-      // Thêm log mới vào danh sách
-      if (data.combatLog && data.combatLog.length > 0) {
-        this.combatLogs.push(...data.combatLog);
-      }
-
-      // Cập nhật HP/Energy hiển thị trên Header
       const charStore = useCharacterStore();
       if (charStore.character) {
         charStore.character.hp = data.playerHp;
-        // Nếu data backend trả về energy thì update luôn (cần backend hỗ trợ thêm, tạm thời fetch lại)
-        if (this.status !== "ONGOING") {
-          charStore.fetchCharacter();
-        }
+        if(data.playerEnergy !== undefined) charStore.character.energy = data.playerEnergy;
+        if (this.levelUp) charStore.fetchCharacter();
       }
+      if (this.status === "VICTORY") useAuthStore().fetchProfile();
 
-      // Nếu thắng -> Cập nhật tiền
-      if (this.status === "VICTORY") {
-        const authStore = useAuthStore();
-        authStore.fetchProfile();
-      }
-
-      // Tự động cuộn xuống log cuối cùng
       setTimeout(() => {
-        const logDiv = document.querySelector(".combat-log-container");
+        const logDiv = document.querySelector(".combat-log");
         if (logDiv) logDiv.scrollTop = logDiv.scrollHeight;
       }, 50);
     },
-
-    resetBattle() {
-      this.enemy = null;
-      this.status = "IDLE";
-      this.combatLogs = [];
-    },
-  },
+    resetBattle() { this.enemy = null; this.status = "IDLE"; this.combatLogs = []; }
+  }
 });

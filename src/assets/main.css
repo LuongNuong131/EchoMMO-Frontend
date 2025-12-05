@@ -1,73 +1,100 @@
-/* --- IMPORTS --- */
+/* =========================================
+   1. IMPORTS & FONTS
+   ========================================= */
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");
 @import "@fortawesome/fontawesome-free/css/all.css";
 
-/* --- ROOT VARIABLES (CYBER SYSTEM) --- */
+/* =========================================
+   2. ROOT VARIABLES (CYBER SYSTEM)
+   ========================================= */
 :root {
-  /* Core Colors */
-  --bg-void: #020617; /* Deepest dark */
-  --bg-panel: rgba(10, 15, 30, 0.75);
+  /* --- Core Colors --- */
+  --bg-void: #020617; /* Deepest Dark */
+  --bg-panel: rgba(10, 15, 30, 0.75); /* Glass Panel Background */
 
-  /* Neon Palette - Dùng chung cho toàn app */
-  --primary: #00f3ff; /* Cyan - Main Interface */
+  /* --- Neon Palette --- */
+  --primary: #00f3ff;       /* Cyan: Main Interface, Borders, Active States */
   --primary-glow: rgba(0, 243, 255, 0.5);
 
-  --secondary: #7000ff; /* Purple - Magic/Mystic */
-  --accent: #ff0055; /* Red/Pink - Danger/Alert/Attack */
+  --secondary: #7000ff;     /* Purple: Magic, Mystic, Secondary Actions */
+  --accent: #ff0055;        /* Red/Pink: Danger, Alert, Attack, Cancel */
+  
+  --success: #00ff9d;       /* Green: Health, Success, Online */
+  --warning: #ffbe0b;       /* Gold/Yellow: Legendary, Warning, Gold Currency */
 
-  --success: #00ff9d; /* Green - Health/Success */
-  --warning: #ffbe0b; /* Yellow/Gold - Gold/Warning/Legendary */
+  --text-main: #e2e8f0;     /* High contrast text */
+  --text-dim: #94a3b8;      /* Low priority text */
 
-  --text-main: #e2e8f0;
-  --text-dim: #94a3b8;
-
-  /* Borders & Radius */
+  /* --- Borders & Radius --- */
   --glass-border: 1px solid rgba(255, 255, 255, 0.08);
   --neon-border: 1px solid var(--primary);
+  
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
 
-  /* Typography */
-  --font-display: "Orbitron", sans-serif; /* Headers, Numbers */
-  --font-body: "Rajdhani", sans-serif; /* Text content */
-  --font-code: "JetBrains Mono", monospace; /* Logs, Chat, Stats */
+  /* --- Typography --- */
+  --font-display: "Orbitron", sans-serif;   /* Headers, HUD Numbers */
+  --font-body:    "Rajdhani", sans-serif;   /* Content, Descriptions */
+  --font-code:    "JetBrains Mono", monospace; /* Logs, Chat, Stats */
 
-  /* Layout */
+  /* --- Layout & Animation --- */
   --header-height: 80px;
-  --sidebar-width: 280px; /* Default */
+  --sidebar-width: 280px;
   --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* --- BASE RESET --- */
-*,
-*::before,
-*::after {
+/* =========================================
+   3. BASE RESET & GLOBAL STYLES
+   ========================================= */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
   background-color: var(--bg-void);
   font-family: var(--font-body);
   color: var(--text-main);
-  overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.6;
+  overflow-x: hidden; /* Prevent horizontal scrollbars */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove default link styles */
-a {
-  text-decoration: none;
-  color: inherit;
+/* Force Dark Mode Appearance */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--text-main);
+    background-color: var(--bg-void);
+  }
 }
 
-/* Button Reset */
-button {
-  font-family: var(--font-display);
+/* Typography Resets */
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+button { font-family: var(--font-display); cursor: pointer; }
+input, textarea, select { font-family: var(--font-body); }
+
+/* Custom Text Selection */
+::selection {
+  background: var(--primary);
+  color: #000;
 }
 
-/* --- UTILITY CLASSES --- */
+/* =========================================
+   4. UTILITY CLASSES
+   ========================================= */
+
+/* Page Container (Layout Helper) */
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  /* Padding top often handled by Layout or individual views */
+}
 
 /* Glassmorphism Panel */
 .glass-panel {
@@ -79,7 +106,7 @@ button {
   border-radius: var(--radius-md);
 }
 
-/* Text Gradient Effect */
+/* Neon Text Gradient */
 .text-gradient {
   font-family: var(--font-display);
   background: linear-gradient(135deg, #fff 20%, var(--primary) 100%);
@@ -88,33 +115,17 @@ button {
   filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
 }
 
-/* Page Container (Updated for Layout) */
-.page-container {
-  /* Padding-top handled by layout structure or specific page styles */
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-}
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-/* Custom Scrollbar (Global) */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-}
+/* =========================================
+   5. COMPONENT STYLES
+   ========================================= */
 
-/* --- GLOBAL COMPONENTS --- */
-
-/* 3D Cyber Button */
+/* 3D Cyber Button (Primary - Cyan) */
 .btn-3d {
   padding: 12px 24px;
   background: rgba(0, 243, 255, 0.05);
@@ -123,13 +134,12 @@ button {
   font-weight: 700;
   letter-spacing: 1px;
   border: 1px solid var(--primary);
+  /* Angled corners via clip-path */
   clip-path: polygon(
-    10px 0,
-    100% 0,
-    100% calc(100% - 10px),
-    calc(100% - 10px) 100%,
-    0 100%,
-    0 10px
+    10px 0, 100% 0, 
+    100% calc(100% - 10px), 
+    calc(100% - 10px) 100%, 
+    0 100%, 0 10px
   );
   cursor: pointer;
   transition: all 0.3s ease;
@@ -139,7 +149,7 @@ button {
 
 .btn-3d:hover:not(:disabled) {
   background: var(--primary);
-  color: #000;
+  color: #000; /* Black text on neon background for contrast */
   box-shadow: 0 0 20px var(--primary-glow);
   transform: translateY(-2px);
 }
@@ -150,137 +160,94 @@ button {
   filter: grayscale(1);
 }
 
-/* Red/Danger Variant */
+/* 3D Cyber Button (Danger - Red/Pink) */
 .btn-danger-3d {
   color: var(--accent);
   border-color: var(--accent);
   background: rgba(255, 0, 85, 0.05);
 }
+
 .btn-danger-3d:hover:not(:disabled) {
   background: var(--accent);
+  color: #fff;
   box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
 }
 
-/* --- VUE TRANSITIONS (Router View) --- */
+/* =========================================
+   6. VUE TRANSITIONS & ANIMATIONS
+   ========================================= */
 
-/* Fade Transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+/* Vue Router: Standard Fade */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* Page Slide Up Transition */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
+/* Vue Router: Page Slide Up */
+.page-fade-enter-active, .page-fade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
+.page-fade-enter-from { opacity: 0; transform: translateY(20px); }
+.page-fade-leave-to { opacity: 0; transform: translateY(-20px); }
 
-/* --- GLOBAL KEYFRAMES --- */
-
-/* Glitch Effect */
+/* Animation: Glitch Text */
 @keyframes glitch-skew {
-  0% {
-    transform: skew(0deg);
-  }
-  20% {
-    transform: skew(-2deg);
-  }
-  40% {
-    transform: skew(2deg);
-  }
-  60% {
-    transform: skew(-1deg);
-  }
-  80% {
-    transform: skew(1deg);
-  }
-  100% {
-    transform: skew(0deg);
-  }
+  0% { transform: skew(0deg); }
+  20% { transform: skew(-2deg); }
+  40% { transform: skew(2deg); }
+  60% { transform: skew(-1deg); }
+  80% { transform: skew(1deg); }
+  100% { transform: skew(0deg); }
 }
 
-/* Pulse (Warning/Active) */
+/* Animation: Pulse (Breathing effect) */
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Floating Object */
+/* Animation: Floating Hover */
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
-/* Scanning Line */
+/* Animation: Scanning Line (for overlays) */
 @keyframes scan {
-  0% {
-    top: 0;
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
+  0% { top: 0; opacity: 0; }
+  50% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
 }
 
-/* Rotation */
+/* Animation: Spin (Loaders) */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Blink (Cursor/Status) */
+/* Animation: Blink (Cursor or Alerts) */
 @keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-/* --- RESPONSIVE HELPERS --- */
+/* Animation: Fade In Up (General UI) */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   7. RESPONSIVE HELPERS
+   ========================================= */
 @media (max-width: 768px) {
   :root {
-    --sidebar-width: 0px; /* Mobile often hides sidebar initially */
+    --sidebar-width: 0px; /* Collapse sidebar by default on mobile */
     --header-height: 60px;
   }
+  
+  .mobile-hide {
+    display: none !important;
+  }
+  
   .page-container {
-    padding-bottom: 80px; /* Space for bottom nav if needed */
+    padding-bottom: 80px; /* Safe space for mobile bottom navs */
   }
 }

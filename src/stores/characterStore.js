@@ -3,107 +3,41 @@ import axiosClient from "../api/axiosClient";
 import router from "../router";
 
 export const useCharacterStore = defineStore("character", {
-  state: () => ({
-    character: null,
-    isLoading: false,
-    logs: [], // Nhật ký hoạt động (Explore/System)
-  }),
-
+  state: () => ({ character: null, isLoading: false, logs: [] }),
   getters: {
-    // Tính % thanh kinh nghiệm
-    xpPercent: (state) => {
-      if (!state.character) return 0;
-      const needed = state.character.level * 100;
-      return Math.min((state.character.currentExp / needed) * 100, 100);
-    },
-    // Tính % thanh máu
-    hpPercent: (state) => {
-      if (!state.character) return 0;
-      return Math.min((state.character.hp / state.character.maxHp) * 100, 100);
-    },
-    // Tính % thanh năng lượng
-    energyPercent: (state) => {
-      if (!state.character) return 0;
-      return Math.min(
-        (state.character.energy / state.character.maxEnergy) * 100,
-        100
-      );
-    },
+    xpPercent: (s) => s.character ? Math.min((s.character.currentExp / (s.character.level * 100)) * 100, 100) : 0,
+    hpPercent: (s) => s.character ? Math.min((s.character.hp / s.character.maxHp) * 100, 100) : 0,
+    energyPercent: (s) => s.character ? Math.min((s.character.energy / s.character.maxEnergy) * 100, 100) : 0,
   },
-
   actions: {
     async fetchCharacter() {
-      this.isLoading = true;
       try {
         const res = await axiosClient.get("/character/me");
-        this.character = res.data || null;
-      } catch (error) {
-        console.error("Lỗi tải nhân vật:", error);
-        // Nếu lỗi 403/401 thì đá về login
-        if (error.response && [401, 403].includes(error.response.status)) {
-          router.push("/login");
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    async createCharacter(name) {
-      try {
-        const res = await axiosClient.post("/character/create", { name });
         this.character = res.data;
-        return true;
-      } catch (error) {
-        alert(error.response?.data || "Tạo thất bại");
-        return false;
-      }
+      } catch (e) { if (e.response?.status === 401) router.push("/login"); }
     },
-
-    // Đi thám hiểm (Logic mới từ Backend GameFi)
     async explore() {
-      if (!this.character) return;
-      if (this.character.energy < 1) {
-        alert("Hết năng lượng! Hãy về làng nghỉ ngơi.");
-        return;
-      }
+      if (!this.character) return { type: 'ERROR', message: 'Lỗi data' };
+      if (this.character.energy < 1) return { type: 'ERROR', message: 'Hết năng lượng!' };
 
       try {
         const res = await axiosClient.post("/exploration/explore");
         const data = res.data;
-
-        // Cập nhật lại UI dựa trên phản hồi server
+        // Update state local
         this.character.energy = data.currentEnergy;
+        if(data.newLevel) await this.fetchCharacter(); 
+        else if(data.expGained) this.character.currentExp += data.expGained;
 
-        // Nếu lên cấp -> load lại toàn bộ để cập nhật maxHp, stats mới
-        if (data.newLevel) {
-          await this.fetchCharacter();
-          this.addLog(`🌟 <b>LÊN CẤP ĐỘ ${data.newLevel}!</b>`, "LEVEL_UP");
-        } else {
-          // Cộng EXP client-side cho mượt
-          this.character.currentExp += data.expGained || 0;
-        }
-
-        // Ghi log
-        this.addLog(data.message, data.rewardType);
-      } catch (error) {
-        const msg =
-          error.response?.data?.message ||
-          error.response?.data ||
-          "Lỗi kết nối";
-        if (msg === "CAPTCHA_REQUIRED") {
-          throw new Error("CAPTCHA"); // Ném lỗi để View hiện Modal Captcha
-        }
-        this.addLog("❌ " + msg, "ERROR");
+        this.addLog(data.message, data.type);
+        return data; // Trả về data để View vẽ hình
+      } catch (e) {
+        const msg = e.response?.data?.message || "Lỗi mạng";
+        if (msg === "CAPTCHA_REQUIRED") throw new Error("CAPTCHA");
+        return { type: 'ERROR', message: msg };
       }
     },
-
-    // Hàm phụ thêm log vào nhật ký
     addLog(message, type = "INFO") {
-      this.logs.unshift({
-        id: Date.now(),
-        message,
-        type,
-      });
+      this.logs.unshift({ id: Date.now(), message, type });
       if (this.logs.length > 50) this.logs.pop();
     },
   },

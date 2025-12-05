@@ -270,7 +270,7 @@ const sendDM = async () => {
     messages.value.push(res.data);
     scrollToBottom();
   } catch (e) {
-    alert("Gửi thất bại!");
+    // Xử lý lỗi
   }
 };
 
@@ -365,7 +365,7 @@ const scrollToBottom = () => {
   font-size: 0.8em;
 }
 
-/* --- TÌM KIẾM (NEW DESIGN) --- */
+/* --- TÌM KIẾM --- */
 .search-box-wrapper {
   display: flex;
   align-items: center;
@@ -384,7 +384,7 @@ const scrollToBottom = () => {
   flex: 1;
   display: flex;
   align-items: center;
-  background-color: #fdf5e6; /* Màu giấy sáng */
+  background-color: #fdf5e6;
   background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
   padding: 8px 15px;
   border-radius: 4px;
@@ -396,14 +396,12 @@ const scrollToBottom = () => {
   border-color: var(--gold-accent);
   box-shadow: 0 0 10px rgba(251, 192, 45, 0.3);
 }
-
 .search-icon {
   color: #5d4037;
   font-size: 1.1em;
   margin-right: 10px;
   opacity: 0.7;
 }
-
 .real-input {
   width: 100%;
   border: none;
@@ -412,14 +410,13 @@ const scrollToBottom = () => {
   font-family: "Playfair Display", serif;
   font-weight: bold;
   font-size: 1.1em;
-  color: #2c1810; /* Màu mực đậm dễ đọc */
+  color: #2c1810;
 }
 .real-input::placeholder {
   color: #a1887f;
   font-weight: normal;
   font-style: italic;
 }
-
 .btn-connect {
   background: var(--red-seal);
   color: #fff;
@@ -442,11 +439,8 @@ const scrollToBottom = () => {
   transform: translateY(-2px);
   box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
 }
-.btn-connect:active {
-  transform: translateY(0);
-}
 
-/* --- REQUESTS PANEL --- */
+/* --- REQUESTS --- */
 .requests-panel {
   padding: 15px;
   border-radius: 4px;
@@ -497,7 +491,6 @@ const scrollToBottom = () => {
   font-weight: bold;
   color: var(--text-ink);
 }
-
 .req-actions {
   display: flex;
   gap: 5px;
@@ -559,7 +552,6 @@ const scrollToBottom = () => {
   border-radius: 4px;
   font-weight: bold;
 }
-
 .friend-list {
   padding: 15px;
   flex: 1;
@@ -579,7 +571,6 @@ const scrollToBottom = () => {
   margin-bottom: 10px;
   opacity: 0.5;
 }
-
 .friend-slot {
   display: flex;
   justify-content: space-between;
@@ -596,7 +587,6 @@ const scrollToBottom = () => {
   border-color: var(--gold-accent);
   transform: translateX(5px);
 }
-
 .slot-left {
   display: flex;
   align-items: center;
@@ -636,7 +626,6 @@ const scrollToBottom = () => {
   color: #a1887f;
   font-style: italic;
 }
-
 .btn-action {
   background: transparent;
   border: 1px solid #8d6e63;
@@ -664,7 +653,7 @@ const scrollToBottom = () => {
   border-color: #ff8a80;
 }
 
-/* --- CHAT MODAL --- */
+/* --- CHAT MODAL (ANCIENT STYLE) --- */
 .ancient-chat-window {
   position: fixed;
   bottom: 20px;
@@ -711,37 +700,104 @@ const scrollToBottom = () => {
   color: #ef5350;
 }
 
+/* --- CHAT STREAM (NỀN KHUNG CHAT MỚI) --- */
 .chat-stream {
   flex: 1;
-  padding: 15px;
+  padding: 20px 15px;
   overflow-y: auto;
-  background-image: linear-gradient(rgba(62, 39, 35, 0.1) 1px, transparent 1px);
-  background-size: 100% 1.5em;
+  background-color: #fdf5e6;
+  background-image: linear-gradient(
+    rgba(141, 110, 99, 0.15) 1px,
+    transparent 1px
+  );
+  background-size: 100% 2rem;
 }
 
+/* Dòng tin nhắn */
 .msg-row {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
   display: flex;
+  align-items: flex-end;
 }
 .msg-row.me {
   justify-content: flex-end;
 }
+
+/* Nội dung tin nhắn (Bong bóng) */
 .msg-content {
-  padding: 8px 12px;
-  max-width: 80%;
-  font-size: 0.95em;
-  line-height: 1.4;
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--text-ink);
-  border: 1px solid #d7ccc8;
-  border-radius: 4px;
-  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding: 10px 16px;
+  max-width: 85%;
+  font-size: 1rem;
+  line-height: 1.5;
   font-family: "Merriweather", serif;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  word-wrap: break-word;
 }
+
+/* Style cho BẰNG HỮU (Tin đến) */
+.msg-row:not(.me) .msg-content {
+  background: #ffffff;
+  color: #3e2723;
+  border: 1px solid #d7ccc8;
+  border-radius: 12px 12px 12px 2px;
+  margin-left: 5px;
+}
+/* Đuôi tin nhắn đến */
+.msg-row:not(.me) .msg-content::before {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 8px 10px 0;
+  border-color: transparent #d7ccc8 transparent transparent;
+}
+.msg-row:not(.me) .msg-content::after {
+  content: "";
+  position: absolute;
+  bottom: 0px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 8px 10px 0;
+  border-color: transparent #ffffff transparent transparent;
+}
+
+/* Style cho BẢN THÂN (Tin đi) */
 .msg-row.me .msg-content {
   background: #fff3e0;
-  border-color: #ffe0b2;
-  color: #e65100;
+  color: #bf360c;
+  border: 1px solid #ffcc80;
+  border-radius: 12px 12px 2px 12px;
+  margin-right: 5px;
+  font-weight: 500;
+}
+/* Đuôi tin nhắn đi */
+.msg-row.me .msg-content::before {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -8px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 8px 0 0;
+  border-color: #ffcc80 transparent transparent transparent;
+}
+.msg-row.me .msg-content::after {
+  content: "";
+  position: absolute;
+  bottom: 0px;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 8px 0 0;
+  border-color: #fff3e0 transparent transparent transparent;
 }
 
 .chat-init {

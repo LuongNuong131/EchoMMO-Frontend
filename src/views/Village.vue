@@ -28,55 +28,37 @@
               <div class="monitor-row">
                 <i class="fas fa-heart red-icon"></i>
                 <div class="bar-track">
-                  <div
-                    class="bar-fill red-fill"
-                    :style="{
-                      width:
-                        (charStore.character?.hp / charStore.character?.maxHp) *
-                          100 +
-                        '%',
-                    }"
-                  ></div>
+                  <div class="bar-fill red-fill" :style="{
+                    width:
+                      (charStore.character?.hp / charStore.character?.maxHp) *
+                      100 +
+                      '%',
+                  }"></div>
                 </div>
-                <span class="status-text"
-                  >{{ charStore.character?.hp }}/{{
-                    charStore.character?.maxHp
-                  }}</span
-                >
+                <span class="status-text">{{ charStore.character?.hp }}/{{
+                  charStore.character?.maxHp
+                }}</span>
               </div>
               <div class="monitor-row">
                 <i class="fas fa-bolt blue-icon"></i>
                 <div class="bar-track">
-                  <div
-                    class="bar-fill blue-fill"
-                    :style="{
-                      width:
-                        (charStore.character?.energy /
-                          charStore.character?.maxEnergy) *
-                          100 +
-                        '%',
-                    }"
-                  ></div>
+                  <div class="bar-fill blue-fill" :style="{
+                    width:
+                      (charStore.character?.energy /
+                        charStore.character?.maxEnergy) *
+                      100 +
+                      '%',
+                  }"></div>
                 </div>
-                <span class="status-text"
-                  >{{ charStore.character?.energy }}/{{
-                    charStore.character?.maxEnergy
-                  }}</span
-                >
+                <span class="status-text">{{ charStore.character?.energy }}/{{
+                  charStore.character?.maxEnergy
+                }}</span>
               </div>
             </div>
 
-            <button
-              class="btn-wood full-width"
-              @click="restAtInn"
-              :disabled="isResting"
-            >
-              <span v-if="!isResting"
-                ><i class="fas fa-coffee"></i> UỐNG TRÀ HỒI SỨC</span
-              >
-              <span v-else
-                >ĐANG NGHỈ NGƠI... <i class="fas fa-spinner fa-spin"></i
-              ></span>
+            <button class="btn-wood full-width" @click="restAtInn" :disabled="isResting">
+              <span v-if="!isResting"><i class="fas fa-coffee"></i> UỐNG TRÀ HỒI SỨC</span>
+              <span v-else>ĐANG NGHỈ NGƠI... <i class="fas fa-spinner fa-spin"></i></span>
             </button>
           </div>
         </div>
@@ -131,6 +113,7 @@
 import { ref, onMounted } from "vue";
 import { useCharacterStore } from "../stores/characterStore";
 
+// KHÔNG import ảnh ở đây nữa để tránh lỗi đường dẫn
 const charStore = useCharacterStore();
 const isResting = ref(false);
 
@@ -158,13 +141,13 @@ onMounted(() => {
 
 /* --- PALETTE MÀU SÁNG (BRIGHT THEME) --- */
 :root {
-  --bg-paper: #fdf5e6; /* Màu giấy sáng (Old Lace) */
-  --wood-frame: #5d4037; /* Nâu gỗ đậm */
-  --wood-light: #8d6e63; /* Nâu gỗ nhạt */
-  --text-ink: #2c1810; /* Mực tàu (Nâu đen) */
-  --gold-accent: #fbc02d; /* Vàng kim */
-  --red-accent: #b71c1c; /* Đỏ chu sa */
-  --card-bg: #fffaf0; /* Nền card sáng */
+  --bg-paper: #fdf5e6;
+  --wood-frame: #5d4037;
+  --wood-light: #8d6e63;
+  --text-ink: #2c1810;
+  --gold-accent: #fbc02d;
+  --red-accent: #b71c1c;
+  --card-bg: #fffaf0;
   --shadow-soft: rgba(93, 64, 55, 0.2);
 }
 
@@ -181,12 +164,13 @@ onMounted(() => {
 .bg-layer {
   position: absolute;
   inset: 0;
-  /* Dùng ảnh phong cảnh sáng (thủy mặc hoặc thành cổ ban ngày) */
-  background-image: url("https://img.freepik.com/free-vector/hand-drawn-chinese-style-background_23-2148962293.jpg");
+  /* --- SỬA ĐƯỜNG DẪN Ở ĐÂY --- */
+  /* Dùng ../ để lùi ra khỏi thư mục views, sau đó vào assets */
+  background-image: url("../assets/Background/b_doanhtrai.png");
   background-size: cover;
   background-position: center;
   z-index: 0;
-  opacity: 0.15; /* Làm mờ ảnh nền để nổi bật nội dung */
+  opacity: 0.15;
 }
 
 .paper-overlay {
@@ -218,12 +202,14 @@ onMounted(() => {
   margin-bottom: 40px;
   text-align: center;
 }
+
 .header-ornament {
   height: 2px;
   width: 80px;
   background: var(--wood-frame);
   position: relative;
 }
+
 .header-ornament::after {
   content: "♦";
   position: absolute;
@@ -231,9 +217,11 @@ onMounted(() => {
   color: var(--wood-frame);
   font-size: 1.2em;
 }
+
 .header-ornament.left::after {
   right: 0;
 }
+
 .header-ornament.right::after {
   left: 0;
 }
@@ -243,10 +231,11 @@ onMounted(() => {
   font-size: 2.8em;
   margin: 0;
   font-weight: 900;
-  color: var(--text-ink); /* Chữ màu mực tàu đậm */
-  text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8); /* Viền trắng để nổi trên nền */
+  color: var(--text-ink);
+  text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8);
   letter-spacing: 2px;
 }
+
 .hub-subtitle {
   color: #5d4037;
   font-style: italic;
@@ -254,6 +243,7 @@ onMounted(() => {
   font-size: 1.1em;
   font-weight: bold;
 }
+
 .ornament {
   color: var(--red-accent);
   font-size: 0.7em;
@@ -281,13 +271,13 @@ onMounted(() => {
   transition: all 0.3s;
   overflow: hidden;
 }
+
 .place-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(93, 64, 55, 0.3);
   border-color: var(--wood-light);
 }
 
-/* Khung viền đôi trang trí bên trong */
 .card-border-frame {
   position: absolute;
   inset: 5px;
@@ -317,10 +307,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--wood-light); /* Mặc định nâu nhạt */
+  background: var(--wood-light);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: 0.3s;
 }
+
 .place-card:hover .icon-circle {
   transform: scale(1.1);
 }
@@ -328,16 +319,19 @@ onMounted(() => {
 /* Màu icon riêng từng loại */
 .inn-card .icon-circle {
   background: #81c784;
-} /* Xanh lá nhạt (Hồi phục) */
+}
+
 .market-card .icon-circle {
   background: #ffb74d;
-} /* Cam vàng (Chợ) */
+}
+
 .bag-card .icon-circle {
   background: #a1887f;
-} /* Nâu (Túi) */
+}
+
 .board-card .icon-circle {
   background: #9575cd;
-} /* Tím (BXH) */
+}
 
 .place-card h3 {
   font-family: "Cinzel", serif;
@@ -346,6 +340,7 @@ onMounted(() => {
   font-weight: bold;
   color: var(--text-ink);
 }
+
 .card-desc {
   font-size: 0.95em;
   color: #6d4c41;
@@ -361,15 +356,18 @@ onMounted(() => {
   border-radius: 6px;
   border: 1px solid #e0e0e0;
 }
+
 .monitor-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
 }
+
 .red-icon {
   color: #e53935;
 }
+
 .blue-icon {
   color: #1e88e5;
 }
@@ -381,17 +379,21 @@ onMounted(() => {
   border-radius: 4px;
   overflow: hidden;
 }
+
 .bar-fill {
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s;
 }
+
 .red-fill {
   background: #e53935;
 }
+
 .blue-fill {
   background: #1e88e5;
 }
+
 .status-text {
   font-size: 0.8em;
   font-weight: bold;
@@ -418,12 +420,14 @@ onMounted(() => {
   justify-content: center;
   gap: 8px;
 }
+
 .btn-wood:hover:not(:disabled) {
   background: var(--wood-frame);
   color: #fff;
   border-color: var(--wood-frame);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 .btn-wood:disabled {
   background: #f5f5f5;
   color: #bdbdbd;
@@ -441,12 +445,11 @@ onMounted(() => {
   position: relative;
   width: 100%;
   max-width: 600px;
-  /* Gradient đỏ đậm phong cách cung đình */
   background: linear-gradient(135deg, #b71c1c, #880e4f);
   color: #fff;
-  border: 4px double #ffecb3; /* Viền vàng kem */
+  border: 4px double #ffecb3;
   padding: 20px 30px;
-  border-radius: 50px; /* Bo tròn */
+  border-radius: 50px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -463,6 +466,7 @@ onMounted(() => {
 .gate-content {
   text-align: left;
 }
+
 .big-text {
   display: block;
   font-family: "Cinzel", serif;
@@ -471,6 +475,7 @@ onMounted(() => {
   color: #fff;
   letter-spacing: 1px;
 }
+
 .sub-text {
   display: block;
   font-size: 0.9em;
@@ -496,6 +501,7 @@ onMounted(() => {
   .hub-title {
     font-size: 2em;
   }
+
   .hub-grid {
     grid-template-columns: 1fr;
     max-width: 400px;

@@ -1,568 +1,348 @@
 <template>
-  <div class="page-container wuxia-explore">
-    <div class="landscape-viewport">
-      <div
-        class="ink-scroll-bg"
-        :style="{ backgroundPosition: bgPos + 'px 0' }"
-      ></div>
-
-      <div
-        class="cloud-overlay"
-        :style="{ backgroundPosition: bgPos * 0.5 + 'px 0' }"
-      ></div>
-
-      <div class="paper-texture-overlay"></div>
-
-      <div class="hud-top-left">
-        <div class="hud-text">
-          <span class="seal-icon">地</span> Vị trí: Hắc Phong Sơn
-        </div>
-        <div class="hud-text sub">Độ cao: {{ altitude }} trượng</div>
-      </div>
-
-      <div class="hud-top-right">
-        <div class="hud-text">
-          Thể Lực
-          <span class="energy-val">{{ energyPercent.toFixed(0) }}%</span>
-        </div>
-        <div class="energy-brush-bar">
-          <div class="ink-fill" :style="{ width: energyPercent + '%' }"></div>
-        </div>
-      </div>
-
-      <div class="center-focus" :class="{ spinning: isMoving }">
-        <div class="bagua-ring"></div>
-        <div class="bagua-dot"></div>
-      </div>
-
-      <transition name="scroll-unroll">
-        <div v-if="eventData" class="event-scroll" :class="eventData.type">
-          <div class="scroll-rods top"></div>
-          <div class="scroll-content">
-            <div class="event-icon">
-              <i
-                v-if="eventData.type === 'GOLD'"
-                class="fas fa-coins text-gold"
-              ></i>
-              <i
-                v-else-if="eventData.type === 'BATTLE'"
-                class="fas fa-swords text-red"
-              ></i>
-              <i v-else class="fas fa-box-open text-blue"></i>
-            </div>
-            <div class="event-msg">{{ eventData.message }}</div>
-          </div>
-          <div class="scroll-rods bot"></div>
-        </div>
-      </transition>
+  <div class="page-container explore-page">
+    <div class="status-hud glass-panel">
+      <div class="stat-item">❤️ {{ charStore.character?.hp }}/{{ charStore.character?.maxHp }}</div>
+      <div class="stat-item">⚡ {{ charStore.character?.energy }}/{{ charStore.character?.maxEnergy }}</div>
+      <div class="stat-item gold">💰 {{ authStore.wallet?.gold }}</div>
     </div>
 
-    <div class="control-desk">
-      <div class="bamboo-log-area custom-scroll">
-        <div class="bamboo-slats">
-          <div v-for="(log, i) in recentLogs" :key="i" class="slat-entry">
-            <span class="time-stamp"
-              >[{{ new Date().toLocaleTimeString() }}]</span
-            >
-            {{ log.message }}
-          </div>
-          <div v-if="recentLogs.length === 0" class="slat-placeholder">
-            ...Chưa có tin tức...
-          </div>
+    <div class="game-scene">
+      <div class="scene-background" :style="{ backgroundPosition: bgPosition + 'px 0' }"></div>
+
+      <transition name="float-up">
+        <div v-if="showExp" class="exp-popup">+{{ lastExp }} EXP</div>
+      </transition>
+
+      <div class="actor player" :class="{ walking: isMoving }">
+        <div class="avatar-glow">
+          <div class="char-emoji">{{ charStore.character?.name.charAt(0) || '🧙' }}</div>
         </div>
       </div>
 
-      <div class="desk-actions">
-        <button
-          class="btn-jade-seal"
-          @mousedown="startScouting"
-          @mouseup="stopScouting"
-          @touchstart="startScouting"
-          @touchend="stopScouting"
-          :class="{ active: isMoving }"
-          :disabled="charStore.character?.energy <= 0 || isBusy"
-        >
-          <div class="jade-inner">
-            <span class="kanji-scan" v-if="!isMoving">THÁM</span>
-            <span class="kanji-scan" v-else>DÒ...</span>
+      <div class="actor target" v-if="targetType" :style="{ left: targetLeft + '%' }">
+        <div class="target-icon" :class="targetType">
+          <span v-if="targetType === 'ENEMY'">👿</span>
+          <span v-if="targetType === 'GOLD'">💰</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-deck">
+      <div class="log-screen custom-scroll">
+        <div v-for="(log, i) in recentLogs" :key="i" class="log-line" :class="log.type">
+          <span class="time">[{{ new Date(log.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}]</span>
+          <span v-html="log.message"></span>
+        </div>
+      </div>
+
+      <div class="action-pad">
+        <button class="btn-explore" @mousedown="startMoving" @mouseup="stopMoving" @touchstart="startMoving"
+          @touchend="stopMoving" :disabled="isBusy || charStore.character?.energy <= 0" :class="{ active: isMoving }">
+          <div class="btn-inner">
+            <i class="fas fa-shoe-prints"></i>
+            <span>{{ isMoving ? 'ĐANG TÌM...' : 'GIỮ ĐỂ ĐI' }}</span>
           </div>
-          <div class="tassel"></div>
         </button>
 
-        <div class="side-buttons">
-          <button class="btn-wood" @click="$router.push('/village')">
-            TRẠI
-          </button>
-          <button class="btn-wood" @click="$router.push('/inventory')">
-            TÚI
-          </button>
+        <div class="side-btns">
+          <button class="btn-small" @click="$router.push('/village')"><i class="fas fa-home"></i> LÀNG</button>
+          <button class="btn-small" @click="$router.push('/inventory')"><i class="fas fa-box"></i> TÚI</button>
         </div>
       </div>
     </div>
-
     <CaptchaModal ref="captchaModal" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useCharacterStore } from "../stores/characterStore";
-import { useAuthStore } from "../stores/authStore";
-import CaptchaModal from "../components/CaptchaModal.vue";
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useCharacterStore } from '../stores/characterStore';
+import { useAuthStore } from '../stores/authStore';
+import { useRouter } from 'vue-router';
+import CaptchaModal from '../components/CaptchaModal.vue';
 
 const charStore = useCharacterStore();
 const authStore = useAuthStore();
+const router = useRouter();
 const captchaModal = ref(null);
 
-const bgPos = ref(0);
+const bgPosition = ref(0);
 const isMoving = ref(false);
 const isBusy = ref(false);
-const eventData = ref(null);
-const altitude = ref(150);
+const targetType = ref(null);
+const targetLeft = ref(120);
+const showExp = ref(false);
+const lastExp = ref(0);
 let moveInterval = null;
-
-const energyPercent = computed(() =>
-  charStore.character
-    ? (charStore.character.energy / charStore.character.maxEnergy) * 100
-    : 0
-);
+let eventTimer = null;
 
 const recentLogs = computed(() => charStore.logs.slice(0, 5));
 
-const startScouting = () => {
-  if (isBusy.value || charStore.character.energy <= 0) return;
+const startMoving = () => {
+  if (isBusy.value || charStore.character?.energy <= 0) return;
   isMoving.value = true;
-  eventData.value = null;
-
-  moveInterval = setInterval(() => {
-    bgPos.value -= 5;
-    altitude.value = 150 + Math.floor(Math.random() * 6 - 3);
-  }, 30);
-
-  setTimeout(triggerEvent, 1500);
+  targetType.value = null; targetLeft.value = 120;
+  moveInterval = setInterval(() => { bgPosition.value -= 15; }, 30);
+  eventTimer = setTimeout(triggerEvent, 1200);
 };
 
-const stopScouting = () => {
+const stopMoving = () => {
   isMoving.value = false;
   if (moveInterval) clearInterval(moveInterval);
+  if (eventTimer) clearTimeout(eventTimer);
 };
 
 const triggerEvent = async () => {
-  stopScouting();
+  stopMoving();
   isBusy.value = true;
-
   try {
-    const oldLogLen = charStore.logs.length;
-    await charStore.explore();
-
-    if (charStore.logs.length > oldLogLen) {
-      eventData.value = charStore.logs[0];
-      setTimeout(() => {
-        eventData.value = null;
-      }, 3000);
+    const result = await charStore.explore();
+    if (result.type === 'ERROR') { /* Handle error */ }
+    else {
+      if (result.expGained > 0) {
+        lastExp.value = result.expGained;
+        showExp.value = true; setTimeout(() => showExp.value = false, 1000);
+      }
+      if (result.type === 'ENEMY') {
+        targetType.value = 'ENEMY'; animateTargetEntry();
+        setTimeout(() => router.push('/battle'), 1500);
+      } else if (result.type === 'GOLD') {
+        targetType.value = 'GOLD'; animateTargetEntry();
+        authStore.fetchProfile();
+        setTimeout(() => isBusy.value = false, 1500);
+      } else {
+        isBusy.value = false;
+      }
     }
   } catch (e) {
-    if (e.message === "CAPTCHA") captchaModal.value.open();
-  } finally {
-    setTimeout(() => (isBusy.value = false), 500);
+    if (e.message === 'CAPTCHA') captchaModal.value.open();
+    isBusy.value = false;
   }
 };
 
-onMounted(() => {
-  charStore.fetchCharacter();
-});
-onUnmounted(() => stopScouting());
+const animateTargetEntry = () => {
+  const anim = setInterval(() => {
+    targetLeft.value -= 5;
+    if (targetLeft.value <= 60) clearInterval(anim);
+  }, 20);
+};
+
+onMounted(() => { charStore.fetchCharacter(); authStore.fetchProfile(); });
+onUnmounted(() => stopMoving());
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Serif+TC:wght@700&display=swap");
-
-/* --- COLORS & VARS --- */
-:root {
-  --paper: #e3d5b8;
-  --wood: #4e342e;
-  --ink: #212121;
-  --jade: #43a047;
-  --red: #b71c1c;
-  --gold: #d4a017;
-}
-
-.wuxia-explore {
-  background: #1a1a1a;
+.explore-page {
+  background: #050505;
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: "Playfair Display", serif;
-  color: var(--wood);
 }
 
-/* --- VIEWPORT (TRANH THỦY MẶC) --- */
-.landscape-viewport {
+.status-hud {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  padding: 10px 20px;
+  z-index: 100;
+  font-weight: bold;
+  border: 1px solid #333;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 30px;
+  color: #fff;
+}
+
+.gold {
+  color: #ffd700;
+}
+
+.game-scene {
   flex: 1;
   position: relative;
   overflow: hidden;
-  /* MÀU DỰ PHÒNG NẾU ẢNH LỖI (Màu giấy cũ) */
-  background-color: #d7ccc8;
-  border-bottom: 4px double var(--wood);
+  background: #111;
+  border-bottom: 2px solid #333;
 }
 
-.ink-scroll-bg {
+.scene-background {
   position: absolute;
   inset: 0;
-  /* Link ảnh Unsplash ổn định (Núi non thủy mặc) */
-  background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
+  background-image: url('https://raw.githubusercontent.com/htkhang111/fe-game-fi/refs/heads/main/src/assets/img/forest.png');
   background-size: cover;
-  background-position: center;
-  filter: sepia(40%) grayscale(20%) contrast(0.9);
-  /* Fallback gradient nếu ảnh vẫn lỗi */
-  background-color: #d7ccc8;
-}
-
-/* Lớp mây mờ */
-.cloud-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.6) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Lớp vân giấy */
-.paper-texture-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.3;
-  pointer-events: none;
-  z-index: 3;
-  /* Tạo vân giấy bằng CSS không cần ảnh */
-  background-image: repeating-linear-gradient(
-      45deg,
-      #000 0,
-      #000 1px,
-      transparent 0,
-      transparent 50%
-    ),
-    radial-gradient(#000 1%, transparent 1%);
-  background-size: 10px 10px, 3px 3px;
-}
-
-/* HUD INFO */
-.hud-top-left,
-.hud-top-right {
-  position: absolute;
-  top: 20px;
-  z-index: 10;
-  padding: 10px 15px;
-  background: rgba(227, 213, 184, 0.9);
-  border: 2px solid var(--wood);
-  border-radius: 4px;
-  color: var(--wood);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.hud-top-left {
-  left: 20px;
-}
-.hud-top-right {
-  right: 20px;
-  text-align: right;
-}
-
-.hud-text {
-  font-weight: bold;
-  font-size: 1em;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.hud-text.sub {
-  font-size: 0.8em;
-  color: #5d4037;
-  margin-top: 2px;
-  font-style: italic;
-}
-.seal-icon {
-  background: var(--red);
-  color: #fff;
-  padding: 2px 4px;
-  font-size: 0.7em;
-  border-radius: 2px;
-}
-.energy-val {
-  color: var(--red);
-  font-weight: bold;
-  margin-left: 5px;
-}
-
-.energy-brush-bar {
-  width: 120px;
-  height: 8px;
-  background: #ccc;
-  margin-top: 5px;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--wood);
-}
-.ink-fill {
-  height: 100%;
-  background: var(--wood);
-  transition: width 0.3s;
-}
-
-/* CENTER FOCUS (BÁT QUÁI) */
-.center-focus {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 150px;
-  height: 150px;
-  pointer-events: none;
-  opacity: 0.6;
-  z-index: 5;
-  transition: opacity 0.3s;
-}
-.bagua-ring {
-  position: absolute;
-  inset: 0;
-  border: 4px dashed var(--wood);
-  border-radius: 50%;
-}
-.bagua-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  background: var(--red);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-}
-.spinning .bagua-ring {
-  animation: spin 3s linear infinite;
-  border-color: var(--red);
+  background-repeat: repeat-x;
   opacity: 0.8;
 }
 
-/* EVENT SCROLL (CUỘN GIẤY) */
-.event-scroll {
+.actor {
   position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff8e1;
-  padding: 20px 40px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  min-width: 240px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.scroll-rods {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 12px;
-  background: var(--wood);
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-}
-.scroll-rods.top {
-  top: -6px;
-}
-.scroll-rods.bot {
-  bottom: -6px;
-}
-
-.event-icon {
-  font-size: 2.5em;
-  margin-bottom: 10px;
-}
-.text-gold {
-  color: var(--gold);
-}
-.text-red {
-  color: var(--red);
-}
-.text-blue {
-  color: #1e88e5;
-}
-.event-msg {
-  font-weight: bold;
-  font-family: "Playfair Display";
-  color: var(--wood);
-  font-size: 1.2em;
-}
-
-/* --- CONTROL DESK --- */
-.control-desk {
-  height: 240px;
-  background: var(--wood);
-  border-top: 4px solid #3e2723;
-  display: flex;
-  padding: 20px;
-  gap: 20px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-  /* Vân gỗ (CSS Only) */
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.03) 0,
-    rgba(255, 255, 255, 0.03) 2px,
-    transparent 2px,
-    transparent 8px
-  );
-}
-
-/* BAMBOO LOGS */
-.bamboo-log-area {
-  flex: 1;
-  background: #6d4c41;
-  border: 4px inset #3e2723;
-  padding: 5px;
-  overflow-y: auto;
-}
-.bamboo-slats {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.slat-entry {
-  background: #d7ccc8;
-  padding: 6px 10px;
-  font-size: 0.9em;
-  border-radius: 2px;
-  color: #3e2723;
-  font-weight: bold;
-  border-bottom: 1px solid #a1887f;
-}
-.time-stamp {
-  color: var(--red);
-  margin-right: 5px;
-  font-size: 0.8em;
-}
-.slat-placeholder {
-  text-align: center;
-  color: #a1887f;
-  margin-top: 20px;
-  font-style: italic;
-}
-
-/* DESK ACTIONS */
-.desk-actions {
-  flex: 0 0 140px;
+  bottom: 20%;
+  left: 20%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.2s;
+}
+
+.actor.target {
+  left: auto;
+}
+
+.avatar-glow {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #000;
+  border: 3px solid #00f3ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+}
+
+.char-emoji {
+  font-size: 40px;
+}
+
+.walking .avatar-glow {
+  animation: bounce 0.4s infinite alternate;
+}
+
+.target-icon {
+  font-size: 60px;
+  filter: drop-shadow(0 0 10px red);
+}
+
+.target-icon.GOLD {
+  filter: drop-shadow(0 0 10px gold);
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+.exp-popup {
+  position: absolute;
+  top: 40%;
+  left: 22%;
+  color: #00f3ff;
+  font-weight: bold;
+  font-size: 1.5em;
+  text-shadow: 0 0 5px #000;
+  animation: floatUp 1s forwards;
+  z-index: 10;
+}
+
+@keyframes floatUp {
+  to {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+.control-deck {
+  height: 250px;
+  background: #0b1121;
+  display: flex;
+  padding: 15px;
   gap: 15px;
 }
 
-/* JADE SEAL BUTTON */
-.btn-jade-seal {
+.log-screen {
+  flex: 1;
+  background: #000;
+  border: 1px solid #333;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #aaa;
+}
+
+.log-line {
+  margin-bottom: 4px;
+  border-bottom: 1px solid #222;
+}
+
+.log-line.GOLD {
+  color: #ffd700;
+}
+
+.log-line.ENEMY {
+  color: #ff0055;
+}
+
+.time {
+  color: #555;
+  margin-right: 5px;
+}
+
+.action-pad {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-explore {
   width: 100px;
   height: 100px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.2s;
-  z-index: 10;
-}
-.jade-inner {
-  width: 100%;
-  height: 100%;
   border-radius: 50%;
-  /* Giả lập ngọc bích */
-  background: radial-gradient(circle at 30% 30%, #81c784, #388e3c);
-  border: 4px solid #c8e6c9;
+  border: 4px solid #333;
+  background: #1e293b;
+  color: #00f3ff;
+  cursor: pointer;
+  transition: 0.2s;
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-.kanji-scan {
-  font-family: "Noto Serif TC", serif;
-  font-size: 2em;
-  color: #e8f5e9;
-  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
-}
-.tassel {
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 40px;
-  background: var(--red);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  z-index: -1;
+  align-items: center;
+  text-align: center;
 }
 
-.btn-jade-seal:active,
-.btn-jade-seal.active {
+.btn-explore.active {
+  border-color: #00f3ff;
+  background: #000;
+  box-shadow: 0 0 30px #00f3ff;
   transform: scale(0.95);
 }
-.btn-jade-seal.active .jade-inner {
-  background: radial-gradient(circle, #ef5350, #b71c1c); /* Đỏ khi ấn */
-  border-color: #ffcdd2;
-}
 
-.side-buttons {
+.btn-inner {
   display: flex;
-  gap: 10px;
-  width: 100%;
+  flex-direction: column;
+  align-items: center;
 }
-.btn-wood {
-  flex: 1;
-  background: #5d4037;
-  color: #d7ccc8;
-  border: 1px solid #8d6e63;
-  padding: 5px;
-  font-family: "Playfair Display", serif;
+
+.btn-inner i {
+  font-size: 2em;
+  margin-bottom: 5px;
+}
+
+.btn-inner span {
+  font-size: 0.7em;
+  font-weight: bold;
+}
+
+.side-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-small {
+  background: #333;
+  border: none;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 0.7em;
+  border-radius: 4px;
   cursor: pointer;
-  box-shadow: 0 2px 0 #3e2723;
-}
-.btn-wood:active {
-  transform: translateY(2px);
-  box-shadow: none;
-}
-
-/* ANIMATIONS */
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
-}
-.scroll-unroll-enter-active {
-  animation: unroll 0.5s ease-out;
-}
-@keyframes unroll {
-  from {
-    height: 0;
-    opacity: 0;
-    transform: translate(-50%, -50%) scaleY(0);
-  }
-  to {
-    height: auto;
-    opacity: 1;
-    transform: translate(-50%, -50%) scaleY(1);
-  }
-}
-
-/* SCROLLBAR */
-.custom-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #5d4037;
-  border-radius: 2px;
 }
 </style>
