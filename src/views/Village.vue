@@ -1,107 +1,103 @@
 <template>
-  <div class="page-container village-page bright-ancient-theme">
+  <div class="page-container village-page ancient-wood-theme">
     <div class="bg-layer"></div>
-    <div class="paper-overlay"></div>
+    <div class="paper-texture"></div>
+    <div class="screen-border"></div>
 
     <div class="village-wrapper">
       <div class="hub-header">
-        <div class="header-ornament left"></div>
-        <div class="header-content">
-          <h1 class="hub-title">
-            <span class="ornament">❖</span> LẠC DƯƠNG THÀNH
-            <span class="ornament">❖</span>
-          </h1>
-          <p class="hub-subtitle">Thành Trì Phồn Hoa - Thiên Hạ Thái Bình</p>
+        <div class="header-scroll-decor">
+          <span class="decor-line"></span>
+          <div class="main-title-box">
+            <h1 class="hub-title">LẠC DƯƠNG</h1>
+            <div class="seal-mark">thành</div>
+          </div>
+          <span class="decor-line"></span>
         </div>
-        <div class="header-ornament right"></div>
+        <p class="hub-subtitle">-- Thiên Hạ Thái Bình --</p>
       </div>
 
       <div class="hub-grid">
-        <div class="place-card inn-card">
-          <div class="card-border-frame"></div>
-          <div class="card-content">
-            <div class="icon-circle"><i class="fas fa-bed"></i></div>
-            <h3>KHÁCH ĐIẾM</h3>
-            <p class="card-desc">Nghỉ ngơi hồi phục sinh lực</p>
+        <div class="wood-card inn-card">
+          <div class="card-inner">
+            <div class="card-icon-frame">
+              <i class="fas fa-bed"></i>
+            </div>
+            <h3 class="card-name">KHÁCH ĐIẾM</h3>
+            <p class="card-desc">Hồi phục sinh lực</p>
 
-            <div class="status-monitor">
-              <div class="monitor-row">
-                <i class="fas fa-heart red-icon"></i>
-                <div class="bar-track">
-                  <div class="bar-fill red-fill" :style="{
-                    width:
-                      (charStore.character?.hp / charStore.character?.maxHp) *
-                      100 +
-                      '%',
-                  }"></div>
+            <div class="status-scroll">
+              <div class="stat-row">
+                <span class="stat-label">Sinh</span>
+                <div class="stat-bar-frame">
+                  <div class="stat-fill red" :style="{ width: hpPercent + '%' }"></div>
                 </div>
-                <span class="status-text">{{ charStore.character?.hp }}/{{
-                  charStore.character?.maxHp
-                }}</span>
               </div>
-              <div class="monitor-row">
-                <i class="fas fa-bolt blue-icon"></i>
-                <div class="bar-track">
-                  <div class="bar-fill blue-fill" :style="{
-                    width:
-                      (charStore.character?.energy /
-                        charStore.character?.maxEnergy) *
-                      100 +
-                      '%',
-                  }"></div>
+              <div class="stat-row">
+                <span class="stat-label">Nội</span>
+                <div class="stat-bar-frame">
+                  <div class="stat-fill blue" :style="{ width: energyPercent + '%' }"></div>
                 </div>
-                <span class="status-text">{{ charStore.character?.energy }}/{{
-                  charStore.character?.maxEnergy
-                }}</span>
               </div>
             </div>
 
-            <button class="btn-wood full-width" @click="restAtInn" :disabled="isResting">
-              <span v-if="!isResting"><i class="fas fa-coffee"></i> UỐNG TRÀ HỒI SỨC</span>
-              <span v-else>ĐANG NGHỈ NGƠI... <i class="fas fa-spinner fa-spin"></i></span>
+            <button class="btn-plaque" @click="restAtInn" :disabled="isResting">
+              <span v-if="!isResting">UỐNG TRÀ</span>
+              <span v-else>ĐANG NGHỈ...</span>
             </button>
           </div>
+          <div class="nail n-tl"></div><div class="nail n-tr"></div>
+          <div class="nail n-bl"></div><div class="nail n-br"></div>
         </div>
 
-        <router-link to="/market" class="place-card market-card">
-          <div class="card-border-frame"></div>
-          <div class="card-content">
-            <div class="icon-circle gold"><i class="fas fa-store"></i></div>
-            <h3>THƯƠNG HỘI</h3>
-            <p class="card-desc">Giao dịch binh khí & đan dược</p>
-            <div class="btn-wood action">VÀO CHỢ</div>
+        <router-link to="/market" class="wood-card market-card">
+          <div class="card-inner">
+            <div class="card-icon-frame gold-border">
+              <i class="fas fa-coins"></i>
+            </div>
+            <h3 class="card-name">THƯƠNG HỘI</h3>
+            <p class="card-desc">Giao thương buôn bán</p>
+            <div class="btn-plaque action">VÀO CHỢ</div>
           </div>
+          <div class="nail n-tl"></div><div class="nail n-tr"></div>
+          <div class="nail n-bl"></div><div class="nail n-br"></div>
         </router-link>
 
-        <router-link to="/inventory" class="place-card bag-card">
-          <div class="card-border-frame"></div>
-          <div class="card-content">
-            <div class="icon-circle brown"><i class="fas fa-box-open"></i></div>
-            <h3>HÀNH TRANG</h3>
-            <p class="card-desc">Kiểm tra túi đồ & trang bị</p>
-            <div class="btn-wood action">XEM TÚI</div>
+        <router-link to="/inventory" class="wood-card bag-card">
+          <div class="card-inner">
+            <div class="card-icon-frame wood-border">
+              <i class="fas fa-box"></i>
+            </div>
+            <h3 class="card-name">HÀNH TRANG</h3>
+            <p class="card-desc">Hành lý mang theo</p>
+            <div class="btn-plaque action">MỞ TÚI</div>
           </div>
+          <div class="nail n-tl"></div><div class="nail n-tr"></div>
+          <div class="nail n-bl"></div><div class="nail n-br"></div>
         </router-link>
 
-        <router-link to="/leaderboard" class="place-card board-card">
-          <div class="card-border-frame"></div>
-          <div class="card-content">
-            <div class="icon-circle purple"><i class="fas fa-scroll"></i></div>
-            <h3>ANH HÙNG BẢNG</h3>
-            <p class="card-desc">Danh sách cao thủ giang hồ</p>
-            <div class="btn-wood action">XEM BXH</div>
+        <router-link to="/leaderboard" class="wood-card board-card">
+          <div class="card-inner">
+            <div class="card-icon-frame jade-border">
+              <i class="fas fa-scroll"></i>
+            </div>
+            <h3 class="card-name">BẢNG VÀNG</h3>
+            <p class="card-desc">Danh chấn giang hồ</p>
+            <div class="btn-plaque action">XEM BẢNG</div>
           </div>
+          <div class="nail n-tl"></div><div class="nail n-tr"></div>
+          <div class="nail n-bl"></div><div class="nail n-br"></div>
         </router-link>
       </div>
 
       <div class="deploy-section">
-        <button @click="$router.push('/explore')" class="btn-gate-bright">
-          <div class="gate-content">
-            <span class="big-text">XUẤT THÀNH</span>
-            <span class="sub-text">Hành tẩu giang hồ - Trừ gian diệt ác</span>
+        <button @click="$router.push('/explore')" class="btn-imperial-seal">
+          <div class="seal-content">
+            <span class="seal-main-text">XUẤT THÀNH</span>
+            <span class="seal-sub-text">Hành Hiệp Trượng Nghĩa</span>
           </div>
-          <div class="gate-icon-wrapper">
-            <i class="fas fa-dungeon"></i>
+          <div class="seal-stamp">
+            <i class="fas fa-torii-gate"></i>
           </div>
         </button>
       </div>
@@ -110,17 +106,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useCharacterStore } from "../stores/characterStore";
 
-// KHÔNG import ảnh ở đây nữa để tránh lỗi đường dẫn
 const charStore = useCharacterStore();
 const isResting = ref(false);
+
+const hpPercent = computed(() => {
+  if (!charStore.character) return 0;
+  return (charStore.character.hp / charStore.character.maxHp) * 100;
+});
+
+const energyPercent = computed(() => {
+  if (!charStore.character) return 0;
+  return (charStore.character.energy / charStore.character.maxEnergy) * 100;
+});
 
 const restAtInn = async () => {
   if (isResting.value) return;
   isResting.value = true;
-
   try {
     await new Promise((r) => setTimeout(r, 2000));
     await charStore.fetchCharacter();
@@ -137,376 +141,242 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Serif+TC:wght@500;700;900&display=swap");
 
-/* --- PALETTE MÀU SÁNG (BRIGHT THEME) --- */
+/* --- CORE PALETTE (Màu Cổ) --- */
 :root {
-  --bg-paper: #fdf5e6;
-  --wood-frame: #5d4037;
-  --wood-light: #8d6e63;
-  --text-ink: #2c1810;
-  --gold-accent: #fbc02d;
-  --red-accent: #b71c1c;
-  --card-bg: #fffaf0;
-  --shadow-soft: rgba(93, 64, 55, 0.2);
+  --paper-bg: #eaddcf;      /* Giấy cũ */
+  --wood-dark: #3e2723;     /* Gỗ đen */
+  --wood-mid: #5d4037;      /* Gỗ nâu */
+  --wood-light: #8d6e63;    /* Gỗ sáng */
+  --ink: #1a1a1a;           /* Mực tàu */
+  --red-seal: #8a1c1c;      /* Đỏ son trầm */
+  --gold-antique: #c5a059;  /* Vàng đồng cổ */
+  --jade: #388e3c;          /* Ngọc bích */
 }
 
-/* --- BASE LAYOUT --- */
-.village-page.bright-ancient-theme {
-  background-color: var(--bg-paper);
+/* --- LAYOUT --- */
+.village-page.ancient-wood-theme {
+  background-color: var(--paper-bg);
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
-  font-family: "Playfair Display", serif;
-  color: var(--text-ink);
+  overflow-x: hidden;
+  font-family: "Noto Serif TC", serif;
+  color: var(--wood-dark);
 }
 
+/* --- SỬA LẠI PHẦN NỀN --- */
 .bg-layer {
-  position: absolute;
-  inset: 0;
-  /* --- SỬA ĐƯỜNG DẪN Ở ĐÂY --- */
-  /* Dùng ../ để lùi ra khỏi thư mục views, sau đó vào assets */
+  position: absolute; inset: 0;
+  /* Khôi phục ảnh nền gốc của bạn */
   background-image: url("../assets/Background/b_doanhtrai.png");
-  background-size: cover;
-  background-position: center;
+  background-size: cover; background-position: center;
+  /* Điều chỉnh độ mờ và màu sắc để hợp với theme gỗ tối */
+  opacity: 0.25; 
+  filter: sepia(0.4) contrast(1.1) brightness(0.9);
   z-index: 0;
-  opacity: 0.15;
 }
 
-.paper-overlay {
-  position: absolute;
-  inset: 0;
+.paper-texture {
+  position: absolute; inset: 0;
   background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
-  opacity: 0.5;
-  z-index: 1;
-  pointer-events: none;
+  opacity: 0.5; z-index: 1; pointer-events: none;
+}
+
+.screen-border {
+  position: fixed; inset: 0;
+  border: 8px solid var(--wood-dark);
+  pointer-events: none; z-index: 999;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
 }
 
 .village-wrapper {
-  position: relative;
-  z-index: 10;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 80px 20px 40px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  position: relative; z-index: 10;
+  max-width: 1000px; margin: 0 auto;
+  padding: 60px 20px 40px;
+  display: flex; flex-direction: column;
 }
 
-/* --- HEADER --- */
+/* --- HEADER (Kiểu hoành phi câu đối) --- */
 .hub-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 40px;
-  text-align: center;
+  text-align: center; margin-bottom: 50px;
 }
 
-.header-ornament {
-  height: 2px;
-  width: 80px;
-  background: var(--wood-frame);
+.header-scroll-decor {
+  display: flex; align-items: center; justify-content: center; gap: 15px;
+}
+
+.decor-line {
+  height: 2px; width: 60px; background: var(--wood-dark);
   position: relative;
 }
-
-.header-ornament::after {
-  content: "♦";
-  position: absolute;
-  top: -10px;
-  color: var(--wood-frame);
-  font-size: 1.2em;
+.decor-line::after {
+  content: "✦"; position: absolute; top: -10px; 
+  left: 50%; transform: translateX(-50%); color: var(--wood-dark);
 }
 
-.header-ornament.left::after {
-  right: 0;
-}
-
-.header-ornament.right::after {
-  left: 0;
+.main-title-box {
+  border: 4px double var(--wood-dark);
+  padding: 10px 30px;
+  background: var(--paper-bg);
+  position: relative;
+  box-shadow: 5px 5px 0 rgba(62,39,35,0.2);
 }
 
 .hub-title {
-  font-family: "Cinzel", serif;
-  font-size: 2.8em;
-  margin: 0;
-  font-weight: 900;
-  color: var(--text-ink);
-  text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8);
-  letter-spacing: 2px;
+  font-size: 2.8em; margin: 0; font-weight: 900;
+  color: var(--ink); letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.seal-mark {
+  position: absolute; top: -10px; right: -15px;
+  width: 40px; height: 40px; background: var(--red-seal);
+  color: #fff; font-size: 0.8em; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; box-shadow: 2px 2px 2px rgba(0,0,0,0.3);
+  transform: rotate(15deg);
+  border: 1px solid #ffcdd2;
 }
 
 .hub-subtitle {
-  color: #5d4037;
-  font-style: italic;
-  margin-top: 5px;
-  font-size: 1.1em;
-  font-weight: bold;
+  margin-top: 15px; font-style: italic; color: var(--wood-mid); font-weight: bold;
 }
 
-.ornament {
-  color: var(--red-accent);
-  font-size: 0.7em;
-  vertical-align: middle;
-}
-
-/* --- GRID CARDS --- */
+/* --- GRID (Thẻ bài gỗ) --- */
 .hub-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 25px;
-  margin-bottom: auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px; margin-bottom: 40px;
 }
 
-.place-card {
+/* THẺ GỖ */
+.wood-card {
   position: relative;
+  background: #5d4037; /* Màu gỗ nền */
+  padding: 6px; /* Viền gỗ ngoài */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  /* Cắt góc (Octagon shape) */
+  clip-path: polygon(
+    10px 0, calc(100% - 10px) 0, 
+    100% 10px, 100% calc(100% - 10px), 
+    calc(100% - 10px) 100%, 10px 100%, 
+    0 calc(100% - 10px), 0 10px
+  );
+  transition: transform 0.3s;
   text-decoration: none;
-  color: var(--text-ink);
-  background-color: var(--card-bg);
-  border: 1px solid #d7ccc8;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px var(--shadow-soft);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s;
-  overflow: hidden;
 }
 
-.place-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(93, 64, 55, 0.3);
-  border-color: var(--wood-light);
-}
+.wood-card:hover { transform: translateY(-5px); }
 
-.card-border-frame {
-  position: absolute;
-  inset: 5px;
-  border: 2px double var(--wood-light);
-  border-radius: 6px;
-  pointer-events: none;
-}
-
-.card-content {
-  padding: 30px 20px;
-  text-align: center;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 2;
-}
-
-/* ICON TRÒN SÁNG */
-.icon-circle {
-  font-size: 2em;
-  margin-bottom: 15px;
-  color: #fff;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--wood-light);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
-}
-
-.place-card:hover .icon-circle {
-  transform: scale(1.1);
-}
-
-/* Màu icon riêng từng loại */
-.inn-card .icon-circle {
-  background: #81c784;
-}
-
-.market-card .icon-circle {
-  background: #ffb74d;
-}
-
-.bag-card .icon-circle {
-  background: #a1887f;
-}
-
-.board-card .icon-circle {
-  background: #9575cd;
-}
-
-.place-card h3 {
-  font-family: "Cinzel", serif;
-  font-size: 1.4em;
-  margin: 0 0 8px;
-  font-weight: bold;
-  color: var(--text-ink);
-}
-
-.card-desc {
-  font-size: 0.95em;
-  color: #6d4c41;
-  margin-bottom: 20px;
-}
-
-/* --- STATUS BAR (SÁNG) --- */
-.status-monitor {
-  width: 100%;
-  margin-bottom: 20px;
-  background: #f5f5f5;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-}
-
-.monitor-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.red-icon {
-  color: #e53935;
-}
-
-.blue-icon {
-  color: #1e88e5;
-}
-
-.bar-track {
-  flex: 1;
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.bar-fill {
+.card-inner {
+  background: var(--paper-bg); /* Giấy dán lên gỗ */
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s;
-}
-
-.red-fill {
-  background: #e53935;
-}
-
-.blue-fill {
-  background: #1e88e5;
-}
-
-.status-text {
-  font-size: 0.8em;
-  font-weight: bold;
-  color: #616161;
-  min-width: 60px;
-  text-align: right;
-}
-
-/* --- BUTTONS (GỖ SÁNG) --- */
-.btn-wood {
-  width: 100%;
-  padding: 10px;
-  margin-top: auto;
-  background: #fff;
-  border: 2px solid var(--wood-light);
-  color: var(--wood-frame);
-  font-family: "Cinzel";
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-wood:hover:not(:disabled) {
-  background: var(--wood-frame);
-  color: #fff;
-  border-color: var(--wood-frame);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.btn-wood:disabled {
-  background: #f5f5f5;
-  color: #bdbdbd;
-  border-color: #e0e0e0;
-  cursor: not-allowed;
-}
-
-/* --- DEPLOY BUTTON (CỔNG THÀNH) --- */
-.deploy-section {
-  margin-top: 40px;
+  padding: 25px 15px;
+  display: flex; flex-direction: column; align-items: center;
   text-align: center;
+  /* Cắt góc trong */
+  clip-path: polygon(
+    5px 0, calc(100% - 5px) 0, 
+    100% 5px, 100% calc(100% - 5px), 
+    calc(100% - 5px) 100%, 5px 100%, 
+    0 calc(100% - 5px), 0 5px
+  );
+  border: 1px solid rgba(0,0,0,0.1);
 }
 
-.btn-gate-bright {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  background: linear-gradient(135deg, #b71c1c, #880e4f);
-  color: #fff;
-  border: 4px double #ffecb3;
-  padding: 20px 30px;
-  border-radius: 50px;
+/* ĐINH ỐC TRANG TRÍ */
+.nail {
+  position: absolute; width: 6px; height: 6px; background: #261815;
+  border-radius: 50%; z-index: 5;
+  box-shadow: inset 1px 1px 1px rgba(255,255,255,0.2);
+}
+.n-tl { top: 12px; left: 12px; }
+.n-tr { top: 12px; right: 12px; }
+.n-bl { bottom: 12px; left: 12px; }
+.n-br { bottom: 12px; right: 12px; }
+
+/* ICON */
+.card-icon-frame {
+  width: 60px; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8em; color: var(--wood-dark);
+  border: 2px solid var(--wood-dark);
+  transform: rotate(45deg); /* Hình thoi */
+  margin-bottom: 20px;
+  background: rgba(0,0,0,0.05);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+}
+.card-icon-frame i { transform: rotate(-45deg); } /* Xoay icon lại */
+
+.gold-border { border-color: var(--gold-antique); color: #8d6e63; }
+.wood-border { border-color: var(--wood-mid); color: var(--wood-mid); }
+.jade-border { border-color: var(--jade); color: var(--jade); }
+
+.card-name {
+  font-size: 1.4em; font-weight: 900; margin: 0 0 5px;
+  color: var(--wood-dark); font-family: "Noto Serif TC";
+}
+.card-desc { font-size: 0.85em; color: var(--wood-light); margin-bottom: 20px; font-style: italic; }
+
+/* STAT BARS */
+.status-scroll { width: 100%; margin-bottom: 15px; }
+.stat-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.stat-label { font-size: 0.75em; font-weight: bold; width: 30px; }
+.stat-bar-frame { flex: 1; height: 6px; background: #ccc; border: 1px solid var(--wood-dark); }
+.stat-fill { height: 100%; }
+.red { background: #b71c1c; }
+.blue { background: #1565c0; }
+
+/* NÚT TRONG CARD (BTN PLAQUE) */
+.btn-plaque {
+  width: 100%; padding: 8px; margin-top: auto;
+  background: var(--wood-dark); color: #eaddcf;
+  border: 2px solid #5d4037;
+  font-family: "Noto Serif TC"; font-weight: bold;
+  cursor: pointer; box-shadow: 0 3px 0 #261815;
+  transition: 0.2s; position: relative; top: 0;
+}
+.btn-plaque:hover { background: #4e342e; top: -2px; box-shadow: 0 5px 0 #261815; }
+.btn-plaque:active { top: 2px; box-shadow: 0 1px 0 #261815; }
+.action { text-align: center; display: block; width: auto; min-width: 100px;}
+
+/* --- NÚT XUẤT THÀNH (IMPERIAL SEAL) --- */
+.deploy-section { text-align: center; margin-top: 20px; }
+
+.btn-imperial-seal {
+  position: relative; width: 100%; max-width: 400px; margin: 0 auto;
+  /* Màu đỏ son như ấn triện */
+  background: #8a1c1c;
+  color: #fff8e1;
+  border: 4px double #d4af37; /* Viền vàng */
+  padding: 15px 30px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   transition: 0.3s;
-  box-shadow: 0 5px 15px rgba(183, 28, 28, 0.4);
+  box-shadow: 0 5px 0 #5c0b0b, 0 15px 20px rgba(0,0,0,0.3);
+  /* Vát góc nhẹ */
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
-.btn-gate-bright:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 20px rgba(183, 28, 28, 0.6);
-}
+.btn-imperial-seal:hover { transform: translateY(-2px); background: #9b2020; box-shadow: 0 7px 0 #5c0b0b; }
+.btn-imperial-seal:active { transform: translateY(3px); box-shadow: 0 2px 0 #5c0b0b; }
 
-.gate-content {
-  text-align: left;
-}
+.seal-content { text-align: left; }
+.seal-main-text { display: block; font-size: 1.5em; font-weight: 900; letter-spacing: 2px; }
+.seal-sub-text { font-size: 0.8em; color: #ffecb3; font-style: italic; }
 
-.big-text {
-  display: block;
-  font-family: "Cinzel", serif;
-  font-size: 1.6em;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: 1px;
-}
-
-.sub-text {
-  display: block;
-  font-size: 0.9em;
-  color: #ffcdd2;
-  font-weight: 500;
-  margin-top: 2px;
-}
-
-.gate-icon-wrapper {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.2);
+.seal-stamp {
+  width: 50px; height: 50px;
+  border: 2px solid #d4af37;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8em;
-  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5em; color: #d4af37;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .hub-title {
-    font-size: 2em;
-  }
-
-  .hub-grid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  .hub-title { font-size: 2em; }
+  .hub-grid { grid-template-columns: 1fr; max-width: 320px; margin: 0 auto 30px; }
 }
 </style>

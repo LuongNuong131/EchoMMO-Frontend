@@ -320,10 +320,17 @@ const scrollToBottom = () => {
   z-index: 10;
   max-width: 800px;
   margin: 0 auto;
-  padding: 80px 20px 20px;
+  
+  /* Chỉnh lại padding để cân đối hơn */
+  padding: 80px 20px 0px 20px; 
+  
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
+  
+  /* Đảm bảo wrapper chiếm full chiều cao để tính toán calc() chính xác */
+  height: 100vh; 
+  box-sizing: border-box;
 }
 
 /* --- TEXTURES --- */
@@ -526,9 +533,21 @@ const scrollToBottom = () => {
 .friends-panel {
   border-radius: 4px;
   overflow: hidden;
-  height: 500px;
+  
+  /* CŨ: height: 500px; -> Gây tràn màn hình */
+  
+  /* MỚI: Tự động tính toán chiều cao */
+  /* Lấy 100% chiều cao màn hình TRỪ đi khoảng 300px (Header + Search + Padding) */
+  height: calc(100vh - 300px); 
+  
+  /* Đảm bảo khung không bị quá nhỏ trên màn hình thấp */
+  min-height: 300px; 
+  
   display: flex;
   flex-direction: column;
+  
+  /* Thêm margin bottom để không dính sát đáy nếu có nội dung khác */
+  margin-bottom: 20px; 
 }
 .panel-header {
   background: var(--wood-dark);
@@ -554,8 +573,13 @@ const scrollToBottom = () => {
 }
 .friend-list {
   padding: 15px;
-  flex: 1;
-  overflow-y: auto;
+  
+  /* Quan trọng: Flex 1 để chiếm hết phần còn lại trong .friends-panel */
+  flex: 1; 
+  
+  /* Quan trọng: Chỉ cuộn khu vực danh sách này, không cuộn cả trang */
+  overflow-y: auto; 
+  
   background: rgba(0, 0, 0, 0.3);
 }
 .empty-state {
