@@ -10,7 +10,7 @@
           <span class="decor-line"></span>
           <div class="main-title-box">
             <h1 class="hub-title">LẠC DƯƠNG</h1>
-            <div class="seal-mark">thành</div>
+            <div class="seal-mark">THÀNH</div>
           </div>
           <span class="decor-line"></span>
         </div>

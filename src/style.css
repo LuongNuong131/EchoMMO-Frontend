@@ -4,41 +4,38 @@
 
 /* --- 2. GLOBAL VARIABLES (CYBERPALETTE) --- */
 :root {
-  /* Colors */
-  --bg-void: #020617; /* Màu nền chính (Đen thẳm) */
-  --bg-panel: rgba(10, 15, 30, 0.85); /* Màu nền các bảng (Kính mờ) */
+  --bg-void: #020617;
+  --bg-panel: rgba(10, 15, 30, 0.85);
 
-  --primary: #00f3ff; /* Cyan - Màu chủ đạo */
+  --primary: #00f3ff;
   --primary-glow: rgba(0, 243, 255, 0.5);
 
-  --secondary: #7000ff; /* Tím - Phụ trợ */
-  --accent: #ff0055; /* Đỏ hồng - Điểm nhấn/Cảnh báo */
+  --secondary: #7000ff;
+  --accent: #ff0055;
 
-  --success: #00ff9d; /* Xanh lá - Thành công */
-  --warning: #ffbe0b; /* Vàng - Cảnh báo/Vàng gold */
+  --success: #00ff9d;
+  --warning: #ffbe0b;
 
-  --text-main: #e2e8f0; /* Màu chữ chính */
-  --text-dim: #94a3b8; /* Màu chữ mờ */
+  --text-main: #e2e8f0;
+  --text-dim: #94a3b8;
 
-  /* Borders & Spacing */
   --glass-border: 1px solid rgba(255, 255, 255, 0.08);
   --neon-border: 1px solid var(--primary);
+
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
 
-  /* Fonts */
-  --font-display: "Orbitron", sans-serif; /* Tiêu đề, Số liệu */
-  --font-body: "Rajdhani", sans-serif; /* Nội dung văn bản */
-  --font-code: "JetBrains Mono", monospace; /* Chat, Log, Code */
+  --font-display: "Orbitron", sans-serif;
+  --font-body: "Rajdhani", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
 
-  /* Animation Settings */
   --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --sidebar-width: 280px;
   --header-height: 80px;
 }
 
-/* --- 3. BASE RESET --- */
+/* --- 3. BASE RESET + FIX SCROLL CORE --- */
 *,
 *::before,
 *::after {
@@ -55,12 +52,22 @@ body {
   font-family: var(--font-body);
   color: var(--text-main);
   line-height: 1.6;
-  overflow: hidden; /* App.vue sẽ handle scroll */
+  overflow: hidden; /* khóa mặc định → sẽ mở bằng allow-scroll */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  overscroll-behavior: none; /* chống bounce mobile */
 }
 
-/* Tắt chế độ Light Mode mặc định của trình duyệt */
+/* Khi **tắt chế độ full page/chat** → body được phép scroll */
+body.allow-scroll {
+  overflow: auto !important;
+  overflow-y: overlay !important;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* If browser forces light mode → ignore */
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--text-main);
@@ -68,14 +75,13 @@ body {
   }
 }
 
-/* Link Styles */
+/* --- 4. UI RESET --- */
 a {
   text-decoration: none;
   color: inherit;
   transition: 0.3s;
 }
 
-/* Button Reset */
 button {
   font-family: var(--font-display);
   cursor: pointer;
@@ -87,9 +93,7 @@ select {
   font-family: var(--font-body);
 }
 
-/* --- 4. GLOBAL UTILITY CLASSES --- */
-
-/* Glass Panel (Hiệu ứng kính) */
+/* --- 5. GLASS PANEL --- */
 .glass-panel {
   background: var(--bg-panel);
   backdrop-filter: blur(12px);
@@ -99,7 +103,7 @@ select {
   border-radius: var(--radius-md);
 }
 
-/* Text Gradient (Chữ màu neon chuyển sắc) */
+/* --- 6. TEXT & SELECTION --- */
 .text-gradient {
   font-family: var(--font-display);
   background: linear-gradient(135deg, #fff 20%, var(--primary) 100%);
@@ -108,40 +112,36 @@ select {
   filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
 }
 
-/* Page Container (Khung trang chuẩn) */
 .page-container {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  /* Padding top để tránh bị Header che */
   padding-top: 20px;
 }
 
-/* Custom Scrollbar (Thanh cuộn đẹp) */
+/* --- 7. CUSTOM SCROLLBAR --- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+  background: linear-gradient(var(--primary), var(--secondary));
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
 
-/* Selection Color (Màu khi bôi đen chữ) */
+/* Selection neon */
 ::selection {
   background: var(--primary);
   color: #000;
 }
 
-/* --- 5. GLOBAL ANIMATIONS --- */
-
-/* Glitch Animation */
+/* --- 8. ANIMATIONS (Core) --- */
 @keyframes glitch-skew {
   0% {
     transform: skew(0deg);
@@ -163,11 +163,9 @@ select {
   }
 }
 
-/* Pulse (Nhịp đập) */
 @keyframes pulse {
   0% {
     transform: scale(1);
-    opacity: 1;
   }
   50% {
     transform: scale(1.05);
@@ -175,11 +173,9 @@ select {
   }
   100% {
     transform: scale(1);
-    opacity: 1;
   }
 }
 
-/* Float (Lơ lửng) */
 @keyframes float {
   0%,
   100% {
@@ -190,7 +186,6 @@ select {
   }
 }
 
-/* Fade In Up (Hiệu ứng xuất hiện) */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -202,7 +197,7 @@ select {
   }
 }
 
-/* Vue Transitions Global */
+/* --- Vue transitions --- */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -220,9 +215,7 @@ select {
   transform: translateY(20px);
 }
 
-/* --- 6. BUTTON STYLES (Cyber Buttons) --- */
-
-/* Nút chuẩn (Cyan) */
+/* --- 9. BUTTONS --- */
 .btn-3d {
   padding: 12px 24px;
   background: rgba(0, 243, 255, 0.05);
@@ -231,35 +224,25 @@ select {
   font-weight: 700;
   letter-spacing: 1px;
   border: 1px solid var(--primary);
-  /* Cắt góc nút */
-  clip-path: polygon(
-    10px 0,
-    100% 0,
-    100% calc(100% - 10px),
-    calc(100% - 10px) 100%,
-    0 100%,
-    0 10px
-  );
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
-
 .btn-3d:hover:not(:disabled) {
   background: var(--primary);
   color: #000;
   box-shadow: 0 0 20px var(--primary-glow);
   transform: translateY(-2px);
 }
-
 .btn-3d:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   filter: grayscale(1);
 }
 
-/* Nút nguy hiểm/Hủy (Đỏ) */
+/* Danger */
 .btn-danger-3d {
   color: var(--accent);
   border-color: var(--accent);
@@ -271,7 +254,7 @@ select {
   box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
 }
 
-/* --- 7. RESPONSIVE HELPERS --- */
+/* --- 10. RESPONSIVE --- */
 @media (max-width: 768px) {
   :root {
     --sidebar-width: 0px;

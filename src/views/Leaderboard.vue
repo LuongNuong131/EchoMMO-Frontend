@@ -87,8 +87,8 @@
 
         <div class="rank-scroll custom-scroll">
           <div
-            v-for="(entry, index) in restOfList"
-            :key="index + 3"
+            v-for="(entry, index) in rankedRestOfList"
+            :key="entry.name"
             class="list-row"
             :style="{ animationDelay: index * 0.05 + 's' }"
           >
@@ -99,7 +99,7 @@
               <div class="ink-bar">
                 <div
                   class="fill"
-                  :style="{ width: Math.random() * 60 + 40 + '%' }"
+                  :style="{ width: entry.barWidth + '%' }"
                 ></div>
               </div>
             </div>
@@ -123,12 +123,37 @@ const activeTab = ref("level");
 const lbStore = useLeaderboardStore();
 
 const currentList = computed(() => {
-  return activeTab.value === "level" ? lbStore.topLevels : lbStore.topWealth;
+  // Đảm bảo trả về mảng rỗng nếu store chưa có dữ liệu
+  const list = activeTab.value === "level" ? lbStore.topLevels : lbStore.topWealth;
+  return list || [];
 });
 
-const restOfList = computed(() => {
-  return currentList.value.slice(3);
+// Tính toán giá trị lớn nhất trong list hiện tại (cho mục đích thanh bar)
+const maxVal = computed(() => {
+    if (currentList.value.length === 0) return 1;
+    // Lấy giá trị 'value' của người hạng 1
+    return currentList.value[0].value;
 });
+
+// Tính toán danh sách còn lại với Rank và Bar Width đã được chuẩn hóa
+const rankedRestOfList = computed(() => {
+    const list = currentList.value.slice(3);
+    const max = maxVal.value;
+
+    return list.map((entry, index) => ({
+        ...entry,
+        // Rank bắt đầu từ 4 (index 0 của list này là rank 4)
+        rank: index + 4, 
+        // Tính toán chiều rộng thanh bar (chuẩn hóa dựa trên maxVal)
+        barWidth: max > 0 ? (entry.value / max) * 100 : 0
+    }));
+});
+
+
+const formatVal = (val) => {
+  if (activeTab.value === "wealth") return Number(val).toLocaleString() + " Xu";
+  return "Cảnh giới " + val;
+};
 
 const switchTab = async (tab) => {
   activeTab.value = tab;
@@ -136,10 +161,6 @@ const switchTab = async (tab) => {
   else await lbStore.fetchWealthBoard();
 };
 
-const formatVal = (val) => {
-  if (activeTab.value === "wealth") return Number(val).toLocaleString() + " Xu";
-  return "Cảnh giới " + val;
-};
 
 onMounted(() => {
   lbStore.fetchLevelBoard();
@@ -476,6 +497,7 @@ onMounted(() => {
   height: 100%;
   background: var(--jade);
   box-shadow: 0 0 5px var(--jade);
+  transition: width 0.3s ease; /* Thêm transition cho thanh bar */
 }
 
 .row-val {
