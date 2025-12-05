@@ -2,29 +2,56 @@ import { defineStore } from "pinia";
 import axiosClient from "../api/axiosClient";
 
 export const useAdminStore = defineStore("admin", {
-  state: () => ({ stats: {}, users: [], items: [], listings: [] }),
+  state: () => ({
+    stats: {},
+    users: [],
+    items: [],
+    listings: [],
+  }),
   actions: {
     async fetchStats() {
-      const res = await axiosClient.get("/admin/stats");
-      this.stats = res.data;
+      try {
+        const res = await axiosClient.get("/admin/stats");
+        this.stats = res.data;
+      } catch (e) {
+        console.error(e);
+      }
     },
     async fetchUsers() {
-      const res = await axiosClient.get("/admin/users");
-      this.users = res.data;
+      try {
+        const res = await axiosClient.get("/admin/users");
+        this.users = res.data;
+      } catch (e) {
+        console.error(e);
+      }
     },
     async fetchItems() {
-      const res = await axiosClient.get("/admin/items");
-      this.items = res.data;
+      try {
+        const res = await axiosClient.get("/admin/items");
+        this.items = res.data;
+      } catch (e) {
+        console.error(e);
+      }
     },
     async fetchListings() {
-      const res = await axiosClient.get("/admin/listings");
-      this.listings = res.data;
+      try {
+        const res = await axiosClient.get("/admin/listings");
+        this.listings = res.data;
+      } catch (e) {
+        console.error(e);
+      }
     },
 
-    async toggleUser(id) {
-      await axiosClient.post(`/admin/user/toggle/${id}`);
-      this.fetchUsers();
+    // [MỚI] Logic Ban/Unban chuẩn
+    async banUser(id, reason) {
+      await axiosClient.post(`/admin/user/ban/${id}`, { reason });
+      await this.fetchUsers();
     },
+    async unbanUser(id) {
+      await axiosClient.post(`/admin/user/unban/${id}`);
+      await this.fetchUsers();
+    },
+
     async deleteUser(id) {
       if (confirm("Xóa vĩnh viễn user này?")) {
         await axiosClient.delete(`/admin/user/${id}`);
@@ -51,10 +78,8 @@ export const useAdminStore = defineStore("admin", {
       }
     },
 
-    // --- MỚI: GỬI THÔNG BÁO ---
     async sendNotification(payload) {
       try {
-        // payload: { title, message, type, recipientUsername (optional) }
         await axiosClient.post("/admin/notification/create", payload);
         alert("📢 Đã phát loa thông báo thành công!");
       } catch (e) {

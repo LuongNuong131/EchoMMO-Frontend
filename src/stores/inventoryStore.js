@@ -4,6 +4,7 @@ import { useCharacterStore } from "./characterStore";
 
 export const useInventoryStore = defineStore("inventory", {
   state: () => ({ items: [], isLoading: false }),
+
   getters: {
     equippedItems: (state) => {
       const slots = {
@@ -21,6 +22,7 @@ export const useInventoryStore = defineStore("inventory", {
       return slots;
     },
   },
+
   actions: {
     async fetchInventory() {
       this.isLoading = true;
@@ -33,44 +35,35 @@ export const useInventoryStore = defineStore("inventory", {
         this.isLoading = false;
       }
     },
+
+    async equipItem(id) {
+      const charStore = useCharacterStore();
+      try {
+        await axiosClient.post(`/inventory/equip/${id}`);
+        await this.fetchInventory();
+        await charStore.fetchCharacter(); // Cập nhật stats nhân vật
+      } catch (e) {
+        alert(e.response?.data);
+      }
+    },
+
+    async unequipItem(id) {
+      const charStore = useCharacterStore();
+      try {
+        await axiosClient.post(`/inventory/unequip/${id}`);
+        await this.fetchInventory();
+        await charStore.fetchCharacter();
+      } catch (e) {
+        alert(e.response?.data);
+      }
+    },
+
     async useItem(id) {
+      const charStore = useCharacterStore();
       try {
         const res = await axiosClient.post(`/inventory/use/${id}`);
         alert(res.data);
         await this.fetchInventory();
-        const charStore = useCharacterStore();
-        await charStore.fetchCharacter();
-      } catch (e) {
-        alert(e.response?.data || "Lỗi");
-      }
-    },
-    async equipItem(id) {
-      try {
-        await axiosClient.post(`/inventory/equip/${id}`);
-        await this.fetchInventory();
-        const charStore = useCharacterStore();
-        await charStore.fetchCharacter();
-      } catch (e) {
-        alert(e.response?.data);
-      }
-    },
-    async unequipItem(id) {
-      try {
-        await axiosClient.post(`/inventory/unequip/${id}`);
-        await this.fetchInventory();
-        const charStore = useCharacterStore();
-        await charStore.fetchCharacter();
-      } catch (e) {
-        alert(e.response?.data);
-      }
-    },
-    async enhanceItem(id) {
-      if (!confirm("Cường hóa tốn phí. Tiếp tục?")) return;
-      try {
-        const res = await axiosClient.post(`/inventory/enhance/${id}`);
-        alert(res.data);
-        await this.fetchInventory();
-        const charStore = useCharacterStore();
         await charStore.fetchCharacter();
       } catch (e) {
         alert(e.response?.data);

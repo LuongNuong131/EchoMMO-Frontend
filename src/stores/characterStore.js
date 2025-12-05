@@ -3,41 +3,99 @@ import axiosClient from "../api/axiosClient";
 import router from "../router";
 
 export const useCharacterStore = defineStore("character", {
-  state: () => ({ character: null, isLoading: false, logs: [] }),
+  state: () => ({
+    character: null,
+    isLoading: false,
+    logs: [],
+  }),
+
   getters: {
-    xpPercent: (s) => s.character ? Math.min((s.character.currentExp / (s.character.level * 100)) * 100, 100) : 0,
-    hpPercent: (s) => s.character ? Math.min((s.character.hp / s.character.maxHp) * 100, 100) : 0,
-    energyPercent: (s) => s.character ? Math.min((s.character.energy / s.character.maxEnergy) * 100, 100) : 0,
+    xpPercent: (state) => {
+      if (!state.character) return 0;
+      const needed = state.character.level * 100; // Hoặc theo công thức backend
+      return Math.min((state.character.currentExp / needed) * 100, 100);
+    },
+    hpPercent: (state) => {
+      if (!state.character) return 0;
+      return Math.min((state.character.hp / state.character.maxHp) * 100, 100);
+    },
+    energyPercent: (state) => {
+      if (!state.character) return 0;
+      return Math.min(
+        (state.character.energy / state.character.maxEnergy) * 100,
+        100
+      );
+    },
   },
+
   actions: {
     async fetchCharacter() {
+      this.isLoading = true;
       try {
         const res = await axiosClient.get("/character/me");
-        this.character = res.data;
-      } catch (e) { if (e.response?.status === 401) router.push("/login"); }
+        this.character = res.data || null;
+      } catch (error) {
+        if (error.response && [401, 403].includes(error.response.status)) {
+          router.push("/login");
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
+
+    async createCharacter(name) {
+      try {
+        const res = await axiosClient.post("/character/create", { name });
+        this.character = res.data;
+        return true;
+      } catch (error) {
+        alert(error.response?.data || "Lỗi tạo nhân vật");
+        return false;
+      }
+    },
+
+    // Logic Thám Hiểm (Tích hợp GameFi)
     async explore() {
-      if (!this.character) return { type: 'ERROR', message: 'Lỗi data' };
-      if (this.character.energy < 1) return { type: 'ERROR', message: 'Hết năng lượng!' };
+      if (!this.character) return;
+      if (this.character.energy < 1) {
+        this.addLog("⚠️ Hết thể lực! Hãy về khách điếm nghỉ ngơi.", "WARNING");
+        return;
+      }
 
       try {
         const res = await axiosClient.post("/exploration/explore");
         const data = res.data;
-        // Update state local
-        this.character.energy = data.currentEnergy;
-        if(data.newLevel) await this.fetchCharacter(); 
-        else if(data.expGained) this.character.currentExp += data.expGained;
 
-        this.addLog(data.message, data.type);
-        return data; // Trả về data để View vẽ hình
-      } catch (e) {
-        const msg = e.response?.data?.message || "Lỗi mạng";
-        if (msg === "CAPTCHA_REQUIRED") throw new Error("CAPTCHA");
-        return { type: 'ERROR', message: msg };
+        // Cập nhật state từ response
+        this.character.energy = data.currentEnergy;
+        this.character.currentExp = data.currentExp;
+        this.character.hp = this.character.hp; // Backend chưa trả về HP, giữ nguyên hoặc fetch lại
+
+        if (data.newLevel) {
+          this.fetchCharacter(); // Reload nếu lên cấp để lấy maxHp mới
+          this.addLog(
+            `🎉 CHÚC MỪNG! Đã đột phá lên Cảnh Giới ${data.newLevel}`,
+            "LEVEL_UP"
+          );
+        }
+
+        this.addLog(data.message, data.type === "ENEMY" ? "ENEMY" : "INFO");
+      } catch (error) {
+        const msg =
+          error.response?.data?.message || error.response?.data || "Lỗi";
+        if (msg === "CAPTCHA") {
+          throw new Error("CAPTCHA"); // Để view xử lý hiện popup
+        }
+        this.addLog("❌ " + msg, "ERROR");
       }
     },
+
     addLog(message, type = "INFO") {
-      this.logs.unshift({ id: Date.now(), message, type });
+      this.logs.unshift({
+        id: Date.now(),
+        message,
+        type,
+      });
       if (this.logs.length > 50) this.logs.pop();
     },
   },

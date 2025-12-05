@@ -1,60 +1,92 @@
 <template>
-  <div class="page-container explore-mmo">
-    <div class="stats-bar glass-panel">
-      <div class="stat"><i class="fas fa-heart text-red"></i> {{ charStore.character?.hp }}/{{
-        charStore.character?.maxHp }}</div>
-      <div class="stat"><i class="fas fa-bolt text-yellow"></i> {{ charStore.character?.energy }}/{{
-        charStore.character?.maxEnergy }}</div>
-      <div class="stat"><i class="fas fa-coins text-gold"></i> {{ authStore.wallet?.gold }}</div>
+  <div class="page-container wuxia-explore">
+    <div class="landscape-viewport">
+      <div
+        class="ink-scroll-bg"
+        :style="{ backgroundPosition: bgPos + 'px 0' }"
+      ></div>
+
+      <div class="paper-texture-overlay"></div>
+
+      <div class="hud-top-left">
+        <div class="hud-text">
+          <span class="seal-icon">地</span> Vị trí: Hắc Phong Sơn
+        </div>
+      </div>
+
+      <div class="hud-top-right">
+        <div class="hud-text">
+          Thân Thể:
+          <span class="energy-val"
+            >{{ charStore.character?.hp }}/{{
+              charStore.character?.maxHp
+            }}</span
+          >
+        </div>
+        <div class="hud-text">
+          Thể Lực:
+          <span class="energy-val">{{ charStore.character?.energy }}</span>
+        </div>
+      </div>
+
+      <div class="center-focus" :class="{ spinning: isMoving }">
+        <div class="bagua-ring"></div>
+      </div>
+
+      <transition name="scroll-unroll">
+        <div v-if="eventData" class="event-scroll" :class="eventData.type">
+          <div class="scroll-rods top"></div>
+          <div class="scroll-content">
+            <div class="event-icon">
+              <i
+                v-if="eventData.type === 'GOLD'"
+                class="fas fa-coins text-gold"
+              ></i>
+              <i
+                v-else-if="eventData.type === 'ENEMY'"
+                class="fas fa-skull text-red"
+              ></i>
+              <i v-else class="fas fa-wind"></i>
+            </div>
+            <div class="event-msg">{{ eventData.message }}</div>
+          </div>
+          <div class="scroll-rods bot"></div>
+        </div>
+      </transition>
     </div>
 
-    <div class="main-layout">
-      <div class="action-zone">
-        <div class="scene-viewer glass-panel">
-          <div class="scene-bg" :class="currentBiome"></div>
-          <div class="character-sprite">
-            <div class="avatar-circle">
-              {{ charStore.character?.name.charAt(0).toUpperCase() }}
-            </div>
-          </div>
-          <transition name="pop">
-            <div v-if="targetIcon" class="encounter-icon">{{ targetIcon }}</div>
-          </transition>
-        </div>
-
-        <div class="controls">
-          <button class="btn-step" @click="handleStep" :disabled="isBusy || charStore.character?.energy < 1"
-            :class="{ 'disabled': charStore.character?.energy < 1 }">
-            <div class="btn-content">
-              <i class="fas fa-shoe-prints"></i>
-              <span>BƯỚC TIẾP</span>
-              <small>-1 Năng Lượng</small>
-            </div>
-          </button>
-
-          <div class="sub-actions">
-            <button class="btn-sub" @click="$router.push('/village')">
-              <i class="fas fa-home"></i> Về Làng
-            </button>
-            <button class="btn-sub" @click="$router.push('/inventory')">
-              <i class="fas fa-box"></i> Túi Đồ
-            </button>
+    <div class="control-desk">
+      <div class="bamboo-log-area custom-scroll">
+        <div class="bamboo-slats">
+          <div v-for="(log, i) in recentLogs" :key="i" class="slat-entry">
+            <span class="time-stamp"
+              >[{{ new Date(log.id).toLocaleTimeString() }}]</span
+            >
+            <span :class="log.type">{{ log.message }}</span>
           </div>
         </div>
       </div>
 
-      <div class="log-zone glass-panel custom-scroll">
-        <div class="log-header">NHẬT KÝ HÀNH TRÌNH</div>
-        <transition-group name="list" tag="div" class="log-list">
-          <div v-for="(log, i) in charStore.logs" :key="log.id" class="log-item" :class="log.type">
-            <span class="time">[{{ new Date(log.id).toLocaleTimeString([], {
-              hour: '2-digit', minute: '2-digit',
-              second:'2-digit'}) }}]</span>
-            <span class="message" v-html="log.message"></span>
+      <div class="desk-actions">
+        <button
+          class="btn-jade-seal"
+          @click="handleExplore"
+          :class="{ active: isMoving }"
+          :disabled="charStore.character?.energy <= 0 || isBusy"
+        >
+          <div class="jade-inner">
+            <span class="kanji-scan" v-if="!isMoving">THÁM</span>
+            <span class="kanji-scan" v-else>ĐANG ĐI</span>
           </div>
-        </transition-group>
-        <div v-if="charStore.logs.length === 0" class="empty-log">
-          Hãy bắt đầu bước đi để khám phá thế giới...
+        </button>
+
+        <div class="side-buttons">
+          <button class="btn-wood" @click="$router.push('/village')">
+            TRẠI
+          </button>
+          <button class="btn-wood" @click="$router.push('/inventory')">
+            TÚI
+          </button>
         </div>
       </div>
     </div>
@@ -64,362 +96,302 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useCharacterStore } from '../stores/characterStore';
-import { useAuthStore } from '../stores/authStore';
-import { useRouter } from 'vue-router';
-import CaptchaModal from '../components/CaptchaModal.vue';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useCharacterStore } from "../stores/characterStore";
+import { useRouter } from "vue-router";
+import CaptchaModal from "../components/CaptchaModal.vue";
 
 const charStore = useCharacterStore();
-const authStore = useAuthStore();
 const router = useRouter();
 const captchaModal = ref(null);
 
+const bgPos = ref(0);
+const isMoving = ref(false);
 const isBusy = ref(false);
-const targetIcon = ref(null);
-const currentBiome = ref('forest'); // Có thể đổi map sau này
+const eventData = ref(null);
+let moveInterval = null;
 
-const handleStep = async () => {
+const recentLogs = computed(() => charStore.logs.slice(0, 10));
+
+const handleExplore = async () => {
   if (isBusy.value) return;
   isBusy.value = true;
-  targetIcon.value = null;
+  isMoving.value = true;
+  eventData.value = null;
+
+  // Hiệu ứng chạy nền
+  moveInterval = setInterval(() => {
+    bgPos.value -= 5;
+  }, 30);
 
   try {
-    const data = await charStore.explore();
+    const oldLogLen = charStore.logs.length;
+    await charStore.explore();
 
-    // Xử lý kết quả trả về
-    if (data.type === 'ENEMY') {
-      targetIcon.value = '👿';
-      // Delay xíu để người dùng thấy log rồi mới chuyển cảnh
-      setTimeout(() => router.push('/battle'), 800);
-    } else if (data.type === 'GOLD') {
-      targetIcon.value = '💰';
-      authStore.fetchProfile(); // Cập nhật tiền
-    } else if (data.type === 'MATERIAL') {
-      targetIcon.value = '🪵';
-      authStore.fetchProfile();
-    } else if (data.type === 'EXP' || data.type === 'LEVEL_UP') {
-      targetIcon.value = '✨';
-    } else {
-      targetIcon.value = '🍃';
-    }
+    // Dừng chạy sau 1.5s
+    setTimeout(() => {
+      clearInterval(moveInterval);
+      isMoving.value = false;
 
+      if (charStore.logs.length > oldLogLen) {
+        const latest = charStore.logs[0];
+        eventData.value = latest;
+
+        // Nếu gặp quái -> Chuyển cảnh Battle
+        if (latest.type === "ENEMY") {
+          setTimeout(() => router.push("/battle"), 1500);
+        }
+      }
+      isBusy.value = false;
+    }, 1500);
   } catch (e) {
-    if (e.message === 'CAPTCHA') {
-      captchaModal.value.open();
-    }
-  } finally {
-    setTimeout(() => { isBusy.value = false; }, 300); // Cooldown nhẹ để tránh spam quá nhanh
+    clearInterval(moveInterval);
+    isMoving.value = false;
+    isBusy.value = false;
+    if (e.message === "CAPTCHA") captchaModal.value.open();
   }
 };
 
-onMounted(() => {
-  charStore.fetchCharacter();
-});
+onMounted(() => charStore.fetchCharacter());
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Serif+TC:wght@700&display=swap");
 
-.explore-mmo {
-  background: #111;
+.wuxia-explore {
+  background: #1a1a1a;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  gap: 10px;
-  font-family: "Noto Serif TC", serif;
-}
-
-/* TOP STATS */
-.stats-bar {
-  display: flex;
-  justify-content: space-around;
-  padding: 15px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #fff;
-  background: #222;
-  border: 1px solid #444;
-}
-
-.text-red {
-  color: #ff5252;
-}
-
-.text-yellow {
-  color: #ffd740;
-}
-
-.text-gold {
-  color: #ffab00;
-}
-
-/* MAIN LAYOUT */
-.main-layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
   overflow: hidden;
+  font-family: "Playfair Display", serif;
+  color: #4e342e;
 }
 
-/* ACTION ZONE (LEFT) */
-.action-zone {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.scene-viewer {
+.landscape-viewport {
   flex: 1;
   position: relative;
-  background: #000;
-  border: 2px solid #555;
-  border-radius: 8px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #d7ccc8;
+  border-bottom: 4px double #4e342e;
+  /* Hình nền thủy mặc */
+  background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
 }
 
-.scene-bg {
+.ink-scroll-bg {
   position: absolute;
   inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1000&auto=format&fit=crop');
-  /* Rừng */
-  background-size: cover;
-  opacity: 0.4;
-  transition: 0.5s;
+  background: inherit;
+  filter: sepia(0.5) grayscale(0.5);
 }
-
-.character-sprite {
-  z-index: 2;
-  position: relative;
-  animation: breathe 3s infinite;
-}
-
-.avatar-circle {
-  width: 80px;
-  height: 80px;
-  background: #3e2723;
-  color: #ffecb3;
-  border: 3px solid #ffecb3;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  box-shadow: 0 0 20px rgba(255, 236, 179, 0.4);
-}
-
-.encounter-icon {
+.paper-texture-overlay {
   position: absolute;
-  top: 20%;
-  font-size: 4rem;
-  z-index: 3;
-  animation: floatUp 0.8s ease-out forwards;
+  inset: 0;
+  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+  opacity: 0.4;
+  pointer-events: none;
 }
 
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* HUD */
+.hud-top-left,
+.hud-top-right {
+  position: absolute;
+  top: 20px;
+  padding: 10px 15px;
+  background: rgba(253, 245, 230, 0.9);
+  border: 2px solid #4e342e;
+  border-radius: 4px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
-
-.btn-step {
-  padding: 20px;
-  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
-  border: 2px solid #4caf50;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  transition: 0.1s;
-  box-shadow: 0 5px 0 #1b5e20;
+.hud-top-left {
+  left: 20px;
 }
-
-.btn-step:active {
-  transform: translateY(5px);
-  box-shadow: none;
+.hud-top-right {
+  right: 20px;
+  text-align: right;
 }
-
-.btn-step:disabled {
-  background: #424242;
-  border-color: #616161;
-  box-shadow: none;
-  cursor: not-allowed;
-  opacity: 0.7;
+.seal-icon {
+  background: #b71c1c;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 2px;
+  margin-right: 5px;
 }
-
-.btn-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-.btn-content span {
-  font-size: 1.5rem;
+.energy-val {
+  color: #b71c1c;
   font-weight: 900;
 }
 
-.btn-content small {
-  font-size: 0.9rem;
-  opacity: 0.8;
+/* Center Ring */
+.center-focus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+}
+.bagua-ring {
+  width: 120px;
+  height: 120px;
+  border: 4px dashed #4e342e;
+  border-radius: 50%;
+}
+.spinning .bagua-ring {
+  animation: spin 3s linear infinite;
+  border-color: #b71c1c;
+  opacity: 0.9;
 }
 
-.sub-actions {
+/* Event Scroll */
+.event-scroll {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff8e1;
+  padding: 20px 40px;
+  border-left: 2px solid #8d6e63;
+  border-right: 2px solid #8d6e63;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+}
+.scroll-rods {
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  height: 12px;
+  background: #4e342e;
+  border-radius: 6px;
+}
+.scroll-rods.top {
+  top: -6px;
+}
+.scroll-rods.bot {
+  bottom: -6px;
+}
+.event-icon {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+.text-gold {
+  color: #f9a825;
+}
+.text-red {
+  color: #b71c1c;
+}
+
+/* Control Desk */
+.control-desk {
+  height: 260px;
+  background: #4e342e;
+  border-top: 4px solid #3e2723;
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+  background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+}
+.bamboo-log-area {
+  flex: 1;
+  background: #3e2723;
+  border: 4px inset #271c19;
+  padding: 5px;
+  overflow-y: auto;
+}
+.slat-entry {
+  background: #d7ccc8;
+  padding: 8px;
+  font-size: 0.95em;
+  margin-bottom: 2px;
+  border-bottom: 1px solid #a1887f;
+  font-weight: bold;
+}
+.ENEMY {
+  color: #c62828;
+}
+.GOLD {
+  color: #f9a825;
+}
+.LEVEL_UP {
+  color: #2e7d32;
+}
+
+.desk-actions {
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+.btn-jade-seal {
+  width: 100px;
+  height: 100px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.jade-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #66bb6a, #2e7d32);
+  border: 4px solid #a5d6a7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+.kanji-scan {
+  font-family: "Noto Serif TC";
+  font-size: 1.8em;
+  color: #e8f5e9;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 900;
+}
+.btn-jade-seal:active {
+  transform: scale(0.95);
+}
+
+.side-buttons {
   display: flex;
   gap: 10px;
+  width: 100%;
 }
-
-.btn-sub {
+.btn-wood {
   flex: 1;
-  padding: 12px;
-  background: #37474f;
-  color: #eceff1;
-  border: 1px solid #546e7a;
-  border-radius: 6px;
+  background: #6d4c41;
+  color: #efebe9;
+  border: 2px solid #8d6e63;
+  padding: 5px;
+  font-family: "Playfair Display";
   font-weight: bold;
   cursor: pointer;
 }
-
-.btn-sub:hover {
-  background: #455a64;
+.btn-wood:hover {
+  background: #8d6e63;
 }
 
-/* LOG ZONE (RIGHT) */
-.log-zone {
-  display: flex;
-  flex-direction: column;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  padding: 10px;
-}
-
-.log-header {
-  text-align: center;
-  font-weight: bold;
-  color: #888;
-  border-bottom: 1px dashed #444;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-}
-
-.log-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.log-item {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-  padding: 8px;
-  border-left: 3px solid #555;
-  background: rgba(255, 255, 255, 0.02);
-  animation: slideIn 0.3s ease-out;
-}
-
-.log-item.GOLD {
-  border-color: #ffab00;
-  color: #ffecb3;
-}
-
-.log-item.EXP {
-  border-color: #2979ff;
-  color: #bbdefb;
-}
-
-.log-item.LEVEL_UP {
-  border-color: #d500f9;
-  color: #ea80fc;
-  font-weight: bold;
-  background: rgba(213, 0, 249, 0.1);
-}
-
-.log-item.ENEMY {
-  border-color: #ff1744;
-  color: #ff8a80;
-}
-
-.log-item.MATERIAL {
-  border-color: #795548;
-  color: #d7ccc8;
-}
-
-.time {
-  color: #666;
-  margin-right: 8px;
-  font-size: 0.8rem;
-}
-
-/* ANIMATIONS */
-@keyframes breathe {
-
-  0%,
+@keyframes spin {
   100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.05);
+    transform: rotate(360deg);
   }
 }
-
-@keyframes floatUp {
-  0% {
-    transform: translateY(0) scale(0.5);
-    opacity: 0;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(-50px) scale(1.2);
-    opacity: 0;
-  }
+.scroll-unroll-enter-active {
+  animation: unroll 0.5s ease-out;
 }
-
-@keyframes slideIn {
+@keyframes unroll {
   from {
-    transform: translateX(-10px);
+    height: 0;
     opacity: 0;
   }
-
   to {
-    transform: translateX(0);
+    height: auto;
     opacity: 1;
-  }
-}
-
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .main-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .action-zone {
-    height: 400px;
-  }
-
-  .log-zone {
-    height: 300px;
   }
 }
 </style>

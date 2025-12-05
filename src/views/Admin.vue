@@ -52,17 +52,19 @@
       <div v-if="activeTab === 'stats'" class="stats-panel">
         <div class="stat-card paper-texture">
           <h3>TỔNG NHÂN SĨ</h3>
-          <p class="num">{{ stats.totalUsers || 0 }}</p>
+          <p class="num">{{ adminStore.stats.totalUsers || 0 }}</p>
           <div class="seal-bg"><i class="fas fa-user"></i></div>
         </div>
         <div class="stat-card paper-texture">
           <h3>TỔNG VẬT PHẨM</h3>
-          <p class="num">{{ stats.totalItems || 0 }}</p>
+          <p class="num">{{ adminStore.stats.totalItems || 0 }}</p>
           <div class="seal-bg"><i class="fas fa-box-open"></i></div>
         </div>
         <div class="stat-card paper-texture">
           <h3>NGÂN LƯỢNG LƯU THÔNG</h3>
-          <p class="num gold-text">{{ formatNumber(stats.totalGold || 0) }}</p>
+          <p class="num gold-text">
+            {{ formatNumber(adminStore.stats.totalGold || 0) }}
+          </p>
           <div class="seal-bg"><i class="fas fa-coins"></i></div>
         </div>
       </div>
@@ -109,7 +111,7 @@
                     <i class="fas fa-lock-open"></i>
                   </button>
                   <button
-                    @click="deleteUser(u.userId)"
+                    @click="adminStore.deleteUser(u.userId)"
                     class="btn-icon gray"
                     title="Xóa bỏ"
                   >
@@ -170,50 +172,17 @@
                   class="ink-input"
                 />
               </div>
-              <div
-                class="form-row"
-                v-if="
-                  [
-                    'WEAPON',
-                    'ARMOR',
-                    'HELMET',
-                    'BOOTS',
-                    'RING',
-                    'NECKLACE',
-                  ].includes(itemForm.type)
-                "
-              >
+              <div class="form-row">
                 <input
-                  v-model.number="itemForm.atkBonus"
-                  type="number"
-                  placeholder="Công Lực"
-                  class="ink-input"
-                />
-                <input
-                  v-model.number="itemForm.defBonus"
-                  type="number"
-                  placeholder="Phòng Thủ"
-                  class="ink-input"
-                />
-                <input
-                  v-model.number="itemForm.speedBonus"
-                  type="number"
-                  placeholder="Thân Pháp"
-                  class="ink-input"
-                />
-              </div>
-              <div class="form-row" v-if="itemForm.type === 'CONSUMABLE'">
-                <input
-                  v-model.number="itemForm.hpBonus"
-                  type="number"
-                  placeholder="Hồi Phục Sinh Lực"
-                  class="ink-input"
+                  v-model="itemForm.imageUrl"
+                  placeholder="URL Hình ảnh..."
+                  class="ink-input full-width"
                 />
               </div>
               <div class="form-row align-center">
                 <label class="check-label">
                   <input type="checkbox" v-model="itemForm.isSystemItem" />
-                  <span class="label-text">Hàng Shop Vô Hạn?</span>
+                  <span class="label-text"> Hàng Shop Vô Hạn?</span>
                 </label>
                 <button type="submit" class="btn-wood primary">HOÀN TẤT</button>
               </div>
@@ -237,7 +206,7 @@
               <tr v-for="i in adminStore.items" :key="i.itemId">
                 <td>#{{ i.itemId }}</td>
                 <td class="bold-text">{{ i.name }}</td>
-                <td>{{ translateType(i.type) }}</td>
+                <td>{{ i.type }}</td>
                 <td :class="'text-' + i.rarity">{{ i.rarity }}</td>
                 <td>{{ i.basePrice }}</td>
                 <td>
@@ -251,205 +220,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'market'" class="content-panel paper-texture">
-        <h3 class="panel-title">SỔ GIAO DỊCH</h3>
-        <div class="table-responsive custom-scroll">
-          <table class="ancient-table">
-            <thead>
-              <tr>
-                <th>NGƯỜI BÁN</th>
-                <th>VẬT PHẨM</th>
-                <th>GIÁ</th>
-                <th>SỐ LƯỢNG</th>
-                <th>TRẠNG THÁI</th>
-                <th>XỬ LÝ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="l in adminStore.listings" :key="l.listingId">
-                <td>{{ l.seller.username }}</td>
-                <td class="bold-text">{{ l.item.name }}</td>
-                <td class="gold-text">{{ l.price }}</td>
-                <td>{{ l.quantity }}</td>
-                <td>{{ l.status }}</td>
-                <td>
-                  <button
-                    @click="adminStore.deleteListing(l.listingId)"
-                    class="btn-wood red small"
-                  >
-                    GỠ BỎ
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'grant'" class="content-panel paper-texture">
-        <h3 class="panel-title">BAN THƯỞNG</h3>
-
-        <div class="grant-layout">
-          <div class="grant-sidebar">
-            <button
-              @click="grantType = 'GOLD'"
-              :class="['grant-opt', { active: grantType === 'GOLD' }]"
-            >
-              <i class="fas fa-coins"></i> NGÂN LƯỢNG
-            </button>
-            <button
-              @click="grantType = 'ITEM'"
-              :class="['grant-opt', { active: grantType === 'ITEM' }]"
-            >
-              <i class="fas fa-box-open"></i> BẢO VẬT
-            </button>
-          </div>
-
-          <div class="grant-form-area ancient-border">
-            <form
-              v-if="grantType === 'GOLD'"
-              @submit.prevent="giveGold"
-              class="ancient-form"
-            >
-              <div class="form-header">
-                <i class="fas fa-money-bill-wave gold-text"></i> CẤP PHÁT NGÂN
-                LƯỢNG
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>NGƯỜI NHẬN</label>
-                  <input
-                    v-model="goldForm.username"
-                    placeholder="Nhập tên nhân sĩ..."
-                    class="ink-input large"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>SỐ LƯỢNG</label>
-                  <input
-                    v-model.number="goldForm.amount"
-                    type="number"
-                    placeholder="Nhập số lượng..."
-                    class="ink-input large"
-                    required
-                  />
-                </div>
-              </div>
-              <button class="btn-wood primary big-btn">BAN THƯỞNG NGAY</button>
-            </form>
-
-            <form v-else @submit.prevent="grantItem" class="ancient-form">
-              <div class="form-header">
-                <i class="fas fa-gem blue-text"></i> BAN TẶNG BẢO VẬT
-              </div>
-              <div class="form-group">
-                <label>NGƯỜI NHẬN</label>
-                <input
-                  v-model="itemGrantForm.username"
-                  placeholder="Nhập tên nhân sĩ..."
-                  class="ink-input large"
-                  required
-                />
-              </div>
-              <div class="form-row">
-                <div class="form-group flex-2">
-                  <label>VẬT PHẨM</label>
-                  <select
-                    v-model="itemGrantForm.itemId"
-                    class="ink-input large"
-                    required
-                  >
-                    <option :value="null" disabled>-- Chọn vật phẩm --</option>
-                    <option
-                      v-for="i in adminStore.items"
-                      :key="i.itemId"
-                      :value="i.itemId"
-                    >
-                      [{{ i.rarity }}] {{ i.name }} -
-                      {{ translateType(i.type) }}
-                    </option>
-                  </select>
-                </div>
-                <div class="form-group flex-1">
-                  <label>SỐ LƯỢNG</label>
-                  <input
-                    v-model.number="itemGrantForm.quantity"
-                    type="number"
-                    placeholder="1"
-                    class="ink-input large"
-                    required
-                  />
-                </div>
-              </div>
-              <button class="btn-wood primary big-btn">GỬI VẬT PHẨM</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'notify'" class="content-panel paper-texture">
-        <h3 class="panel-title">PHÁT CÁO THỊ</h3>
-        <div class="notify-layout">
-          <form
-            @submit.prevent="sendNotification"
-            class="ancient-form full-width"
-          >
-            <div class="form-row">
-              <div class="form-group flex-3">
-                <label>TIÊU ĐỀ CÁO THỊ</label>
-                <input
-                  v-model="notifForm.title"
-                  placeholder="Ví dụ: Thiên hạ thái bình..."
-                  class="ink-input large"
-                  required
-                />
-              </div>
-              <div class="form-group flex-1">
-                <label>LOẠI TIN</label>
-                <select v-model="notifForm.type" class="ink-input large">
-                  <option value="INFO">Thông Tin</option>
-                  <option value="WARNING">Cảnh Báo</option>
-                  <option value="SUCCESS">Tin Vui</option>
-                  <option value="ERROR">Khẩn Cấp</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>NỘI DUNG CHI TIẾT</label>
-              <textarea
-                v-model="notifForm.message"
-                placeholder="Viết nội dung cáo thị tại đây..."
-                class="ink-input text-area big-area"
-                required
-              ></textarea>
-            </div>
-
-            <div class="form-row align-end">
-              <div class="form-group flex-1">
-                <label>ĐỐI TƯỢNG NHẬN</label>
-                <select v-model="notifMode" class="ink-input large">
-                  <option value="ALL">Toàn Server (Loa Lớn)</option>
-                  <option value="USER">Cá Nhân (Mật Thư)</option>
-                </select>
-              </div>
-              <div class="form-group flex-2" v-if="notifMode === 'USER'">
-                <label>TÊN NGƯỜI NHẬN</label>
-                <input
-                  v-model="notifForm.recipientUsername"
-                  placeholder="Nhập tên..."
-                  class="ink-input large"
-                />
-              </div>
-              <div class="form-group flex-1">
-                <button class="btn-wood primary big-btn">ĐĂNG CÁO THỊ</button>
-              </div>
-            </div>
-          </form>
         </div>
       </div>
     </div>
@@ -487,141 +257,74 @@
 </template>
 
 <script setup>
-// --- LOGIC GIỮ NGUYÊN KHÔNG ĐỔI ---
 import { ref, reactive, onMounted } from "vue";
 import { useAdminStore } from "../stores/adminStore";
 import axiosClient from "../api/axiosClient";
 
 const adminStore = useAdminStore();
 const activeTab = ref("stats");
-const grantType = ref("GOLD");
 const showCreateItem = ref(false);
-const stats = ref({});
 
 const showBanModal = ref(false);
 const selectedUser = ref(null);
 const banReason = ref("");
 
-const goldForm = reactive({ username: "", amount: 1000 });
-const itemGrantForm = reactive({ username: "", itemId: null, quantity: 1 });
 const itemForm = reactive({
   name: "",
   description: "",
   type: "WEAPON",
   rarity: "C",
   basePrice: 100,
+  imageUrl: "",
   isSystemItem: false,
-  atkBonus: 0,
-  defBonus: 0,
-  speedBonus: 0,
-  hpBonus: 0,
 });
 
-const notifMode = ref("ALL");
-const notifForm = reactive({
-  title: "",
-  message: "",
-  type: "INFO",
-  recipientUsername: "",
-});
-
-const formatNumber = (n) => Number(n || 0).toLocaleString();
-
-const translateType = (type) => {
-  const map = {
-    WEAPON: "Binh Khí",
-    ARMOR: "Giáp",
-    HELMET: "Mũ",
-    BOOTS: "Giày",
-    CONSUMABLE: "Tiêu Hao",
-    MATERIAL: "Nguyên Liệu",
-    RING: "Nhẫn",
-    NECKLACE: "Dây Chuyền",
-  };
-  return map[type] || type;
-};
+const formatNumber = (n) => Number(n).toLocaleString();
 
 const switchTab = (tab) => {
   activeTab.value = tab;
-  if (tab === "stats") fetchStats();
+  if (tab === "stats") adminStore.fetchStats();
   if (tab === "users") adminStore.fetchUsers();
-  if (tab === "items" || tab === "grant") adminStore.fetchItems();
-  if (tab === "market") adminStore.fetchListings();
-};
-
-const fetchStats = async () => {
-  try {
-    const res = await axiosClient.get("/admin/stats");
-    stats.value = res.data;
-  } catch (e) {}
+  if (tab === "items") adminStore.fetchItems();
+  // Các tab khác...
 };
 
 const createItem = async () => {
   try {
     await axiosClient.post("/admin/item/create", itemForm);
-    alert("Tạo Item thành công!");
-    showCreateItem.value = false;
+    alert("Tạo thành công!");
     adminStore.fetchItems();
-    Object.assign(itemForm, {
-      name: "",
-      description: "",
-      type: "WEAPON",
-      rarity: "C",
-      basePrice: 100,
-      isSystemItem: false,
-      atkBonus: 0,
-      defBonus: 0,
-      speedBonus: 0,
-      hpBonus: 0,
-    });
   } catch (e) {
     alert(e.message);
   }
 };
 
+// --- BAN LOGIC ---
 const openBanModal = (u) => {
   selectedUser.value = u;
   banReason.value = "";
   showBanModal.value = true;
 };
-const confirmBan = async () => {
-  if (!banReason.value) return alert("Vui lòng nhập lý do!");
-  await axiosClient.post(`/admin/user/ban/${selectedUser.value.userId}`, {
-    reason: banReason.value,
-  });
-  showBanModal.value = false;
-  adminStore.fetchUsers();
-};
-const unbanUser = async (id) => {
-  await axiosClient.post(`/admin/user/unban/${id}`);
-  adminStore.fetchUsers();
-};
-const deleteUser = async (id) => {
-  if (confirm("Xóa vĩnh viễn user này?")) await adminStore.deleteUser(id);
-};
 
-const giveGold = async () => {
+const confirmBan = async () => {
+  if (!banReason.value) return alert("Cần lý do!");
   try {
-    await axiosClient.post("/admin/grant-gold", goldForm);
-    alert("Đã gửi tiền!");
+    await adminStore.banUser(selectedUser.value.userId, banReason.value);
+    alert("Đã thi hành án!");
+    showBanModal.value = false;
   } catch (e) {
-    alert(e.response?.data);
+    alert(e.message);
   }
 };
-const grantItem = async () => {
-  await adminStore.grantItem(itemGrantForm);
+
+const unbanUser = async (id) => {
+  if (confirm("Phóng thích?")) {
+    await adminStore.unbanUser(id);
+    alert("Đã ân xá!");
+  }
 };
 
-const sendNotification = async () => {
-  if (notifMode.value === "ALL") notifForm.recipientUsername = null;
-  if (notifMode.value === "USER" && !notifForm.recipientUsername)
-    return alert("Nhập tên người nhận!");
-  await adminStore.sendNotification(notifForm);
-  notifForm.title = "";
-  notifForm.message = "";
-};
-
-onMounted(() => fetchStats());
+onMounted(() => adminStore.fetchStats());
 </script>
 
 <style scoped>
@@ -652,30 +355,19 @@ onMounted(() => fetchStats());
   padding-bottom: 80px;
 }
 
-/* --- TEXTURES --- */
-.paper-texture {
-  background-color: var(--paper-bg);
-  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
-}
 .wood-panel {
   background: var(--wood-dark);
   background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
   border: 4px solid var(--wood-light);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
-.custom-scroll::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #8d6e63;
-  border-radius: 4px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+
+.paper-texture {
+  background-color: var(--paper-bg);
+  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
 }
 
-/* --- HEADER --- */
+/* Header */
 .admin-header {
   padding: 20px;
   margin-bottom: 25px;
@@ -710,7 +402,6 @@ onMounted(() => fetchStats());
   font-weight: bold;
   transition: 0.3s;
 }
-.tabs button:hover,
 .tabs button.active {
   background: var(--red-seal);
   color: #fff;
@@ -718,7 +409,7 @@ onMounted(() => fetchStats());
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-/* --- PANELS GENERAL --- */
+/* Panels */
 .content-panel {
   padding: 25px;
   border: 2px solid var(--wood-light);
@@ -737,165 +428,59 @@ onMounted(() => fetchStats());
   letter-spacing: 2px;
 }
 
-/* --- NEW GRANT LAYOUT (Ban Thưởng) --- */
-.grant-layout {
-  display: flex;
-  gap: 20px;
-}
-.grant-sidebar {
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.grant-opt {
-  padding: 15px;
-  text-align: left;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid #d7ccc8;
-  font-family: "Cinzel";
-  font-weight: bold;
-  cursor: pointer;
-  color: #5d4037;
-  transition: 0.2s;
-}
-.grant-opt i {
-  margin-right: 8px;
-  width: 20px;
-  text-align: center;
-}
-.grant-opt.active {
-  background: var(--wood-dark);
-  color: var(--gold-accent);
-  border-color: var(--wood-dark);
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.grant-form-area {
-  flex: 1;
-  padding: 25px;
-  border: 1px dashed #8d6e63;
-  background: rgba(255, 255, 255, 0.4);
-}
-.form-header {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #d7ccc8;
-  padding-bottom: 10px;
-  font-family: "Cinzel";
-}
-.gold-text {
-  color: #f57f17;
-}
-.blue-text {
-  color: #1565c0;
-}
-
-/* --- NOTIFY LAYOUT (Cáo Thị) --- */
-.notify-layout {
-  max-width: 900px;
-  margin: 0 auto;
-}
-.text-area.big-area {
-  min-height: 200px;
-  font-size: 1.1em;
-  line-height: 1.6;
-}
-
-/* --- FORMS & INPUTS (General) --- */
-.ancient-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.form-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.flex-1 {
-  flex: 1;
-}
-.flex-2 {
-  flex: 2;
-}
-.flex-3 {
-  flex: 3;
-}
-.align-end {
-  align-items: flex-end;
-}
-.align-center {
-  align-items: center;
-}
-
-label {
-  font-size: 0.85em;
-  font-weight: bold;
-  color: var(--wood-dark);
-  font-family: "Cinzel";
-}
-
-.ink-input {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid var(--wood-light);
-  padding: 8px 5px;
-  font-family: "Playfair Display";
-  font-weight: bold;
-  color: var(--text-ink);
-  outline: none;
-  transition: 0.3s;
+/* Tables */
+.ancient-table {
   width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
 }
-.ink-input.large {
-  font-size: 1.2em;
-  padding: 10px 5px;
+.ancient-table th {
+  background: var(--wood-light);
+  color: #fff;
+  padding: 12px;
+  font-family: "Cinzel";
+  font-size: 0.9em;
+  text-align: left;
 }
-.ink-input:focus {
-  border-bottom-color: var(--red-seal);
-  background: rgba(183, 28, 28, 0.05);
-}
-.text-area {
-  resize: vertical;
-  border: 1px solid var(--wood-light);
+.ancient-table td {
   padding: 10px;
+  border-bottom: 1px dashed #8d6e63;
+  color: var(--text-ink);
+}
+.stamp {
+  padding: 3px 8px;
+  border: 1px solid;
+  font-weight: bold;
+  font-size: 0.75em;
   border-radius: 4px;
 }
+.stamp.green {
+  color: #2e7d32;
+  border-color: #2e7d32;
+}
+.stamp.red {
+  color: #c62828;
+  border-color: #c62828;
+}
 
-/* Buttons */
-.btn-wood {
-  padding: 10px 25px;
-  background: #efebe9;
-  border: 2px solid var(--wood-dark);
-  color: var(--wood-dark);
-  font-family: "Cinzel";
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.btn-wood:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-.btn-wood.primary {
-  background: var(--red-seal);
-  color: #fff;
-  border-color: #b71c1c;
-}
-.big-btn {
+.btn-icon {
+  background: transparent;
+  border: none;
   font-size: 1.1em;
-  padding: 12px 30px;
-  width: 100%;
+  margin-right: 5px;
+  cursor: pointer;
+}
+.btn-icon.red {
+  color: #c62828;
+}
+.btn-icon.green {
+  color: #2e7d32;
+}
+.btn-icon.gray {
+  color: #5d4037;
 }
 
-/* --- STATS PANEL (Giữ nguyên) --- */
+/* Stats Panel */
 .stats-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -934,57 +519,6 @@ label {
   transform: rotate(-15deg);
 }
 
-/* --- TABLES (Giữ nguyên) --- */
-.ancient-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-.ancient-table th {
-  background: var(--wood-light);
-  color: #fff;
-  padding: 12px;
-  font-family: "Cinzel";
-  font-size: 0.9em;
-  text-align: left;
-}
-.ancient-table td {
-  padding: 10px;
-  border-bottom: 1px dashed #8d6e63;
-  color: var(--text-ink);
-}
-.stamp {
-  padding: 3px 8px;
-  border: 1px solid;
-  font-weight: bold;
-  font-size: 0.75em;
-  border-radius: 4px;
-}
-.stamp.green {
-  color: #2e7d32;
-  border-color: #2e7d32;
-}
-.stamp.red {
-  color: #c62828;
-  border-color: #c62828;
-}
-.btn-icon {
-  background: transparent;
-  border: none;
-  font-size: 1.1em;
-  margin-right: 5px;
-  cursor: pointer;
-}
-.btn-icon.red {
-  color: #c62828;
-}
-.btn-icon.green {
-  color: #2e7d32;
-}
-.btn-icon.gray {
-  color: #5d4037;
-}
-
 /* Modal */
 .ancient-modal-overlay {
   position: fixed;
@@ -1019,21 +553,63 @@ label {
   justify-content: center;
 }
 
-/* Responsive Grant/Notify */
-@media (max-width: 768px) {
-  .grant-layout {
-    flex-direction: column;
-  }
-  .grant-sidebar {
-    width: 100%;
-    flex-direction: row;
-  }
-  .grant-opt {
-    text-align: center;
-  }
-  .form-row {
-    flex-direction: column;
-    gap: 10px;
-  }
+/* Inputs & Buttons */
+.ink-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--wood-light);
+  padding: 8px 5px;
+  font-family: "Playfair Display";
+  font-weight: bold;
+  outline: none;
+  transition: 0.3s;
+}
+.ink-input:focus {
+  border-bottom-color: var(--red-seal);
+  background: rgba(183, 28, 28, 0.05);
+}
+.text-area {
+  resize: vertical;
+  border: 1px solid var(--wood-light);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.btn-wood {
+  padding: 10px 25px;
+  background: #efebe9;
+  border: 2px solid var(--wood-dark);
+  color: var(--wood-dark);
+  font-family: "Cinzel";
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-wood:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.btn-wood.primary {
+  background: var(--red-seal);
+  color: #fff;
+  border-color: #b71c1c;
+}
+.btn-wood.red {
+  background: #c62828;
+  color: white;
+  border-color: #b71c1c;
+}
+
+.create-box {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px dashed #8d6e63;
+  background: rgba(255, 255, 255, 0.4);
+}
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 </style>

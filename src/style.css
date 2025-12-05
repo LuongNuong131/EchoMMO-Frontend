@@ -1,266 +1,99 @@
-/* --- 1. FONTS IMPORT --- */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");
-@import "@fortawesome/fontawesome-free/css/all.css";
+/* File: src/style.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
 
-/* --- 2. GLOBAL VARIABLES (CYBERPALETTE) --- */
-:root {
-  --bg-void: #020617;
-  --bg-panel: rgba(10, 15, 30, 0.85);
-
-  --primary: #00f3ff;
-  --primary-glow: rgba(0, 243, 255, 0.5);
-
-  --secondary: #7000ff;
-  --accent: #ff0055;
-
-  --success: #00ff9d;
-  --warning: #ffbe0b;
-
-  --text-main: #e2e8f0;
-  --text-dim: #94a3b8;
-
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --neon-border: 1px solid var(--primary);
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-
-  --font-display: "Orbitron", sans-serif;
-  --font-body: "Rajdhani", sans-serif;
-  --font-code: "JetBrains Mono", monospace;
-
-  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --sidebar-width: 280px;
-  --header-height: 80px;
-}
-
-/* --- 3. BASE RESET + FIX SCROLL CORE --- */
+/* --- GLOBAL RESET --- */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--bg-void);
-  font-family: var(--font-body);
-  color: var(--text-main);
+  background-color: #121212; /* Dark theme base */
+  color: #e0e0e0;
+  font-family: "Inter", sans-serif;
   line-height: 1.6;
-  overflow: hidden; /* khóa mặc định → sẽ mở bằng allow-scroll */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-  overscroll-behavior: none; /* chống bounce mobile */
 }
 
-/* Khi **tắt chế độ full page/chat** → body được phép scroll */
-body.allow-scroll {
-  overflow: auto !important;
-  overflow-y: overlay !important;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* If browser forces light mode → ignore */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: var(--text-main);
-    background-color: var(--bg-void);
-  }
-}
-
-/* --- 4. UI RESET --- */
 a {
   text-decoration: none;
   color: inherit;
-  transition: 0.3s;
 }
-
 button {
-  font-family: var(--font-display);
+  font-family: inherit;
   cursor: pointer;
 }
 
-input,
-textarea,
-select {
-  font-family: var(--font-body);
-}
-
-/* --- 5. GLASS PANEL --- */
-.glass-panel {
-  background: var(--bg-panel);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  border-radius: var(--radius-md);
-}
-
-/* --- 6. TEXT & SELECTION --- */
-.text-gradient {
-  font-family: var(--font-display);
-  background: linear-gradient(135deg, #fff 20%, var(--primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
-}
-
+/* --- UTILITY CLASSES --- */
 .page-container {
-  width: 100%;
   min-height: 100vh;
-  position: relative;
-  padding-top: 20px;
+  width: 100%;
+  padding-bottom: 60px; /* Space for footer if any */
 }
 
-/* --- 7. CUSTOM SCROLLBAR --- */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Scrollbar */
+.custom-scroll::-webkit-scrollbar {
+  width: 8px;
 }
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+.custom-scroll::-webkit-scrollbar-track {
+  background: #1a1a1a;
 }
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--primary), var(--secondary));
-  border-radius: 6px;
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }
 
-/* Selection neon */
-::selection {
-  background: var(--primary);
+/* Button Styles Common */
+.btn-primary {
+  background: #06d6a0;
   color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.btn-primary:hover {
+  background: #05b587;
 }
 
-/* --- 8. ANIMATIONS (Core) --- */
-@keyframes glitch-skew {
-  0% {
-    transform: skew(0deg);
-  }
-  20% {
-    transform: skew(-2deg);
-  }
-  40% {
-    transform: skew(2deg);
-  }
-  60% {
-    transform: skew(-1deg);
-  }
-  80% {
-    transform: skew(1deg);
-  }
-  100% {
-    transform: skew(0deg);
-  }
+.btn-danger {
+  background: #ef476f;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.btn-danger:hover {
+  background: #d63158;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-  }
+/* Text Colors */
+.text-gold {
+  color: #ffd166;
+}
+.text-red {
+  color: #ef476f;
+}
+.text-green {
+  color: #06d6a0;
+}
+.text-blue {
+  color: #118ab2;
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* --- Vue transitions --- */
+/* Animations */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.slide-up-enter-active {
-  transition: all 0.4s ease-out;
-}
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* --- 9. BUTTONS --- */
-.btn-3d {
-  padding: 12px 24px;
-  background: rgba(0, 243, 255, 0.05);
-  color: var(--primary);
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 1px;
-  border: 1px solid var(--primary);
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-.btn-3d:hover:not(:disabled) {
-  background: var(--primary);
-  color: #000;
-  box-shadow: 0 0 20px var(--primary-glow);
-  transform: translateY(-2px);
-}
-.btn-3d:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-/* Danger */
-.btn-danger-3d {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(255, 0, 85, 0.05);
-}
-.btn-danger-3d:hover:not(:disabled) {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
-}
-
-/* --- 10. RESPONSIVE --- */
-@media (max-width: 768px) {
-  :root {
-    --sidebar-width: 0px;
-    --header-height: 60px;
-  }
-  .mobile-hide {
-    display: none !important;
-  }
 }
