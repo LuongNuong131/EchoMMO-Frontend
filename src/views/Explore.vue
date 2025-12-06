@@ -804,13 +804,9 @@ onUnmounted(() => clearInterval(moveInterval));
 <!-- new code -->
 <template>
   <div class="page-container explore-page">
-
     <div class="explore-layout">
-
       <div class="center-zone">
-
         <div class="game-board">
-
           <div class="status-header">
             <div class="level-badge">
               <span>Lv.{{ charStore.character?.lv }}</span>
@@ -846,7 +842,6 @@ onUnmounted(() => clearInterval(moveInterval));
 
           <div class="stage-viewport">
             <div class="stage-background">
-
               <div class="actor player"
                 :style="{ left: charStore.explorationState.playerPos + '%', transform: `scaleX(${charStore.explorationState.moveDir})` }">
                 <div class="avatar-circle" :class="{ 'moving': isMoving }">
@@ -857,7 +852,8 @@ onUnmounted(() => clearInterval(moveInterval));
 
               <div class="actor target" v-if="showTarget"
                 :style="{ left: (charStore.explorationState.playerPos + (15 * charStore.explorationState.moveDir)) + '%' }">
-                <div class="avatar-target" :class="{ 'is-enemy': isEncounter }">
+
+                <div class="avatar-target" :class="{ 'is-enemy': isEncounter, 'is-reward': !isEncounter }">
                   <img v-if="targetImage" :src="targetImage" class="avatar-img" />
                   <div v-else class="text-3xl">🎁</div>
                 </div>
@@ -868,11 +864,10 @@ onUnmounted(() => clearInterval(moveInterval));
 
           <div class="action-panel">
             <template v-if="!isEncounter">
-              <button class="btn-action main-btn" @click="startExploration"
-                :disabled="isMoving || charStore.character?.energy < 2">
+              <button class="btn-action main-btn" @click="startExploration" :disabled="isMoving">
                 <div class="btn-content">
                   <i class="fas fa-walking"></i>
-                  <span v-if="!isMoving">HÀNH TẨU (-2⚡)</span>
+                  <span v-if="!isMoving">HÀNH TẨU (FREE)</span>
                   <span v-else>ĐANG TÌM... ({{ countdown }}s)</span>
                 </div>
               </button>
@@ -894,7 +889,6 @@ onUnmounted(() => clearInterval(moveInterval));
         <div class="chat-board">
           <ChatPanel />
         </div>
-
       </div>
 
       <div class="right-zone">
@@ -911,7 +905,6 @@ onUnmounted(() => clearInterval(moveInterval));
           </div>
         </div>
       </div>
-
     </div>
 
     <div v-if="isEncounter" class="encounter-modal">
@@ -941,13 +934,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 import CaptchaModal from "@/components/CaptchaModal.vue";
 import ChatPanel from "@/components/ChatPanel.vue";
-
-// === IMPORT HÌNH ẢNH TRỰC TIẾP ===
-import imgGoblin from '@/assets/enemy/idle_goblin.png';
-import imgSkeleton from '@/assets/enemy/idle_skeleton.png';
-import imgMushroom from '@/assets/enemy/idle_mushroom.png';
-import imgGold from '@/assets/resources/r_gold_coin.png';
-import imgYasuo from '@/assets/char/idle_yasou.png';
+import { getEnemyImage, getItemImage, getCharImage } from '@/utils/assetHelper';
 
 const charStore = useCharacterStore();
 const authStore = useAuthStore();
@@ -961,16 +948,10 @@ const countdown = ref(0);
 const logs = ref([]);
 const targetImage = ref('');
 const targetName = ref('');
-// Dùng ảnh từ authStore hoặc ảnh mặc định import ở trên
-const imgPlayer = authStore.user?.avatarUrl || imgYasuo;
+
+const imgPlayer = authStore.user?.avatarUrl || getCharImage('idle');
 
 let moveInterval = null;
-
-const enemyPool = [
-  { name: "Yêu Tinh", img: imgGoblin },
-  { name: "Bộ Xương", img: imgSkeleton },
-  { name: "Nấm Độc", img: imgMushroom }
-];
 
 const getTime = () => new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
@@ -1017,14 +998,18 @@ const handleResult = async () => {
     if (res.type === 'GOLD') {
       showTarget.value = true;
       targetName.value = "Túi Vàng";
-      targetImage.value = imgGold;
+      targetImage.value = getItemImage('GOLD');
       addLog(`<span style="color:#ffd700; font-weight:bold;">${res.message}</span>`);
     } else if (res.type === 'ENEMY') {
       isEncounter.value = true;
       showTarget.value = true;
-      const rnd = enemyPool[Math.floor(Math.random() * enemyPool.length)];
-      targetName.value = rnd.name;
-      targetImage.value = rnd.img;
+
+      const names = ["Yêu Tinh", "Bộ Xương", "Nấm Độc"];
+      const rndName = names[Math.floor(Math.random() * names.length)];
+
+      targetName.value = rndName;
+      targetImage.value = getEnemyImage(rndName);
+
       addLog(`<span style="color:#ef5350; font-weight:bold;">⚠️ ${res.message}</span>`);
     } else {
       addLog(`<span style="color:#aaa;">${res.message}</span>`);
@@ -1066,7 +1051,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   margin: 0 auto;
 }
 
-/* --- CỘT TRÁI --- */
 .center-zone {
   display: flex;
   flex-direction: column;
@@ -1075,7 +1059,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   overflow: hidden;
 }
 
-/* 1. KHUNG GAME */
 .game-board {
   flex: 1;
   min-height: 300px;
@@ -1187,7 +1170,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   color: #00e676;
 }
 
-/* STAGE - MÀN HÌNH CHÍNH */
 .stage-viewport {
   flex: 1;
   min-height: 0;
@@ -1207,7 +1189,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   position: relative;
 }
 
-/* --- CHỈNH SỬA KÍCH THƯỚC VÀ VIỀN --- */
 .actor {
   position: absolute;
   bottom: 25px;
@@ -1215,45 +1196,54 @@ onUnmounted(() => { clearInterval(moveInterval); });
   flex-direction: column;
   align-items: center;
   width: 140px;
-  /* Tăng chiều rộng container */
   transition: left 0.1s linear;
   z-index: 10;
 }
 
+/* CSS CLASS CHUNG */
 .avatar-circle,
 .avatar-target {
   width: 96px;
-  /* Tăng kích thước cực đại */
   height: 96px;
-  /* Tăng kích thước cực đại */
-  /* XÓA BỎ VIỀN VÀNG */
   border: none;
   background: transparent;
-  /* Xóa nền tối luôn nếu muốn trong suốt */
-
-  /* Giữ bo tròn hoặc bỏ tùy bạn, ở đây giữ bo tròn để ảnh không bị vuông vức quá */
-  /* border-radius: 50%; */
-
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* Hiệu ứng bóng đổ nhẹ để tách biệt khỏi nền (tùy chọn) */
   filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+}
+
+/* CSS RIÊNG CHO REWARD (COIN) ĐỂ BÉ LẠI */
+.avatar-target.is-reward {
+  width: 48px;
+  height: 48px;
+  /* Bé đi một nửa */
+  margin-bottom: 15px;
+  /* Đẩy lên một chút cho cân */
+  animation: floatCoin 2s infinite ease-in-out;
+}
+
+@keyframes floatCoin {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .avatar-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Đảm bảo ảnh không bị cắt */
   transform: scale(1.2);
-  /* Phóng to ảnh bên trong lên thêm chút nữa */
 }
 
 .actor-label {
   margin-top: 0px;
-  /* Kéo tên sát lên */
   background: rgba(0, 0, 0, 0.6);
   padding: 2px 10px;
   border-radius: 12px;
@@ -1283,7 +1273,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   }
 }
 
-/* BUTTONS */
 .action-panel {
   height: 60px;
   background: #1a100e;
@@ -1342,7 +1331,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   gap: 6px;
 }
 
-/* 2. KHUNG CHAT */
 .chat-board {
   height: 350px;
   background: rgba(0, 0, 0, 0.6);
@@ -1352,7 +1340,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   flex-shrink: 0;
 }
 
-/* --- CỘT PHẢI: LOG --- */
 .right-zone {
   display: flex;
   flex-direction: column;
@@ -1412,7 +1399,6 @@ onUnmounted(() => { clearInterval(moveInterval); });
   font-size: 0.85em;
 }
 
-/* MODAL */
 .encounter-modal {
   position: fixed;
   inset: 0;
@@ -1448,12 +1434,10 @@ onUnmounted(() => { clearInterval(moveInterval); });
   color: #eee;
 }
 
-/* PREVIEW BOX TRONG MODAL */
 .preview-box {
   width: 160px;
   height: 160px;
   margin: 0 auto 15px;
-  /* Xóa viền nếu muốn sạch sẽ */
   border: none;
   background: transparent;
   display: flex;
