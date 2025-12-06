@@ -109,6 +109,7 @@ import { useCharacterStore } from "./characterStore";
 export const useBattleStore = defineStore("battle", {
   state: () => ({
     enemy: null,
+    enemyVisual: null, // [MỚI] Lưu tên/ảnh quái từ lúc gặp để thống nhất
     enemyHp: 0,
     enemyMaxHp: 0,
     playerHp: 0,
@@ -117,44 +118,38 @@ export const useBattleStore = defineStore("battle", {
     status: "IDLE",
     goldEarned: 0,
     expEarned: 0,
-    skills: []
   }),
 
   actions: {
+    // Set thông tin hình ảnh quái trước khi vào trận
+    setEncounter(visualData) {
+      this.enemyVisual = visualData;
+    },
+
     async startBattle() {
       this.status = "ONGOING";
       this.combatLogs = [];
       try {
         const res = await axiosClient.post("/battle/start");
         this.handleResult(res.data);
-        
-        // Lấy skills nếu cần
-        try {
-            const skillRes = await axiosClient.get("/battle/skills");
-            this.skills = skillRes.data;
-        } catch(err) { /* Bỏ qua nếu chưa có API skill */ }
-        
       } catch (e) {
         this.combatLogs.push("Lỗi: " + (e.response?.data || e.message));
       }
     },
 
-    async attack(attackType, isParried) {
+    // isBuffed: true nếu người chơi ấn nút Tụ Lực
+    async autoTurn(isBuffed) {
       try {
         const res = await axiosClient.post("/battle/attack", {
           enemyId: this.enemy.enemyId,
           enemyHp: this.enemyHp,
-          isParried: isParried,
-          attackType: attackType,
+          isBuffed: isBuffed // Gửi trạng thái cường hóa lên server
         });
         this.handleResult(res.data);
+        return res.data; // Trả về data để view xử lý animation
       } catch (e) {
         console.error(e);
       }
-    },
-
-    async useSkill(skillId) {
-       // Logic gọi API skill (nếu backend đã có)
     },
 
     handleResult(data) {
@@ -166,7 +161,8 @@ export const useBattleStore = defineStore("battle", {
       this.status = data.status;
 
       if (data.combatLog) {
-          this.combatLogs.push(...data.combatLog);
+        // Chỉ lấy log mới nhất để hiển thị cho gọn
+        this.combatLogs = data.combatLog;
       }
 
       if (data.status === "VICTORY") {
@@ -174,18 +170,16 @@ export const useBattleStore = defineStore("battle", {
         this.expEarned = data.expEarned;
       }
 
-      // Cập nhật HP cho nhân vật ở store chính để thanh máu bên ngoài đồng bộ
       const charStore = useCharacterStore();
-      if(charStore.character) {
+      if (charStore.character) {
         charStore.character.hp = data.playerHp;
-        // Nếu backend trả về energy mới thì cập nhật luôn
-        // charStore.character.energy = data.playerEnergy; 
       }
     },
 
     resetBattle() {
       this.status = "IDLE";
       this.enemy = null;
+      this.enemyVisual = null;
       this.combatLogs = [];
     },
   },

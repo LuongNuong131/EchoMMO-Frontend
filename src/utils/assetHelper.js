@@ -1,47 +1,65 @@
 // src/utils/assetHelper.js
 
-// --- 1. NHÂN VẬT ---
+// --- IMPORT ẢNH NHÂN VẬT (YASUO) ---
 import yasuoIdle from '@/assets/char/idle_yasou.png';
 import yasuoAtk from '@/assets/char/atk_yasou.png';
+import yasuoRun from '@/assets/char/run_yasou.png';
 
-// --- 2. QUÁI VẬT (Thống nhất 1 nguồn) ---
+// --- IMPORT ẢNH QUÁI VẬT ---
 import goblinIdle from '@/assets/enemy/idle_goblin.png';
-import goblinAtk from '@/assets/enemy/atk_goblin.png';
-
 import skeletonIdle from '@/assets/enemy/idle_skeleton.png';
-import skeletonAtk from '@/assets/enemy/atk_skeleton.png';
-
 import mushroomIdle from '@/assets/enemy/idle_mushroom.png';
+import goblinAtk from '@/assets/enemy/atk_goblin.png';
+import skeletonAtk from '@/assets/enemy/atk_skeleton.png';
 import mushroomAtk from '@/assets/enemy/atk_mushroom.png';
 
-// --- 3. TÀI NGUYÊN & ITEM ---
+// --- IMPORT ITEM ---
 import goldCoin from '@/assets/resources/r_gold_coin.png';
-import woodLog from '@/assets/resources/r_go.png';       // Kiểm tra lại tên file thực tế trong máy bạn
-import stoneItem from '@/assets/resources/stone_1.png';  // Kiểm tra lại tên file thực tế
+import woodLog from '@/assets/resources/r_go.png';
+import stoneItem from '@/assets/resources/stone_1.png';
 import copperBar from '@/assets/resources/r_copper_bar.png';
 
-// --- MAP DỮ LIỆU ---
-// Key ở đây phải khớp với tên quái vật trả về từ Backend hoặc Random list
+// ============================================================
+// 1. HỆ THỐNG SKINS (NHÂN VẬT)
+// ============================================================
+export const CHARACTER_SKINS = {
+    "skin_yasou": {
+        id: "skin_yasou",
+        name: "Lãng Khách",
+        description: "Kẻ lang thang với thanh kiếm gió.",
+        sprites: {
+            idle: yasuoIdle,
+            run: yasuoRun,
+            attack: yasuoAtk
+        }
+    }
+    // Bạn có thể thêm skin khác vào đây (ví dụ Ninja...)
+};
+
+// [HÀM QUAN TRỌNG] Lấy Skin hiện tại
+export const getCurrentSkin = (avatarUrl) => {
+    // Nếu avatarUrl có trong danh sách skin thì trả về skin đó
+    if (avatarUrl && CHARACTER_SKINS[avatarUrl]) {
+        return CHARACTER_SKINS[avatarUrl];
+    }
+    // Fallback mặc định là Yasuo (nếu user chưa chọn hoặc lỗi)
+    return CHARACTER_SKINS["skin_yasou"];
+};
+
+// ============================================================
+// 2. HỆ THỐNG QUÁI VẬT & ITEM
+// ============================================================
 const enemyMap = {
     "Yêu Tinh": { idle: goblinIdle, atk: goblinAtk },
     "Bộ Xương": { idle: skeletonIdle, atk: skeletonAtk },
     "Nấm Độc": { idle: mushroomIdle, atk: mushroomAtk },
-    // Fallback nếu không tìm thấy tên
     "default": { idle: goblinIdle, atk: goblinAtk }
 };
 
-// --- HÀM TRÍCH XUẤT (Export) ---
-
 export const getEnemyImage = (name, state = 'idle') => {
-    // Tìm trong map, nếu không có thì dùng default
-    // Dùng .find để hỗ trợ tìm gần đúng (ví dụ "Yêu Tinh Rừng" vẫn ra "Yêu Tinh")
     const key = Object.keys(enemyMap).find(k => name && name.includes(k)) || "default";
     const target = enemyMap[key];
     return state === 'attack' ? target.atk : target.idle;
-};
-
-export const getCharImage = (state = 'idle') => {
-    return state === 'attack' ? yasuoAtk : yasuoIdle;
 };
 
 export const getItemImage = (type) => {
@@ -51,4 +69,10 @@ export const getItemImage = (type) => {
         case 'STONE': return stoneItem;
         default: return copperBar;
     }
+};
+
+export const getRandomEnemyData = () => {
+    const keys = Object.keys(enemyMap).filter(k => k !== 'default');
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    return { name: randomKey, img: enemyMap[randomKey].idle };
 };
