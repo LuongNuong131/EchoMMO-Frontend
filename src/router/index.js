@@ -145,6 +145,7 @@ import Village from "../views/Village.vue";
 import Gathering from "../views/Gathering.vue";
 import Explore from "../views/Explore.vue";
 import Character from "../views/Character.vue";
+import Forge from "../views/Forge.vue";
 
 const routes = [
   { path: "/", name: "Home", component: Home, meta: { requiresAuth: true } },
@@ -167,6 +168,7 @@ const routes = [
   { path: "/profile", name: "Profile", component: Profile, meta: { requiresAuth: true } },
   { path: "/notifications", name: "Notifications", component: Notifications, meta: { requiresAuth: true } },
   { path: "/friends", name: "Friends", component: Friends, meta: { requiresAuth: true } },
+  { path: "/forge", name: "Forge", component: Forge, meta: { requiresAuth: true } },
   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
   { path: "/character", name: "Character", component: Character, meta: { requiresAuth: true } }
 ];

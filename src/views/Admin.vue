@@ -222,6 +222,111 @@
           </table>
         </div>
       </div>
+      
+      <div v-if="activeTab === 'grant'" class="content-panel paper-texture">
+        <h3 class="panel-title">BAN THƯỞNG</h3>
+
+        <div class="create-box mb-4">
+          <h4 class="sub-panel-title">NGÂN LƯỢNG (GOLD)</h4>
+          <form @submit.prevent="handleGrantGold" class="ancient-form">
+            <div class="form-row">
+              <input
+                v-model="grantGoldForm.username"
+                placeholder="Danh tính nhận (username)"
+                class="ink-input"
+                required
+              />
+              <input
+                v-model.number="grantGoldForm.amount"
+                type="number"
+                placeholder="Số Lượng Vàng"
+                class="ink-input"
+                min="1"
+                required
+              />
+              <button type="submit" class="btn-wood primary">CẤP VÀNG</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="create-box">
+          <h4 class="sub-panel-title">VẬT PHẨM (ITEM)</h4>
+          <form @submit.prevent="handleGrantItem" class="ancient-form">
+            <div class="form-row">
+              <input
+                v-model="grantItemForm.username"
+                placeholder="Danh tính nhận (username)"
+                class="ink-input"
+                required
+              />
+              <select
+                v-model.number="grantItemForm.itemId"
+                class="ink-input"
+                required
+              >
+                <option :value="0" disabled>Chọn vật phẩm...</option>
+                <option
+                  v-for="item in itemOptions"
+                  :key="item.id"
+                  :value="item.id"
+                >
+                  #{{ item.id }} - {{ item.name }}
+                </option>
+              </select>
+              <input
+                v-model.number="grantItemForm.quantity"
+                type="number"
+                placeholder="Số lượng"
+                class="ink-input"
+                min="1"
+                required
+              />
+              <button type="submit" class="btn-wood primary">CẤP VẬT PHẨM</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div v-if="activeTab === 'notify'" class="content-panel paper-texture">
+        <h3 class="panel-title">CÁO THỊ</h3>
+        <div class="create-box">
+          <form @submit.prevent="handleSendNotification" class="ancient-form">
+            <div class="form-row">
+              <input
+                v-model="notificationForm.title"
+                placeholder="Tiêu đề..."
+                class="ink-input"
+                required
+              />
+              <select v-model="notificationForm.type" class="ink-input">
+                <option value="INFO">Thông Tin (INFO)</option>
+                <option value="SUCCESS">Tin Mừng (SUCCESS)</option>
+                <option value="WARNING">Cảnh Báo (WARNING)</option>
+                <option value="REWARD">Phần Thưởng (REWARD)</option>
+              </select>
+              <input
+                v-model="notificationForm.recipientUsername"
+                placeholder="Người nhận (trống = tất cả)"
+                class="ink-input"
+              />
+            </div>
+            <div class="form-row">
+              <textarea
+                v-model="notificationForm.message"
+                placeholder="Nội dung cáo thị..."
+                class="ink-input text-area full-width"
+                rows="5"
+                required
+              ></textarea>
+            </div>
+            <div class="form-row align-center">
+              <button type="submit" class="btn-wood primary full-width">
+                PHÁT LOA TOÀN GIANG HỒ
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <div
@@ -257,7 +362,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useAdminStore } from "../stores/adminStore";
 import axiosClient from "../api/axiosClient";
 
@@ -279,14 +384,27 @@ const itemForm = reactive({
   isSystemItem: false,
 });
 
+// [MỚI] Form Ban Thưởng
+const grantGoldForm = reactive({ username: "", amount: 1000 });
+const grantItemForm = reactive({ username: "", itemId: 0, quantity: 1 });
+const notificationForm = reactive({ title: "", message: "", type: "INFO", recipientUsername: "" });
+
+// [MỚI] Computed để lấy danh sách Item cho dropdown
+const itemOptions = computed(() =>
+  adminStore.items.map((i) => ({ id: i.itemId, name: i.name }))
+);
+
 const formatNumber = (n) => Number(n).toLocaleString();
 
+// [CẬP NHẬT] Thêm logic fetchItems cho tab 'grant'
 const switchTab = (tab) => {
   activeTab.value = tab;
   if (tab === "stats") adminStore.fetchStats();
   if (tab === "users") adminStore.fetchUsers();
-  if (tab === "items") adminStore.fetchItems();
-  // Các tab khác...
+  // Fetch items cho cả tab 'items' và 'grant'
+  if (tab === "items" || tab === "grant") adminStore.fetchItems(); 
+  if (tab === "market") adminStore.fetchListings(); 
+  // Tab 'notify' không cần fetch gì đặc biệt
 };
 
 const createItem = async () => {
@@ -298,6 +416,50 @@ const createItem = async () => {
     alert(e.message);
   }
 };
+
+// [MỚI] Logic Ban Thưởng Vàng
+const handleGrantGold = async () => {
+  if (!grantGoldForm.username || grantGoldForm.amount <= 0) return alert("Kiểm tra lại dữ liệu!");
+  try {
+      // Gọi action mới trong store
+      await adminStore.grantGold({
+          username: grantGoldForm.username,
+          amount: grantGoldForm.amount
+      });
+      // Reset form sau khi thành công
+      grantGoldForm.amount = 1000;
+  } catch (e) {
+      // Alert đã được xử lý trong store.js
+  }
+};
+
+// [MỚI] Logic Ban Thưởng Vật Phẩm
+const handleGrantItem = async () => {
+    if (!grantItemForm.username || grantItemForm.itemId <= 0 || grantItemForm.quantity <= 0) return alert("Kiểm tra lại dữ liệu!");
+    try {
+        await adminStore.grantItem({
+            username: grantItemForm.username,
+            itemId: grantItemForm.itemId,
+            quantity: grantItemForm.quantity
+        });
+        // Reset form
+        grantItemForm.itemId = 0;
+        grantItemForm.quantity = 1;
+    } catch (e) {
+        // Alert đã được xử lý trong store.js
+    }
+};
+
+// [MỚI] Logic Gửi Cáo Thị
+const handleSendNotification = async () => {
+    if (!notificationForm.title || !notificationForm.message) return alert("Cần tiêu đề và nội dung!");
+    await adminStore.sendNotification(notificationForm);
+    // Reset form sau khi gửi
+    notificationForm.title = "";
+    notificationForm.message = "";
+    notificationForm.recipientUsername = "";
+};
+
 
 // --- BAN LOGIC ---
 const openBanModal = (u) => {
@@ -324,7 +486,10 @@ const unbanUser = async (id) => {
   }
 };
 
-onMounted(() => adminStore.fetchStats());
+onMounted(() => {
+  adminStore.fetchStats()
+  adminStore.fetchItems() // Fetch items ngay từ đầu cho Grant tab
+});
 </script>
 
 <style scoped>
@@ -426,6 +591,17 @@ onMounted(() => adminStore.fetchStats());
   text-align: center;
   font-size: 1.6em;
   letter-spacing: 2px;
+}
+.sub-panel-title {
+    font-family: "Cinzel";
+    font-size: 1.1em;
+    color: var(--red-seal);
+    border-bottom: 1px solid #8d6e63;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+.mb-4 {
+    margin-bottom: 1.5rem;
 }
 
 /* Tables */
@@ -578,13 +754,13 @@ onMounted(() => adminStore.fetchStats());
 
 .btn-wood {
   padding: 10px 25px;
-  background: #efebe9;
   border: 2px solid var(--wood-dark);
   color: var(--wood-dark);
   font-family: "Cinzel";
   font-weight: bold;
   cursor: pointer;
   transition: 0.2s;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 .btn-wood:hover {
   transform: translateY(-2px);
@@ -611,5 +787,8 @@ onMounted(() => adminStore.fetchStats());
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
+}
+.full-width {
+  width: 100% !important;
 }
 </style>

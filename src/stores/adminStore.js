@@ -68,6 +68,16 @@ export const useAdminStore = defineStore("admin", {
       await axiosClient.delete(`/admin/listing/${id}`);
       this.fetchListings();
     },
+    
+    // [MỚI] Logic Ban Thưởng Vàng
+    async grantGold(payload) {
+      try {
+        await axiosClient.post("/admin/grant-gold", payload);
+        alert("Ban thưởng Vàng thành công!");
+      } catch (e) {
+        alert(e.response?.data || "Lỗi ban thưởng Vàng");
+      }
+    },
 
     async grantItem(payload) {
       try {

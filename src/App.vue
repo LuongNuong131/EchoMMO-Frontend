@@ -1,19 +1,5 @@
 <template>
-  <div
-    id="app"
-    class="cyber-root"
-    @mousedown="cursorClick"
-    @mouseup="cursorRelease"
-  >
-    <div
-      class="custom-cursor"
-      :class="{ clicking: isClicking }"
-      :style="{ left: cursorX + 'px', top: cursorY + 'px' }"
-    >
-      <div class="cursor-dot"></div>
-      <div class="cursor-ring"></div>
-    </div>
-
+  <div id="app" class="cyber-root">
     <div class="static-noise"></div>
 
     <transition name="system-boot" mode="out-in">
@@ -31,7 +17,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import MainLayout from "./layouts/MainLayout.vue";
 
@@ -44,30 +30,7 @@ const isAuthPage = computed(() => {
   );
 });
 
-// --- CURSOR LOGIC ---
-const cursorX = ref(-100); // Ẩn ban đầu
-const cursorY = ref(-100);
-const isClicking = ref(false);
-
-const updateCursor = (e) => {
-  cursorX.value = e.clientX;
-  cursorY.value = e.clientY;
-};
-
-const cursorClick = () => {
-  isClicking.value = true;
-};
-const cursorRelease = () => {
-  isClicking.value = false;
-};
-
-onMounted(() => {
-  window.addEventListener("mousemove", updateCursor);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("mousemove", updateCursor);
-});
+// --- Đã xóa toàn bộ logic Javascript xử lý chuột (mousemove, click...) ---
 </script>
 
 <style>
@@ -79,8 +42,8 @@ html {
   width: 100%;
   height: 100%;
   background-color: #020617;
-  cursor: none; /* Ẩn con trỏ mặc định */
-  overflow: hidden; /* App.vue quản lý scroll */
+  /* cursor: none;  <-- ĐÃ XÓA DÒNG NÀY ĐỂ HIỆN LẠI CHUỘT */
+  overflow: hidden; 
 }
 
 #app {
@@ -91,51 +54,7 @@ html {
   position: relative;
 }
 
-/* --- CUSTOM CURSOR --- */
-.custom-cursor {
-  position: fixed;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: difference; /* Giúp con trỏ nổi trên mọi nền */
-}
-
-.cursor-dot {
-  width: 4px;
-  height: 4px;
-  background: #00f3ff;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #00f3ff;
-}
-
-.cursor-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(0, 243, 255, 0.5);
-  border-radius: 50%;
-  transition: all 0.1s;
-}
-
-.custom-cursor.clicking .cursor-ring {
-  width: 15px;
-  height: 15px;
-  border-color: #ff0055;
-  background: rgba(255, 0, 85, 0.3);
-}
-
-@media (max-width: 768px) {
-  .custom-cursor {
-    display: none;
-  } /* Mobile dùng touch, không cần cursor */
-  body,
-  html {
-    cursor: auto;
-  }
-}
+/* --- Đã xóa CSS của .custom-cursor --- */
 
 /* --- GLOBAL NOISE --- */
 .static-noise {

@@ -350,10 +350,12 @@ onMounted(() => {
           <div class="res-icon"><i class="fas fa-coins"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.gold || 0) }}</div>
         </div>
+
         <div class="res-module jade mobile-hide" title="Linh Thạch">
           <div class="res-icon"><i class="fas fa-gem"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.diamonds || 0) }}</div>
         </div>
+
         <div class="res-module energy" title="Chân Khí">
           <div class="res-icon"><i class="fas fa-bolt"></i></div>
           <div class="energy-track">
@@ -404,7 +406,6 @@ const authStore = useAuthStore();
 const charStore = useCharacterStore();
 const notiStore = useNotificationStore();
 
-// Giả lập số lời mời kết bạn (Bạn nên thay bằng data thực tế từ store)
 const friendRequestCount = ref(0); 
 
 const userSkinAvatar = computed(() => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle);
@@ -483,60 +484,93 @@ onMounted(() => {
 /* --- RESOURCE BANK --- */
 .resource-bank {
   display: flex;
-  gap: 8px;
+  gap: 12px; /* Tăng khoảng cách giữa các tài nguyên */
   align-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px 8px;
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 12px;
+  border-radius: 6px;
   border: 1px solid #5d4037;
 }
 
-.res-module { display: flex; align-items: center; gap: 5px; }
-.res-icon { font-size: 0.9em; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
-.res-val { fontWeight: bold; font-size: 0.9em; color: #fdf5e6; }
-.res-val.small { font-size: 0.8em; color: #d7ccc8; min-width: 25px; text-align: right; }
+.res-module { 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+}
 
-.gold .res-icon, .gold .res-val { color: #ffd700; }
-.jade .res-icon { color: #C5A059; }
-.jade .res-val { color: #ffecb3; }
-.energy .res-icon { color: #8A1C1C; }
+.res-icon { 
+  font-size: 1em; 
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)); /* Bóng đổ icon đậm hơn */
+}
+
+.res-val { 
+  font-weight: bold; 
+  font-size: 0.95em; 
+}
+
+.res-val.small { 
+  font-size: 0.85em; 
+  min-width: 30px; 
+  text-align: right; 
+  color: #e0e0e0;
+}
+
+/* --- MÀU SẮC TÀI NGUYÊN (FIXED) --- */
+
+/* 1. NGÂN LƯỢNG (GOLD) - Màu Vàng Rực */
+.resource-bank .gold .res-icon { color: #ffeb3b; }
+.resource-bank .gold .res-val { color: #ffd700; text-shadow: 0 0 2px #b71c1c; }
+
+/* 2. LINH THẠCH (JADE) - Màu Xanh Ngọc */
+.resource-bank .jade .res-icon { color: #00e676; }
+.resource-bank .jade .res-val { color: #69f0ae; }
+
+/* 3. CHÂN KHÍ (ENERGY) - Màu Xanh Dương */
+.resource-bank .energy .res-icon { color: #2979ff; } /* Icon xanh dương sáng */
 
 .energy-track {
-  width: 50px;
-  height: 6px;
-  background: #261815;
-  border: 1px solid #5d4037;
-  border-radius: 2px;
+  width: 60px;
+  height: 8px;
+  background: #1a1a1a;
+  border: 1px solid #546e7a;
+  border-radius: 3px;
   overflow: hidden;
-}
-.energy-bar {
-  height: 100%;
-  background: #8A1C1C;
-  transition: width 0.3s ease;
+  box-shadow: inset 0 0 3px #000;
 }
 
-/* --- HUD ICON NODES (Friends & Noti) --- */
+.energy-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1565c0, #42a5f5); /* Gradient xanh dương */
+  transition: width 0.3s ease;
+  box-shadow: 0 0 5px #2979ff; /* Phát sáng nhẹ */
+}
+
+/* --- HUD ICON NODES --- */
 .hud-icon-node {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #d7ccc8;
+  color: #bcaaa4;
   transition: 0.3s;
   cursor: pointer;
   border-radius: 50%;
-  text-decoration: none; /* Bỏ gạch chân router-link */
+  text-decoration: none; 
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
 }
 
 .hud-icon-node:hover {
   color: #fbc02d;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fbc02d;
 }
 
 .hud-icon-node.has-signal .node-icon {
   animation: shake 2s infinite;
+  color: #ffca28;
 }
 
 @keyframes shake {
@@ -547,17 +581,18 @@ onMounted(() => {
 
 .node-badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background: #b71c1c;
+  top: -4px;
+  right: -4px;
+  background: #d32f2f;
   color: #fff;
-  font-size: 0.65em;
+  font-size: 0.7em;
   font-weight: bold;
-  padding: 1px 4px;
-  border-radius: 4px;
-  border: 1px solid #3e2723;
-  min-width: 14px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  border: 1px solid #fff;
+  min-width: 18px;
   text-align: center;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.3);
 }
 
 /* --- PROFILE --- */
@@ -566,13 +601,14 @@ onMounted(() => {
   align-items: center;
   gap: 15px;
   text-decoration: none;
-  padding-left: 10px;
+  padding-left: 15px;
   border-left: 1px solid #5d4037;
   transition: 0.3s;
 }
 
 .profile-link:hover .char-name {
   color: #fbc02d;
+  text-shadow: 0 0 5px rgba(251, 192, 45, 0.5);
 }
 
 .profile-info {
@@ -581,32 +617,34 @@ onMounted(() => {
 
 .char-name {
   font-weight: bold;
-  font-size: 0.95em;
+  font-size: 1em;
   color: #fdf5e6;
   font-family: "Playfair Display", serif;
 }
 
 .xp-track {
-  width: 70px;
-  height: 3px;
-  background: #261815;
-  margin-top: 3px;
+  width: 80px;
+  height: 4px;
+  background: #1a1a1a;
+  margin-top: 4px;
   margin-left: auto;
-  border-radius: 1px;
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .xp-fill {
   height: 100%;
-  background: #fbc02d;
+  background: linear-gradient(90deg, #fbc02d, #ffeb3b);
   transition: width 0.5s;
 }
 
 .avatar-frame {
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   position: relative;
   border-radius: 50%;
   background: #1a1510;
+  border: 2px solid #8d6e63;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   display: flex;
@@ -628,12 +666,12 @@ onMounted(() => {
   }
 
   .resource-bank {
-    gap: 5px;
-    padding: 4px;
+    gap: 8px;
+    padding: 4px 8px;
   }
 
   .energy-track {
-    width: 30px;
+    width: 35px;
   }
 
   .game-header {

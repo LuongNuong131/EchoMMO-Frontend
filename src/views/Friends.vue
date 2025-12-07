@@ -30,6 +30,7 @@
       </div>
 
       <div class="network-body">
+        
         <transition name="fade">
           <div
             v-if="friendStore.requests.length"
@@ -296,14 +297,14 @@ const scrollToBottom = () => {
   --text-ink: #2c1810;
 }
 
-/* --- BASE LAYOUT --- */
+/* --- BASE LAYOUT (FIX OVERFLOW) --- */
 .friends-page.ancient-theme {
   background: var(--bg-dark);
-  min-height: 100vh;
+  height: 100vh; /* Chiều cao cố định bằng màn hình */
   font-family: "Playfair Display", serif;
   color: #d7ccc8;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden; /* Ẩn thanh cuộn của body */
 }
 
 .wood-bg-layer {
@@ -321,16 +322,19 @@ const scrollToBottom = () => {
   max-width: 800px;
   margin: 0 auto;
   
-  /* Chỉnh lại padding để cân đối hơn */
-  padding: 80px 20px 0px 20px; 
-  
+  /* Layout Flex để chia chiều cao */
   display: flex;
   flex-direction: column;
-  gap: 20px;
   
-  /* Đảm bảo wrapper chiếm full chiều cao để tính toán calc() chính xác */
-  height: 100vh; 
-  box-sizing: border-box;
+  /* Chiều cao 100% của cha (100vh) */
+  height: 100%; 
+  
+  /* Padding trên lớn để tránh Header Game, dưới nhỏ */
+  padding: 80px 20px 20px 20px; 
+  
+  /* Tính padding vào height */
+  box-sizing: border-box; 
+  gap: 20px;
 }
 
 /* --- TEXTURES --- */
@@ -350,17 +354,18 @@ const scrollToBottom = () => {
   background: rgba(38, 24, 21, 0.95);
 }
 
-/* --- HEADER --- */
+/* --- HEADER (Không giãn) --- */
 .network-header {
   text-align: center;
-  padding: 25px 20px;
+  padding: 20px;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
+  flex-shrink: 0; /* Header giữ nguyên kích thước nội dung */
 }
 .title-ancient {
-  font-size: 2em;
+  font-size: 1.8em;
   font-family: "Cinzel", serif;
   color: var(--gold-accent);
   text-shadow: 2px 2px 4px #000;
@@ -372,7 +377,7 @@ const scrollToBottom = () => {
   font-size: 0.8em;
 }
 
-/* --- TÌM KIẾM --- */
+/* --- SEARCH --- */
 .search-box-wrapper {
   display: flex;
   align-items: center;
@@ -382,7 +387,7 @@ const scrollToBottom = () => {
   width: 100%;
   max-width: 600px;
   background: rgba(0, 0, 0, 0.2);
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid rgba(141, 110, 99, 0.3);
 }
@@ -393,7 +398,7 @@ const scrollToBottom = () => {
   align-items: center;
   background-color: #fdf5e6;
   background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
-  padding: 8px 15px;
+  padding: 6px 12px;
   border-radius: 4px;
   border: 2px solid #8d6e63;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -405,7 +410,7 @@ const scrollToBottom = () => {
 }
 .search-icon {
   color: #5d4037;
-  font-size: 1.1em;
+  font-size: 1em;
   margin-right: 10px;
   opacity: 0.7;
 }
@@ -416,7 +421,7 @@ const scrollToBottom = () => {
   outline: none;
   font-family: "Playfair Display", serif;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1em;
   color: #2c1810;
 }
 .real-input::placeholder {
@@ -428,10 +433,10 @@ const scrollToBottom = () => {
   background: var(--red-seal);
   color: #fff;
   border: 2px solid #b71c1c;
-  padding: 10px 20px;
+  padding: 8px 16px;
   font-family: "Cinzel", serif;
   font-weight: bold;
-  font-size: 1em;
+  font-size: 0.9em;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -447,13 +452,28 @@ const scrollToBottom = () => {
   box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
+/* --- NETWORK BODY (Phần chứa danh sách) --- */
+.network-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Chiếm hết phần còn lại của màn hình */
+  flex: 1; 
+  /* Quan trọng để scroll hoạt động bên trong flex item */
+  min-height: 0; 
+}
+
 /* --- REQUESTS --- */
 .requests-panel {
-  padding: 15px;
+  padding: 10px;
   border-radius: 4px;
   border: 2px solid var(--wood-light);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  margin-bottom: 20px;
+  /* Không bị co, nhưng giới hạn chiều cao tối đa */
+  flex-shrink: 0; 
+  max-height: 30%; 
+  display: flex;
+  flex-direction: column;
 }
 .panel-label {
   color: var(--red-seal);
@@ -461,19 +481,20 @@ const scrollToBottom = () => {
   font-family: "Cinzel";
   border-bottom: 1px dashed var(--red-seal);
   padding-bottom: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 .req-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 15px;
+  gap: 10px;
+  overflow-y: auto; /* Scroll riêng cho requests */
 }
 .req-card {
   background: rgba(255, 255, 255, 0.5);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 8px;
   border-radius: 4px;
   border: 1px solid #d7ccc8;
 }
@@ -483,8 +504,8 @@ const scrollToBottom = () => {
   gap: 10px;
 }
 .avatar-circle.pending {
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--red-seal);
   color: #fff;
@@ -493,25 +514,27 @@ const scrollToBottom = () => {
   justify-content: center;
   font-weight: bold;
   font-family: "Cinzel";
+  font-size: 0.8em;
 }
 .req-name {
   font-weight: bold;
   color: var(--text-ink);
+  font-size: 0.9em;
 }
 .req-actions {
   display: flex;
   gap: 5px;
 }
 .btn-seal {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 1px solid;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9em;
+  font-size: 0.8em;
   transition: 0.2s;
 }
 .btn-seal.success {
@@ -529,57 +552,45 @@ const scrollToBottom = () => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-/* --- FRIENDS LIST --- */
+/* --- FRIENDS LIST (Scrollable Panel) --- */
 .friends-panel {
   border-radius: 4px;
   overflow: hidden;
   
-  /* CŨ: height: 500px; -> Gây tràn màn hình */
-  
-  /* MỚI: Tự động tính toán chiều cao */
-  /* Lấy 100% chiều cao màn hình TRỪ đi khoảng 300px (Header + Search + Padding) */
-  height: calc(100vh - 300px); 
-  
-  /* Đảm bảo khung không bị quá nhỏ trên màn hình thấp */
-  min-height: 300px; 
-  
+  /* Flex 1 để chiếm hết phần còn lại */
+  flex: 1; 
   display: flex;
   flex-direction: column;
-  
-  /* Thêm margin bottom để không dính sát đáy nếu có nội dung khác */
-  margin-bottom: 20px; 
 }
 .panel-header {
   background: var(--wood-dark);
-  padding: 15px;
+  padding: 10px 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid var(--wood-light);
+  flex-shrink: 0;
 }
 .panel-header h3 {
   color: var(--gold-accent);
   margin: 0;
   font-family: "Cinzel";
-  font-size: 1.1em;
+  font-size: 1em;
 }
 .count-badge {
   background: var(--wood-light);
   color: #d7ccc8;
   padding: 2px 8px;
-  font-size: 0.8em;
+  font-size: 0.75em;
   border-radius: 4px;
   font-weight: bold;
 }
 .friend-list {
   padding: 15px;
-  
-  /* Quan trọng: Flex 1 để chiếm hết phần còn lại trong .friends-panel */
+  /* Flex 1 để danh sách giãn hết khung panel */
   flex: 1; 
-  
-  /* Quan trọng: Chỉ cuộn khu vực danh sách này, không cuộn cả trang */
+  /* Scroll chỉ xuất hiện ở đây */
   overflow-y: auto; 
-  
   background: rgba(0, 0, 0, 0.3);
 }
 .empty-state {
@@ -600,8 +611,8 @@ const scrollToBottom = () => {
   justify-content: space-between;
   align-items: center;
   background: #3e2723;
-  margin-bottom: 10px;
-  padding: 10px 15px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
   border: 1px solid #5d4037;
   border-radius: 4px;
   transition: 0.2s;
@@ -614,11 +625,11 @@ const scrollToBottom = () => {
 .slot-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 .avatar-frame {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   background: #1a1510;
   border: 2px solid #8d6e63;
   border-radius: 50%;
@@ -629,10 +640,11 @@ const scrollToBottom = () => {
   font-weight: bold;
   font-family: "Cinzel";
   position: relative;
+  font-size: 0.9em;
 }
 .status-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   background: #2e7d32;
   border-radius: 50%;
   position: absolute;
@@ -642,11 +654,12 @@ const scrollToBottom = () => {
 }
 .slot-name {
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1em;
   color: #fdf5e6;
+  display: block;
 }
 .slot-status {
-  font-size: 0.8em;
+  font-size: 0.75em;
   color: #a1887f;
   font-style: italic;
 }
@@ -654,10 +667,10 @@ const scrollToBottom = () => {
   background: transparent;
   border: 1px solid #8d6e63;
   color: #bcaaa4;
-  padding: 6px 12px;
+  padding: 5px 10px;
   cursor: pointer;
   margin-left: 5px;
-  font-size: 0.8em;
+  font-size: 0.75em;
   transition: 0.2s;
   font-family: "Cinzel";
   font-weight: bold;
@@ -677,13 +690,13 @@ const scrollToBottom = () => {
   border-color: #ff8a80;
 }
 
-/* --- CHAT MODAL (ANCIENT STYLE) --- */
+/* --- CHAT MODAL (Nổi lên trên tất cả) --- */
 .ancient-chat-window {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 360px;
-  height: 500px;
+  width: 320px;
+  height: 450px;
   background: var(--paper-bg);
   border: 4px double var(--wood-dark);
   display: flex;
@@ -694,7 +707,7 @@ const scrollToBottom = () => {
 
 .chat-header {
   background: var(--wood-dark);
-  padding: 10px;
+  padding: 8px 12px;
   border-bottom: 2px solid var(--gold-accent);
   display: flex;
   align-items: center;
@@ -704,7 +717,7 @@ const scrollToBottom = () => {
 }
 .target-info {
   font-family: "Cinzel";
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: #d7ccc8;
 }
 .target-name {
@@ -724,10 +737,10 @@ const scrollToBottom = () => {
   color: #ef5350;
 }
 
-/* --- CHAT STREAM (NỀN KHUNG CHAT MỚI) --- */
+/* --- CHAT STREAM --- */
 .chat-stream {
   flex: 1;
-  padding: 20px 15px;
+  padding: 15px;
   overflow-y: auto;
   background-color: #fdf5e6;
   background-image: linear-gradient(
@@ -737,9 +750,8 @@ const scrollToBottom = () => {
   background-size: 100% 2rem;
 }
 
-/* Dòng tin nhắn */
 .msg-row {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   display: flex;
   align-items: flex-end;
 }
@@ -747,19 +759,17 @@ const scrollToBottom = () => {
   justify-content: flex-end;
 }
 
-/* Nội dung tin nhắn (Bong bóng) */
 .msg-content {
   position: relative;
-  padding: 10px 16px;
+  padding: 8px 12px;
   max-width: 85%;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.4;
   font-family: "Merriweather", serif;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
   word-wrap: break-word;
 }
 
-/* Style cho BẰNG HỮU (Tin đến) */
 .msg-row:not(.me) .msg-content {
   background: #ffffff;
   color: #3e2723;
@@ -767,7 +777,6 @@ const scrollToBottom = () => {
   border-radius: 12px 12px 12px 2px;
   margin-left: 5px;
 }
-/* Đuôi tin nhắn đến */
 .msg-row:not(.me) .msg-content::before {
   content: "";
   position: absolute;
@@ -791,7 +800,6 @@ const scrollToBottom = () => {
   border-color: transparent #ffffff transparent transparent;
 }
 
-/* Style cho BẢN THÂN (Tin đi) */
 .msg-row.me .msg-content {
   background: #fff3e0;
   color: #bf360c;
@@ -800,7 +808,6 @@ const scrollToBottom = () => {
   margin-right: 5px;
   font-weight: 500;
 }
-/* Đuôi tin nhắn đi */
 .msg-row.me .msg-content::before {
   content: "";
   position: absolute;
@@ -833,7 +840,7 @@ const scrollToBottom = () => {
 }
 
 .chat-input-zone {
-  padding: 10px;
+  padding: 8px;
   border-top: 2px solid var(--wood-light);
   display: flex;
   gap: 8px;
@@ -841,7 +848,7 @@ const scrollToBottom = () => {
   background: #efebe9;
 }
 .brush-icon {
-  font-size: 1.2em;
+  font-size: 1.1em;
   color: var(--wood-dark);
 }
 .input-scroll {
@@ -850,26 +857,28 @@ const scrollToBottom = () => {
   border: none;
   border-bottom: 1px solid #8d6e63;
   color: var(--text-ink);
-  padding: 5px;
+  padding: 4px;
   font-family: "Playfair Display";
   font-weight: bold;
   outline: none;
+  font-size: 0.9em;
 }
 .btn-send {
   background: var(--red-seal);
   color: #fff;
   border: 1px solid #b71c1c;
-  padding: 5px 12px;
+  padding: 4px 10px;
   font-weight: bold;
   cursor: pointer;
   font-family: "Cinzel";
   border-radius: 4px;
+  font-size: 0.8em;
 }
 .btn-send:hover {
   background: #d32f2f;
 }
 
-/* Scrollbar & Animation */
+/* Animations & Responsive */
 .custom-scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -895,15 +904,21 @@ const scrollToBottom = () => {
   opacity: 0;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .search-box-wrapper {
     flex-direction: column;
-    padding: 15px;
+    padding: 10px;
   }
   .btn-connect {
     width: 100%;
     justify-content: center;
+  }
+  .ancient-chat-window {
+    width: 100%;
+    height: 60vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 10px 10px 0 0;
   }
 }
 </style>

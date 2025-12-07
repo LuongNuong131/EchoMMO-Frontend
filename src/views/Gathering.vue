@@ -73,10 +73,10 @@
           </button>
 
           <button class="btn-gather secondary" @click="handleGatherAll"
-            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 10">
+            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1">
             <div class="btn-content">
-              <span class="btn-title">AUTO (MAX)</span>
-              <span class="btn-sub">Tiêu hao 10 ⚡</span>
+              <span class="btn-title">AUTO (MAX 10)</span>
+              <span class="btn-sub">Gom nhanh</span>
             </div>
           </button>
         </div>
@@ -104,17 +104,15 @@ import { useCharacterStore } from '@/stores/characterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
-// Import Assets (Dùng tài nguyên có sẵn trong project của bạn)
-import copperNodeImg from '@/assets/resources/r_copper_node.png'; // Quặng
-import woodNodeImg from '@/assets/resources/r_go.png';           // Gỗ
-import stoneNodeImg from '@/assets/resources/stone_1.png';       // Đá
-import mysteryNodeImg from '@/assets/resources/r_gohoathach.png'; // Hóa thạch (Sự kiện hiếm)
+import copperNodeImg from '@/assets/resources/r_copper_node.png';
+import woodNodeImg from '@/assets/resources/r_go.png';
+import stoneNodeImg from '@/assets/resources/stone_1.png';
+import mysteryNodeImg from '@/assets/resources/r_gohoathach.png';
 
 const charStore = useCharacterStore();
 const authStore = useAuthStore();
 const router = useRouter();
 
-// --- STATE ---
 const currentEvent = ref(null);
 const remainingNode = ref(0);
 const maxNode = ref(0);
@@ -122,118 +120,99 @@ const isGathering = ref(false);
 const feedbackMsg = ref("");
 const floatingLoots = ref([]);
 
-// Mock dữ liệu người chơi (Sẽ thay bằng data thật từ store)
 const playerLevel = computed(() => charStore.character?.lv || 1);
-const hasTool = ref(true); // Tạm thời mặc định có tool
+const hasTool = ref(true);
 
-// --- DATA CẤU HÌNH SỰ KIỆN ---
+// [CẬP NHẬT] Tăng trữ lượng lên 10 - 25 để phù hợp cày cuốc
 const EVENT_TYPES = [
   {
-    id: 'mining',
-    name: 'Mỏ Đồng Lộ Thiên',
-    image: copperNodeImg,
-    rarityClass: 'common',
-    rarityText: 'Phổ Thông',
-    reqLevel: 1,
-    reqTool: 'Cuốc Chim',
-    minYield: 5, maxYield: 15,
-    lootName: 'Quặng Đồng'
+    id: 'mining', name: 'Mỏ Đồng Lộ Thiên', image: copperNodeImg,
+    rarityClass: 'common', rarityText: 'Phổ Thông',
+    reqLevel: 1, reqTool: 'Cuốc Chim',
+    minYield: 10, maxYield: 20, lootName: 'Quặng Đồng'
   },
   {
-    id: 'wood',
-    name: 'Cây Sồi Cổ Thụ',
-    image: woodNodeImg,
-    rarityClass: 'common',
-    rarityText: 'Phổ Thông',
-    reqLevel: 1,
-    reqTool: 'Rìu Sắt',
-    minYield: 10, maxYield: 25,
-    lootName: 'Gỗ Sồi'
+    id: 'wood', name: 'Cây Sồi Cổ Thụ', image: woodNodeImg,
+    rarityClass: 'common', rarityText: 'Phổ Thông',
+    reqLevel: 1, reqTool: 'Rìu Sắt',
+    minYield: 15, maxYield: 25, lootName: 'Gỗ Sồi'
   },
   {
-    id: 'stone',
-    name: 'Tảng Đá Khổng Lồ',
-    image: stoneNodeImg,
-    rarityClass: 'common',
-    rarityText: 'Phổ Thông',
-    reqLevel: 1,
-    reqTool: 'Búa Tạ',
-    minYield: 8, maxYield: 20,
-    lootName: 'Đá Tảng'
+    id: 'stone', name: 'Tảng Đá Khổng Lồ', image: stoneNodeImg,
+    rarityClass: 'common', rarityText: 'Phổ Thông',
+    reqLevel: 1, reqTool: 'Búa Tạ',
+    minYield: 10, maxYield: 20, lootName: 'Đá Tảng'
   },
   {
-    id: 'special',
-    name: 'Gỗ Hóa Thạch',
-    image: mysteryNodeImg,
-    rarityClass: 'epic',
-    rarityText: 'Cực Phẩm',
-    reqLevel: 5,
-    reqTool: 'Găng Tay',
-    minYield: 2, maxYield: 5,
-    lootName: 'Mảnh Hóa Thạch'
+    id: 'special', name: 'Gỗ Hóa Thạch', image: mysteryNodeImg,
+    rarityClass: 'epic', rarityText: 'Cực Phẩm',
+    reqLevel: 5, reqTool: 'Găng Tay',
+    minYield: 3, maxYield: 8, lootName: 'Mảnh Hóa Thạch' // Hiếm thì ít hơn chút
   }
 ];
 
-// --- LOGIC ---
-
 const initEvent = () => {
-  // Random 1 trong 4 sự kiện
   const rnd = Math.floor(Math.random() * EVENT_TYPES.length);
   const evt = EVENT_TYPES[rnd];
-
   currentEvent.value = evt;
 
-  // Random trữ lượng
+  // Random số lượng tài nguyên
   const amount = Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) + evt.minYield;
   maxNode.value = amount;
   remainingNode.value = amount;
-  feedbackMsg.value = "Bạn phát hiện một nguồn tài nguyên!";
+  feedbackMsg.value = "Bạn phát hiện một nguồn tài nguyên dồi dào!";
 };
 
 const handleGather = async (times) => {
   if (isGathering.value) return;
 
-  const cost = times; // 1 lần tốn 1 energy
+  const cost = times;
   if ((charStore.character?.energy || 0) < cost) {
     feedbackMsg.value = "⚠️ Không đủ năng lượng!";
     return;
   }
 
   isGathering.value = true;
-  feedbackMsg.value = "Đang khai thác...";
+  feedbackMsg.value = times > 1 ? "Đang khai thác liên tục..." : "Đang khai thác...";
 
-  // Giả lập delay
+  // Thời gian khai thác: Nhiều thì lâu hơn chút
+  const delay = times > 1 ? 800 : 500;
+
   setTimeout(() => {
-    // Tính toán số lượng lấy được (không vượt quá trữ lượng còn lại)
+    // Đảm bảo không lấy quá số còn lại
     const actualGathered = Math.min(times, remainingNode.value);
 
-    // Trừ trữ lượng
     remainingNode.value -= actualGathered;
 
-    // Trừ năng lượng (Client side mock)
     if (charStore.character) charStore.character.energy -= actualGathered;
 
     if (actualGathered > 0) {
       showFloatingText(`+${actualGathered} ${currentEvent.value.lootName}`);
-      feedbackMsg.value = `Thu hoạch: ${actualGathered} ${currentEvent.value.lootName}`;
+      feedbackMsg.value = `Thu hoạch thành công: ${actualGathered} ${currentEvent.value.lootName}`;
     }
 
     if (remainingNode.value <= 0) {
       feedbackMsg.value = "Tài nguyên đã cạn kiệt!";
       setTimeout(() => {
-        // Tự động quay về sau 2s khi hết
-        // router.push('/explore'); 
-      }, 2000);
+        router.push('/explore');
+      }, 1500);
     }
 
     isGathering.value = false;
-  }, 600); // 0.6s animation
+  }, delay);
 };
 
+// [UPDATE] Auto Gather: Lấy tối đa 10 cái hoặc hết số còn lại
 const handleGatherAll = () => {
-  // Logic Auto: Lấy tối đa 10 hoặc số lượng còn lại
-  const maxCanTake = Math.min(10, remainingNode.value);
-  handleGather(maxCanTake);
+  const currentEnergy = charStore.character?.energy || 0;
+  // Lấy max 10, hoặc số còn lại, hoặc số energy đang có
+  const times = Math.min(10, remainingNode.value, currentEnergy);
+
+  if (times > 0) {
+    handleGather(times);
+  } else {
+    feedbackMsg.value = "⚠️ Năng lượng không đủ!";
+  }
 };
 
 const showFloatingText = (text) => {
@@ -294,7 +273,6 @@ onMounted(() => {
   color: white;
 }
 
-/* CARD CHÍNH */
 .gathering-card {
   width: 100%;
   max-width: 500px;
@@ -308,7 +286,6 @@ onMounted(() => {
   gap: 20px;
 }
 
-/* HEADER EVENT */
 .event-header {
   text-align: center;
 }
@@ -385,7 +362,6 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* STATUS SECTION */
 .status-section {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
@@ -433,7 +409,6 @@ onMounted(() => {
   color: #ef5350;
 }
 
-/* PROGRESS */
 .progress-section {
   margin-top: 5px;
 }
@@ -460,7 +435,6 @@ onMounted(() => {
   transition: width 0.3s ease;
 }
 
-/* ACTIONS */
 .action-section {
   margin-top: 10px;
   text-align: center;
@@ -541,7 +515,6 @@ onMounted(() => {
   animation: fadeIn 0.3s;
 }
 
-/* FLOATING LOOT */
 .floating-container {
   position: absolute;
   top: 40%;
@@ -561,7 +534,6 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
-/* ANIMATIONS */
 @keyframes shake {
   0% {
     transform: rotate(0deg);
@@ -616,7 +588,5 @@ onMounted(() => {
   .buttons-grid {
     grid-template-columns: 1fr;
   }
-
-  /* Nút dọc trên mobile */
 }
 </style>
