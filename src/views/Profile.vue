@@ -82,10 +82,7 @@ const previewState = ref('idle');
 const newName = ref("");
 let animInterval = null;
 
-<<<<<<< HEAD
 // [AUTO ANIMATION] Chu trình: Đứng -> Chạy -> Đánh
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 const animCycle = ['idle', 'run', 'attack'];
 let animIndex = 0;
 
@@ -96,10 +93,7 @@ const previewImage = computed(() => {
 
 const selectSkin = (id) => {
   selectedSkinId.value = id;
-<<<<<<< HEAD
   // Reset về idle khi chọn con mới
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   animIndex = 0;
   previewState.value = 'idle';
 };
@@ -129,10 +123,7 @@ onMounted(() => {
   charStore.fetchCharacter();
   selectedSkinId.value = currentSkinId.value;
 
-<<<<<<< HEAD
   // [TIMER] Đổi hành động mỗi 2 giây
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   animInterval = setInterval(() => {
     animIndex = (animIndex + 1) % animCycle.length;
     previewState.value = animCycle[animIndex];
@@ -225,18 +216,10 @@ onUnmounted(() => {
   background: #3e2723;
 }
 
-<<<<<<< HEAD
 /* Active state: Bỏ viền vàng, dùng nền sáng hơn */
 .skin-card.active {
   background: #4e342e;
   border-color: #8d6e63;
-=======
-/* [UPDATE] Active state: Bỏ viền vàng, dùng nền sáng hơn */
-.skin-card.active {
-  background: #4e342e;
-  border-color: #8d6e63;
-  /* Màu gỗ nhạt hơn, không phải vàng */
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -313,14 +296,9 @@ onUnmounted(() => {
   transition: 0.3s ease;
 }
 
-<<<<<<< HEAD
 /* Animation classes if needed */
 .actor-img.attack {
   transform: scale(2.2);
-=======
-.actor-img.attack {
-  transform: scale(2.2) translateX(10px);
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 }
 
 .platform {

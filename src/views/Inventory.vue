@@ -1,289 +1,112 @@
 <template>
-  <div class="page-container inventory-bay ancient-theme">
-    <div class="bay-grid">
-      <div class="character-panel paper-texture">
-        <div class="panel-ornament top-left"></div>
-        <div class="panel-ornament top-right"></div>
-        <div class="panel-ornament bot-left"></div>
-        <div class="panel-ornament bot-right"></div>
-
-        <div class="equip-layout">
-          <div class="center-avatar-platform">
-            <div class="aura-ring outer"></div>
-            <div class="aura-ring inner"></div>
-
-            <div class="char-avatar-img">
-              <img
-                v-if="
-                  authStore.user?.avatarUrl &&
-                  authStore.user.avatarUrl.startsWith('http')
-                "
-                :src="authStore.user.avatarUrl"
-                class="real-avatar"
-              />
-              <span v-else class="fallback-char">{{
-                (charStore.character?.name || "H").charAt(0)
-              }}</span>
-            </div>
-
-            <div class="base-plate"></div>
-          </div>
-
-          <div
-            class="wood-slot helmet"
-            @click="unequip('HELMET')"
-            :class="{ filled: equipment.HELMET }"
+  <div class="page-container inventory-bay ancient-theme simplified-layout">
+    <div class="bag-section wood-border full-width">
+      <div class="bag-header">
+        <div class="tab-group">
+          <button
+            :class="{ active: filter === 'ALL' }"
+            @click="filter = 'ALL'"
           >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.HELMET"
-                :src="equipment.HELMET.item.imageUrl"
-              />
-              <i v-else class="fas fa-hard-hat placeholder"></i>
-              <div class="glow-effect" v-if="equipment.HELMET"></div>
-            </div>
-            <div class="slot-label-tag">MŨ</div>
-          </div>
-
-          <div
-            class="wood-slot weapon"
-            @click="unequip('WEAPON')"
-            :class="{ filled: equipment.WEAPON }"
+            TẤT CẢ
+          </button>
+          <button
+            :class="{ active: filter === 'EQUIP' }"
+            @click="filter = 'EQUIP'"
           >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.WEAPON"
-                :src="equipment.WEAPON.item.imageUrl"
-              />
-              <i v-else class="fas fa-khanda placeholder"></i>
-              <div class="glow-effect" v-if="equipment.WEAPON"></div>
-            </div>
-            <div class="slot-label-tag">BINH KHÍ</div>
-          </div>
-
-          <div
-            class="wood-slot armor"
-            @click="unequip('ARMOR')"
-            :class="{ filled: equipment.ARMOR }"
+            TRANG BỊ
+          </button>
+          <button
+            :class="{ active: filter === 'MAT' }"
+            @click="filter = 'MAT'"
           >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.ARMOR"
-                :src="equipment.ARMOR.item.imageUrl"
-              />
-              <i v-else class="fas fa-shield-alt placeholder"></i>
-              <div class="glow-effect" v-if="equipment.ARMOR"></div>
-            </div>
-            <div class="slot-label-tag">Y PHỤC</div>
-          </div>
-
-          <div
-            class="wood-slot boots"
-            @click="unequip('BOOTS')"
-            :class="{ filled: equipment.BOOTS }"
-          >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.BOOTS"
-                :src="equipment.BOOTS.item.imageUrl"
-              />
-              <i v-else class="fas fa-shoe-prints placeholder"></i>
-              <div class="glow-effect" v-if="equipment.BOOTS"></div>
-            </div>
-            <div class="slot-label-tag">GIÀY</div>
-          </div>
-<<<<<<< HEAD
-          
-          <div
-            class="wood-slot necklace"
-            @click="unequip('NECKLACE')"
-            :class="{ filled: equipment.NECKLACE }"
-          >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.NECKLACE"
-                :src="equipment.NECKLACE.item.imageUrl"
-              />
-              <i v-else class="fas fa-gem placeholder"></i>
-              <div class="glow-effect" v-if="equipment.NECKLACE"></div>
-            </div>
-            <div class="slot-label-tag">DÂY CHUYỀN</div>
-          </div>
-
-          <div
-            class="wood-slot ring"
-            @click="unequip('RING')"
-            :class="{ filled: equipment.RING }"
-          >
-            <div class="slot-frame">
-              <img
-                v-if="equipment.RING"
-                :src="equipment.RING.item.imageUrl"
-              />
-              <i v-else class="fas fa-ring placeholder"></i>
-              <div class="glow-effect" v-if="equipment.RING"></div>
-            </div>
-            <div class="slot-label-tag">NHẪN</div>
-          </div>
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
-
-          <svg class="connection-lines" viewBox="0 0 400 400">
-            <line x1="200" y1="60" x2="60" y2="200" class="connector" />
-            <line x1="200" y1="60" x2="340" y2="200" class="connector" />
-            <line x1="200" y1="340" x2="60" y2="200" class="connector" />
-            <line x1="200" y1="340" x2="340" y2="200" class="connector" />
-<<<<<<< HEAD
-            
-            <line x1="130" y1="200" x2="270" y2="200" class="connector" />
-            <line x1="200" y1="130" x2="200" y2="270" class="connector" />
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
-          </svg>
+            VẬT PHẨM
+          </button>
         </div>
+        <div class="capacity">
+          TÚI: {{ inventoryStore.items.length }} / 50
+        </div>
+      </div>
 
-        <div class="stats-scroll">
-          <div class="stat-header">
-            <span class="ornament">❖</span> CHỈ SỐ
-            <span class="ornament">❖</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">CÔNG LỰC</span>
-            <div class="bar-track">
-              <div
-                class="bar-fill red"
-                :style="{
-                  width:
-                    Math.min((charStore.character?.atk / 200) * 100, 100) + '%',
-                }"
-              ></div>
-            </div>
-            <span class="stat-num">{{ charStore.character?.atk }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">PHÒNG THỦ</span>
-            <div class="bar-track">
-              <div
-                class="bar-fill blue"
-                :style="{
-                  width:
-                    Math.min((charStore.character?.def / 200) * 100, 100) + '%',
-                }"
-              ></div>
-            </div>
-            <span class="stat-num">{{ charStore.character?.def }}</span>
+      <div class="grid-container custom-scroll">
+        <div
+          v-for="u in filteredItems"
+          :key="u.userItemId"
+          class="grid-item"
+          @click="selectedItem = u"
+          :class="[
+            'rarity-' + u.item.rarity,
+            {
+              selected: selectedItem?.userItemId === u.userItemId,
+              equipped: u.isEquipped,
+            },
+          ]"
+        >
+          <img :src="u.item.imageUrl" class="item-thumb" />
+          <div class="qty-badge" v-if="u.quantity > 1">x{{ u.quantity }}</div>
+          <div class="equip-badge" v-if="u.isEquipped">
+            <i class="fas fa-shield-alt"></i>
           </div>
         </div>
       </div>
 
-      <div class="bag-section wood-border">
-        <div class="bag-header">
-          <div class="tab-group">
-            <button
-              :class="{ active: filter === 'ALL' }"
-              @click="filter = 'ALL'"
-            >
-              TẤT CẢ
-            </button>
-            <button
-              :class="{ active: filter === 'EQUIP' }"
-              @click="filter = 'EQUIP'"
-            >
-              TRANG BỊ
-            </button>
-            <button
-              :class="{ active: filter === 'MAT' }"
-              @click="filter = 'MAT'"
-            >
-              VẬT PHẨM
-            </button>
+      <transition name="fade">
+        <div v-if="selectedItem" class="detail-panel paper-texture">
+          <div class="detail-header">
+            <h3 :class="'text-rarity-' + selectedItem.item.rarity">
+              {{ selectedItem.item.name }}
+            </h3>
+            <span class="type-seal">{{
+              translateType(selectedItem.item.type)
+            }}</span>
           </div>
-          <div class="capacity">
-            TÚI: {{ inventoryStore.items.length }} / 50
-          </div>
-        </div>
-
-        <div class="grid-container custom-scroll">
-          <div
-            v-for="u in filteredItems"
-            :key="u.userItemId"
-            class="grid-item"
-            @click="selectedItem = u"
-            :class="[
-              'rarity-' + u.item.rarity,
-              {
-                selected: selectedItem?.userItemId === u.userItemId,
-                equipped: u.isEquipped,
-              },
-            ]"
-          >
-            <img :src="u.item.imageUrl" class="item-thumb" />
-            <div class="qty-badge" v-if="u.quantity > 1">x{{ u.quantity }}</div>
-            <div class="equip-badge" v-if="u.isEquipped">
-              <i class="fas fa-shield-alt"></i>
+          <div class="detail-stats">
+            <div v-if="selectedItem.item.atkBonus" class="stat-tag atk">
+              +{{ selectedItem.item.atkBonus }} CÔNG
+            </div>
+            <div v-if="selectedItem.item.defBonus" class="stat-tag def">
+              +{{ selectedItem.item.defBonus }} THỦ
+            </div>
+            <div v-if="selectedItem.item.hpBonus" class="stat-tag hp">
+              +{{ selectedItem.item.hpBonus }} HP
             </div>
           </div>
-        </div>
-
-        <transition name="fade">
-          <div v-if="selectedItem" class="detail-panel paper-texture">
-            <div class="detail-header">
-              <h3 :class="'text-rarity-' + selectedItem.item.rarity">
-                {{ selectedItem.item.name }}
-              </h3>
-              <span class="type-seal">{{
-                translateType(selectedItem.item.type)
-              }}</span>
-            </div>
-            <div class="detail-stats">
-              <div v-if="selectedItem.item.atkBonus" class="stat-tag atk">
-                +{{ selectedItem.item.atkBonus }} CÔNG
-              </div>
-              <div v-if="selectedItem.item.defBonus" class="stat-tag def">
-                +{{ selectedItem.item.defBonus }} THỦ
-              </div>
-              <div v-if="selectedItem.item.hpBonus" class="stat-tag hp">
-                +{{ selectedItem.item.hpBonus }} HP
-              </div>
-            </div>
-            <p class="desc">
-              {{ selectedItem.item.description || "Chưa có thông tin mô tả." }}
-            </p>
-            <div class="action-row">
-              <button
-                v-if="selectedItem.item.type === 'CONSUMABLE'"
-                @click="inventoryStore.useItem(selectedItem.userItemId)"
-                class="btn-wood use"
-              >
-                SỬ DỤNG
-              </button>
-              <template v-if="canEquip(selectedItem)">
-                <button
-                  v-if="!selectedItem.isEquipped"
-                  @click="inventoryStore.equipItem(selectedItem.userItemId)"
-                  class="btn-wood equip"
-                >
-                  TRANG BỊ
-                </button>
-                <button
-                  v-else
-                  @click="inventoryStore.unequipItem(selectedItem.userItemId)"
-                  class="btn-wood unequip"
-                >
-                  THÁO RA
-                </button>
-              </template>
+          <p class="desc">
+            {{ selectedItem.item.description || "Chưa có thông tin mô tả." }}
+          </p>
+          <div class="action-row">
+            <button
+              v-if="selectedItem.item.type === 'CONSUMABLE'"
+              @click="inventoryStore.useItem(selectedItem.userItemId)"
+              class="btn-wood use"
+            >
+              SỬ DỤNG
+            </button>
+            <template v-if="canEquip(selectedItem)">
               <button
                 v-if="!selectedItem.isEquipped"
-                @click="openSellModal(selectedItem)"
-                class="btn-wood sell"
+                @click="inventoryStore.equipItem(selectedItem.userItemId)"
+                class="btn-wood equip"
               >
-                BÁN
+                TRANG BỊ
               </button>
-            </div>
+              <button
+                v-else
+                @click="inventoryStore.unequipItem(selectedItem.userItemId)"
+                class="btn-wood unequip"
+              >
+                THÁO RA
+              </button>
+            </template>
+            <button
+              v-if="!selectedItem.isEquipped"
+              @click="openSellModal(selectedItem)"
+              class="btn-wood sell"
+            >
+              BÁN
+            </button>
           </div>
-        </transition>
-      </div>
+        </div>
+      </transition>
     </div>
 
     <div v-if="showSell" class="ancient-modal-overlay">
@@ -350,6 +173,11 @@
   </div>
 </template>
 
+---
+
+### 2. Script (JavaScript/Composition API)
+
+```javascript
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useInventoryStore } from "../stores/inventoryStore";
@@ -364,9 +192,8 @@ const marketStore = useMarketStore();
 
 const filter = ref("ALL");
 const selectedItem = ref(null);
-const equipment = computed(() => inventoryStore.equippedItems);
+const equipment = computed(() => inventoryStore.equippedItems); 
 
-<<<<<<< HEAD
 // Định nghĩa các loại Item có thể trang bị
 const EQUIP_TYPES = ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"];
 // Định nghĩa các loại Item không thể trang bị (Vật phẩm/Nguyên liệu)
@@ -385,20 +212,6 @@ const filteredItems = computed(() => {
     items = items.filter((i) => MATERIAL_TYPES.includes(i.item.type));
   }
   
-=======
-const filteredItems = computed(() => {
-  let items = inventoryStore.items;
-  if (filter.value === "EQUIP")
-    items = items.filter((i) =>
-      ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"].includes(
-        i.item.type
-      )
-    );
-  if (filter.value === "MAT")
-    items = items.filter((i) =>
-      ["MATERIAL", "CONSUMABLE"].includes(i.item.type)
-    );
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   return items;
 });
 
@@ -429,14 +242,8 @@ const confirmP2P = async () => {
   selectedItem.value = null;
 };
 
-<<<<<<< HEAD
 const canEquip = (u) => EQUIP_TYPES.includes(u.item.type);
-=======
-const canEquip = (u) =>
-  ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"].includes(
-    u.item.type
-  );
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
+
 const unequip = (slot) => {
   if (equipment.value[slot])
     inventoryStore.unequipItem(equipment.value[slot].userItemId);
@@ -448,11 +255,8 @@ const translateType = (type) => {
     ARMOR: "Y Phục",
     HELMET: "Mũ",
     BOOTS: "Giày",
-<<<<<<< HEAD
     RING: "Nhẫn",
     NECKLACE: "Dây Chuyền",
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
     CONSUMABLE: "Tiêu Hao",
     MATERIAL: "Nguyên Liệu",
   };
@@ -465,6 +269,11 @@ onMounted(() => {
 });
 </script>
 
+---
+
+### 3. Style (CSS)
+
+```css
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&display=swap");
 
@@ -484,310 +293,22 @@ onMounted(() => {
   font-family: "Playfair Display", serif;
   color: var(--text-ink);
   overflow: hidden;
+  padding: 0;
+  margin: 0;
 }
 
-.bay-grid {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  height: calc(100vh - 60px);
-  margin-top: 60px;
-}
-
-.paper-texture {
-  background-color: var(--paper-bg);
-  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
-}
-
-/* --- LEFT COL: CHARACTER --- */
-.character-panel {
-  position: relative;
-  border-right: 6px solid var(--wood-light);
+/* KHỐI CHÍNH: Túi đồ chiếm toàn bộ màn hình */
+.bag-section.full-width {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  border: none;
   padding: 20px;
-  background-color: #261815;
-  background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
-  color: #d7ccc8;
-}
-
-/* --- TRUNG TÂM: AVATAR & EQUIP --- */
-.equip-layout {
-  position: relative;
-  width: 400px;
-  height: 400px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-/* 1. AVATAR CENTER */
-.center-avatar-platform {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.char-avatar-img {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 4px solid var(--gold-accent);
-  background: #1a1510;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(251, 192, 45, 0.5);
-  position: relative;
-  z-index: 2;
-}
-.real-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.fallback-char {
-  font-size: 3.5em;
-  color: #fdf5e6;
-}
-
-/* Hào quang */
-.aura-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px dashed rgba(251, 192, 45, 0.4);
-}
-.aura-ring.inner {
-  width: 130px;
-  height: 130px;
-  animation: spinRight 12s linear infinite;
-}
-.aura-ring.outer {
-  width: 160px;
-  height: 160px;
-  border: 1px solid rgba(251, 192, 45, 0.2);
-  animation: spinLeft 20s linear infinite;
-}
-
-@keyframes spinRight {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes spinLeft {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
-/* 2. EQUIP SLOTS (POSITIONING) */
-.wood-slot {
-  position: absolute;
-  width: 70px;
-  height: 80px; /* Slot hình chữ nhật đứng cho giống thẻ bài */
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 20;
-}
-.wood-slot:hover {
-  transform: scale(1.1);
-  z-index: 30;
-}
-
-.slot-frame {
-  width: 60px;
-  height: 60px;
-  background: #3e2723;
-  border: 2px solid #8d6e63;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-  position: relative;
-  overflow: hidden;
-}
-.wood-slot.filled .slot-frame {
-  border-color: var(--gold-accent);
-  background: #4e342e;
-  box-shadow: 0 0 10px rgba(251, 192, 45, 0.3);
-}
-
-.slot-frame img {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-}
-.placeholder {
-  font-size: 1.5em;
-  color: #5d4037;
-  opacity: 0.5;
-}
-.glow-effect {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 70%
-  );
-  animation: pulseSlot 3s infinite;
-}
-
-.slot-label-tag {
-  margin-top: 5px;
-  background: #1a1510;
-  color: #bcaaa4;
-  font-size: 0.7em;
-  padding: 2px 6px;
-  border: 1px solid #5d4037;
-  border-radius: 4px;
-  font-family: "Cinzel";
-  font-weight: bold;
-}
-
-<<<<<<< HEAD
-/* TỌA ĐỘ 6 Ô */
-=======
-/* TỌA ĐỘ 4 Ô - CÁCH TÂM 120px */
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
-.helmet {
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.boots {
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.weapon {
-  top: 50%;
-  left: 30px;
-  transform: translateY(-50%);
-}
-.armor {
-  top: 50%;
-  right: 30px;
-  transform: translateY(-50%);
-}
-<<<<<<< HEAD
-/* New Slots Positioning */
-.necklace {
-  top: 130px; /* Above Weapon/Armor line */
-  left: 60px;
-  transform: translateY(-50%);
-}
-.ring {
-  top: 130px; /* Above Weapon/Armor line */
-  right: 60px;
-  transform: translateY(-50%);
-}
-
-=======
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
-
-/* ĐƯỜNG NỐI SVG */
-.connection-lines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-.connector {
-  stroke: rgba(141, 110, 99, 0.3);
-  stroke-width: 2;
-  stroke-dasharray: 5, 5;
-}
-
-/* 3. STATS SCROLL */
-.stats-scroll {
-  width: 90%;
-  background: var(--paper-bg);
-  padding: 15px;
-  border: 1px solid #8d6e63;
-  border-radius: 4px;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-  color: var(--text-ink);
-  position: relative;
-}
-.stat-header {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #b71c1c;
-  font-family: "Cinzel";
-}
-.ornament {
-  color: #bcaaa4;
-  margin: 0 5px;
-}
-
-.stat-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-weight: bold;
-  font-family: "Cinzel";
-}
-.stat-name {
-  width: 80px;
-  font-size: 0.8em;
-}
-.bar-track {
-  flex: 1;
-  height: 8px;
-  background: #d7ccc8;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.bar-fill {
-  height: 100%;
-}
-.bar-fill.red {
-  background: #b71c1c;
-}
-.bar-fill.blue {
-  background: #1565c0;
-}
-.stat-num {
-  width: 30px;
-  text-align: right;
-  font-size: 0.9em;
-}
-
-/* --- RIGHT COL: BAG --- */
-.bag-section {
-  display: flex;
-  flex-direction: column;
   background: #3e2723;
   background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
-  padding: 20px;
-  position: relative;
+  height: 100vh;
+  box-sizing: border-box;
 }
+
 .bag-header {
   display: flex;
   justify-content: space-between;
@@ -822,13 +343,14 @@ onMounted(() => {
 .grid-container {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 10px;
   align-content: start;
   overflow-y: auto;
   padding: 5px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
+  min-height: 200px;
 }
 .grid-item {
   aspect-ratio: 1;
@@ -1110,8 +632,4 @@ onMounted(() => {
 .custom-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
 }
-<<<<<<< HEAD
 </style>
-=======
-</style>
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f

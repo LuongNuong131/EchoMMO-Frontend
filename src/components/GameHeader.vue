@@ -2,31 +2,18 @@
   <header class="game-header">
     <div class="header-texture"></div>
     <div class="header-border-bot"></div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
     <div class="spacer"></div>
 
     <div class="hud-container" v-if="authStore.token">
-
       <div class="resource-bank">
         <div class="res-module gold" title="Ngân Lượng">
           <div class="res-icon"><i class="fas fa-coins"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.gold || 0) }}</div>
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
         <div class="res-module jade mobile-hide" title="Linh Thạch">
           <div class="res-icon"><i class="fas fa-gem"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.diamonds || 0) }}</div>
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
         <div class="res-module energy" title="Chân Khí">
           <div class="res-icon"><i class="fas fa-bolt"></i></div>
           <div class="energy-track">
@@ -52,9 +39,7 @@
         </div>
 
         <div class="avatar-frame">
-          <div class="frame-content">
-            <img :src="userSkinAvatar" class="avatar-img" />
-          </div>
+          <img :src="userSkinAvatar" class="pixel-focus" />
         </div>
       </router-link>
     </div>
@@ -72,15 +57,11 @@ const authStore = useAuthStore();
 const charStore = useCharacterStore();
 const notiStore = useNotificationStore();
 
-const userSkinAvatar = computed(() => {
-  const skin = getCurrentSkin(authStore.user?.avatarUrl);
-  return skin.sprites.idle;
-});
+const userSkinAvatar = computed(() => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle);
 
 const xpPercent = computed(() => {
   if (!charStore.character) return 0;
-  const needed = charStore.character.level * 100;
-  return Math.min((charStore.character.currentExp / needed) * 100, 100);
+  return Math.min((charStore.character.currentExp / (charStore.character.level * 100)) * 100, 100);
 });
 
 const energyPercent = computed(() => {
@@ -105,11 +86,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cinzel:wght@700&display=swap");
 
 :root {
   --wood-dark: #3e2723;
-  --wood-light: #5d4037;
   --gold-accent: #fbc02d;
   --red-seal: #b71c1c;
 }
@@ -163,7 +143,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 6px;
 }
 
 .res-icon {
@@ -175,7 +154,6 @@ onMounted(() => {
   font-weight: bold;
   font-size: 0.9em;
   color: #fdf5e6;
-  font-family: "Cinzel", serif;
 }
 
 .res-val.small {
@@ -308,56 +286,33 @@ onMounted(() => {
   transition: width 0.5s;
 }
 
-<<<<<<< HEAD
-/* [CSS MỚI CHO AVATAR] */
+/* [LOGIC MỚI - SMART AVATAR] */
 .avatar-frame {
   width: 56px;
   height: 56px;
-  /* Kích thước to hơn */
-=======
-/* [UPDATE] AVATAR: To hơn, rõ nét hơn, bỏ viền vàng */
-.avatar-frame {
-  width: 56px;
-  height: 56px;
-  /* Tăng kích thước (cũ là 40px) */
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
+  /* Kích thước khung */
   position: relative;
   border-radius: 50%;
   background: #1a1510;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+
+  /* Căn giữa tuyệt đối */
   overflow: hidden;
-<<<<<<< HEAD
-  /* Đã xóa border vàng */
   display: flex;
-  align-items: center;
   justify-content: center;
-=======
-  /* Đã xóa border viền vàng */
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
+  align-items: center;
 }
 
-.frame-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-img {
-<<<<<<< HEAD
-  width: 85%;
-  height: 85%;
+.pixel-focus {
+  /* Lấy từ trung tâm ra */
+  width: 130%;
+  /* Zoom 130% để cắt phần thừa */
+  height: 130%;
   object-fit: contain;
+  object-position: center;
+  /* Luôn lấy tâm */
   image-rendering: pixelated;
-  /* Ảnh nét, không mờ */
-=======
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-  image-rendering: pixelated;
-  /* [QUAN TRỌNG] Giúp ảnh pixel art nét căng khi phóng to */
->>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
+  /* Nét căng */
 }
 
 @media (max-width: 600px) {
