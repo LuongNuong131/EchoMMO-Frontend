@@ -1,108 +1,91 @@
-// src/utils/assetHelper.js
-
 import { reactive } from 'vue';
 
 // ============================================================
-// 1. IMPORT NHÂN VẬT & QUÁI (GIỮ NGUYÊN CŨ)
+// 1. HÀM MAPPING ITEM IMAGE (DYNAMIC VITE URL)
 // ============================================================
-import yasuoIdle from '@/assets/char/idle_yasou.png';
-import yasuoAtk from '@/assets/char/atk_yasou.png';
-import yasuoRun from '@/assets/char/run_yasou.png';
-import demonIdle from '@/assets/char/idle_demon1.png';
-import demonAtk from '@/assets/char/atk_demon1.png';
-import demonRun from '@/assets/char/run_demon1.png';
-import langkhachIdle from '@/assets/char/idle_langkhach1.png';
-import langkhachAtk from '@/assets/char/atk_langkhach1.png';
-import langkhachRun from '@/assets/char/run_langkhach1.png';
-
-import goblinIdle from '@/assets/enemy/idle_goblin.png';
-import skeletonIdle from '@/assets/enemy/idle_skeleton.png';
-import mushroomIdle from '@/assets/enemy/idle_mushroom.png';
-import goblinAtk from '@/assets/enemy/atk_goblin.png';
-import skeletonAtk from '@/assets/enemy/atk_skeleton.png';
-import mushroomAtk from '@/assets/enemy/atk_mushroom.png';
-
-import goldCoin from '@/assets/resources/r_gold_coin.png';
-import woodLog from '@/assets/resources/r_go.png';
-import stoneItem from '@/assets/resources/stone_1.png';
-import copperBar from '@/assets/resources/r_copper_bar.png';
-
-// ============================================================
-// 2. IMPORT TRANG BỊ MỚI (NEW ASSETS)
-// ============================================================
-// Sword
-import sword0 from '@/assets/equipment/sword/s_sword_0.png';
-import sword1 from '@/assets/equipment/sword/s_sword_1.png';
-import sword2 from '@/assets/equipment/sword/s_sword_2.png';
-import sword3 from '@/assets/equipment/sword/s_sword_3.png';
-import sword4 from '@/assets/equipment/sword/s_sword_4.png';
-
-// Armor
-import armor0 from '@/assets/equipment/armor/a_armor_0.png';
-import armor1 from '@/assets/equipment/armor/a_armor_1.png';
-import armor2 from '@/assets/equipment/armor/a_armor_2.png';
-import armor3 from '@/assets/equipment/armor/a_armor_3.png';
-import armor4 from '@/assets/equipment/armor/a_armor_4.png';
-
-// Helmet
-import helmet0 from '@/assets/equipment/helmet/h_helmet_0.png';
-import helmet1 from '@/assets/equipment/helmet/h_helmet_1.png';
-import helmet2 from '@/assets/equipment/helmet/h_helmet_2.png';
-import helmet3 from '@/assets/equipment/helmet/h_helmet_3.png';
-import helmet4 from '@/assets/equipment/helmet/h_helmet_4.png';
-
-// Boots
-import boot0 from '@/assets/equipment/boots/b_boot_0.png';
-import boot1 from '@/assets/equipment/boots/b_boot_1.png';
-import boot2 from '@/assets/equipment/boots/b_boot_2.png';
-import boot3 from '@/assets/equipment/boots/b_boot_3.png';
-import boot4 from '@/assets/equipment/boots/b_boot_4.png';
-
-// Ring
-import ring0 from '@/assets/equipment/ring/ri_ring_0.png';
-import ring1 from '@/assets/equipment/ring/ri_ring_1.png';
-import ring2 from '@/assets/equipment/ring/ri_ring_2.png';
-import ring3 from '@/assets/equipment/ring/ri_ring_3.png';
-import ring4 from '@/assets/equipment/ring/ri_ring_4.png';
-
-// Necklace
-import neck0 from '@/assets/equipment/necklace/n_necklace_0.png';
-import neck1 from '@/assets/equipment/necklace/n_necklace_1.png';
-import neck2 from '@/assets/equipment/necklace/n_necklace_2.png';
-import neck3 from '@/assets/equipment/necklace/n_necklace_3.png';
-import neck4 from '@/assets/equipment/necklace/n_necklace_4.png';
-
-// ============================================================
-// 3. HÀM MAPPING ITEM IMAGE
-// ============================================================
-const itemMap = {
-    // Mapping dựa trên tên file hoặc mã code từ backend
-    's_sword_0': sword0, 's_sword_1': sword1, 's_sword_2': sword2, 's_sword_3': sword3, 's_sword_4': sword4,
-    'a_armor_0': armor0, 'a_armor_1': armor1, 'a_armor_2': armor2, 'a_armor_3': armor3, 'a_armor_4': armor4,
-    'h_helmet_0': helmet0, 'h_helmet_1': helmet1, 'h_helmet_2': helmet2, 'h_helmet_3': helmet3, 'h_helmet_4': helmet4,
-    'b_boot_0': boot0, 'b_boot_1': boot1, 'b_boot_2': boot2, 'b_boot_3': boot3, 'b_boot_4': boot4,
-    'ri_ring_0': ring0, 'ri_ring_1': ring1, 'ri_ring_2': ring2, 'ri_ring_3': ring3, 'ri_ring_4': ring4,
-    'n_neck_0': neck0, 'n_neck_1': neck1, 'n_neck_2': neck2, 'n_neck_3': neck3, 'n_neck_4': neck4,
-
-    // Resource
-    'gold': goldCoin, 'wood': woodLog, 'stone': stoneItem, 'copper': copperBar
-};
 
 export const resolveItemImage = (imgCode) => {
-    if (!imgCode) return copperBar; // Fallback
-    // Nếu imgCode là URL đầy đủ (http...) thì trả về luôn
+    // 1. Fallback nếu null/undefined -> Trả về cục đá hoặc ảnh rỗng
+    if (!imgCode) return new URL('../assets/resources/r_stone_3.png', import.meta.url).href;
+
+    // 2. Nếu là URL online (http) thì trả về luôn
     if (imgCode.startsWith('http')) return imgCode;
-    // Nếu là mã (ví dụ: 's_sword_1') thì lấy từ map
-    return itemMap[imgCode] || copperBar;
+
+    // 3. Xử lý tên file (Quan trọng)
+    let fileName = imgCode.trim();
+
+    // TỰ ĐỘNG THÊM .png NẾU THIẾU (Vì DB lưu 'n_necklace_0')
+    if (!fileName.toLowerCase().endsWith('.png') && !fileName.toLowerCase().endsWith('.jpg')) {
+        fileName += '.png';
+    }
+
+    // Chuyển hết về chữ thường để so sánh cho dễ
+    const lowerName = fileName.toLowerCase();
+
+    try {
+        // --- A. EQUIPMENT (Trang bị) ---
+
+        // Kiếm (s_sword...)
+        if (lowerName.startsWith('s_') || lowerName.includes('sword')) {
+            return new URL(`../assets/equipment/sword/${lowerName}`, import.meta.url).href;
+        }
+        // Áo (a_armor...)
+        if (lowerName.startsWith('a_') || lowerName.includes('armor')) {
+            return new URL(`../assets/equipment/armor/${lowerName}`, import.meta.url).href;
+        }
+        // Mũ (h_helmet..., mu...)
+        if (lowerName.startsWith('h_') || lowerName.startsWith('mu') || lowerName.includes('helmet')) {
+            return new URL(`../assets/equipment/helmet/${lowerName}`, import.meta.url).href;
+        }
+        // Giày (b_boot...)
+        if (lowerName.startsWith('b_') || lowerName.includes('boot')) {
+            return new URL(`../assets/equipment/boots/${lowerName}`, import.meta.url).href;
+        }
+        // Nhẫn (ri_ring...)
+        if (lowerName.startsWith('ri_') || lowerName.includes('ring')) {
+            return new URL(`../assets/equipment/ring/${lowerName}`, import.meta.url).href;
+        }
+        // Dây chuyền (n_necklace...) [CÁI NÍ ĐANG CẦN]
+        if (lowerName.startsWith('n_') || lowerName.includes('neck')) {
+            return new URL(`../assets/equipment/necklace/${lowerName}`, import.meta.url).href;
+        }
+
+        // --- B. RESOURCES (Tài nguyên) ---
+        if (lowerName.startsWith('r_') || lowerName.includes('stone') || lowerName.includes('gold') || lowerName.includes('wood') || lowerName.includes('copper')) {
+            return new URL(`../assets/resources/${lowerName}`, import.meta.url).href;
+        }
+
+        // --- C. MẶC ĐỊNH ---
+        // Thử tìm trong assets gốc nếu không match rule trên
+        return new URL(`../assets/${lowerName}`, import.meta.url).href;
+
+    } catch (e) {
+        // Nếu file không tồn tại thật -> Trả về cục đá (để biết là lỗi chứ không phải là đồng vàng)
+        console.error(`[Asset Error] Không tìm thấy file: ${lowerName}`);
+        return new URL('../assets/resources/r_stone_3.png', import.meta.url).href;
+    }
 };
 
 // ============================================================
-// 4. CẤU HÌNH SKINS (GIỮ NGUYÊN)
+// 2. CHARACTER SKINS & ENEMY & HELPER KHÁC
 // ============================================================
+
+const getCharImg = (name) => new URL(`../assets/char/${name}`, import.meta.url).href;
+const getEnemyImg = (name) => new URL(`../assets/enemy/${name}`, import.meta.url).href;
+
 export const CHARACTER_SKINS = reactive({
-    "skin_yasou": { id: "skin_yasou", name: "Yasuo", description: "Kẻ bất dung thứ.", sprites: { idle: yasuoIdle, run: yasuoRun, attack: yasuoAtk } },
-    "skin_demon": { id: "skin_demon", name: "Huyết Quỷ", description: "Sức mạnh từ bóng tối.", sprites: { idle: demonIdle, run: demonRun, attack: demonAtk } },
-    "skin_langkhach": { id: "skin_langkhach", name: "Lãng Khách", description: "Kiếm khách vô danh.", sprites: { idle: langkhachIdle, run: langkhachRun, attack: langkhachAtk } }
+    "skin_yasou": {
+        id: "skin_yasou", name: "Yasuo", description: "Kẻ bất dung thứ.",
+        sprites: { idle: getCharImg('idle_yasou.png'), run: getCharImg('run_yasou.png'), attack: getCharImg('atk_yasou.png') }
+    },
+    "skin_demon": {
+        id: "skin_demon", name: "Huyết Quỷ", description: "Sức mạnh từ bóng tối.",
+        sprites: { idle: getCharImg('idle_demon1.png'), run: getCharImg('run_demon1.png'), attack: getCharImg('atk_demon1.png') }
+    },
+    "skin_langkhach": {
+        id: "skin_langkhach", name: "Lãng Khách", description: "Kiếm khách vô danh.",
+        sprites: { idle: getCharImg('idle_langkhach1.png'), run: getCharImg('run_langkhach1.png'), attack: getCharImg('atk_langkhach1.png') }
+    }
 });
 
 export const getCurrentSkin = (avatarUrl) => {
@@ -110,12 +93,11 @@ export const getCurrentSkin = (avatarUrl) => {
     return CHARACTER_SKINS["skin_yasou"];
 };
 
-// Helpers cũ giữ nguyên
 const enemyMap = {
-    "Yêu Tinh": { idle: goblinIdle, atk: goblinAtk },
-    "Bộ Xương": { idle: skeletonIdle, atk: skeletonAtk },
-    "Nấm Độc": { idle: mushroomIdle, atk: mushroomAtk },
-    "default": { idle: goblinIdle, atk: goblinAtk }
+    "Yêu Tinh": { idle: getEnemyImg('idle_goblin.png'), atk: getEnemyImg('atk_goblin.png') },
+    "Bộ Xương": { idle: getEnemyImg('idle_skeleton.png'), atk: getEnemyImg('atk_skeleton.png') },
+    "Nấm Độc": { idle: getEnemyImg('idle_mushroom.png'), atk: getEnemyImg('atk_mushroom.png') },
+    "default": { idle: getEnemyImg('idle_goblin.png'), atk: getEnemyImg('atk_goblin.png') }
 };
 
 export const getEnemyImage = (name, state = 'idle') => {
@@ -124,17 +106,15 @@ export const getEnemyImage = (name, state = 'idle') => {
     return state === 'attack' ? target.atk : target.idle;
 };
 
-export const getItemImage = (type) => {
-    switch (type) {
-        case 'GOLD': return goldCoin;
-        case 'WOOD': return woodLog;
-        case 'STONE': return stoneItem;
-        default: return copperBar;
-    }
-};
-
+// Hàm lấy kẻ địch ngẫu nhiên
 export const getRandomEnemyData = () => {
     const keys = Object.keys(enemyMap).filter(k => k !== 'default');
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     return { name: randomKey, img: enemyMap[randomKey].idle };
+};
+
+// Hàm lấy ảnh item (dùng cho sự kiện explore nhặt vàng)
+export const getItemImage = (type) => {
+    if (type === 'GOLD') return resolveItemImage('r_gold_coin.png');
+    return resolveItemImage('r_copper_bar.png');
 };
