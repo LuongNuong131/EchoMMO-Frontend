@@ -1,96 +1,116 @@
 <template>
-  <div class="page-container gathering-page">
-    <div class="bg-layer"></div>
+  <div class="page-container gathering-page dark-theme">
+    <div class="ink-bg-layer">
+      <div class="mountain-bg"></div>
+      <div class="fog-anim"></div>
+    </div>
 
     <div class="nav-header">
-      <button class="btn-back" @click="$router.push('/explore')">
-        <i class="fas fa-arrow-left"></i> Rời khỏi
+      <button class="btn-wood-back" @click="$router.push('/explore')">
+        <i class="fas fa-chevron-left"></i> RỜI KHỎI
       </button>
     </div>
 
-    <div class="gathering-card" v-if="currentEvent">
-
+    <div class="gathering-panel" v-if="currentEvent">
+      
       <div class="event-header">
-        <div class="node-icon-frame" :class="{ 'shake-anim': isGathering }">
-          <img :src="currentEvent.image" class="node-img" />
+        <div class="node-frame">
+          <div class="node-circle" :class="{ 'shake-anim': isGathering }">
+            <img :src="currentEvent.image" class="node-img" />
+          </div>
+          <div class="rarity-seal" :class="'bg-' + currentEvent.rarityClass">
+            {{ currentEvent.rarityText }}
+          </div>
         </div>
-        <h2 class="node-name" :class="currentEvent.rarityClass">{{ currentEvent.name }}</h2>
-        <div class="rarity-badge" :class="currentEvent.rarityClass">{{ currentEvent.rarityText }}</div>
-        <div class="requirement-text">
-          <i class="fas fa-exclamation-circle"></i> Yêu cầu: {{ currentEvent.reqTool }} (Cấp {{ currentEvent.reqLevel
-          }})
+        
+        <h2 class="node-name" :class="'text-' + currentEvent.rarityClass">
+          {{ currentEvent.name }}
+        </h2>
+        
+        <div class="req-box">
+          <i class="fas fa-exclamation-triangle"></i> 
+          Yêu cầu: <span class="highlight">{{ currentEvent.reqTool }}</span> (Cấp {{ currentEvent.reqLevel }})
         </div>
       </div>
 
-      <div class="status-section">
-        <div class="status-row" :class="{ 'error-text': playerLevel < currentEvent.reqLevel }">
-          <div class="icon-box"><i class="fas fa-star"></i></div>
-          <div class="status-content">
-            <span class="label">Kỹ năng:</span>
-            <span class="value">Lv.{{ playerLevel }} / {{ currentEvent.reqLevel }}</span>
-          </div>
-        </div>
-
-        <div class="status-row" :class="{ 'warning-text': !hasTool }">
-          <div class="icon-box"><i class="fas fa-tools"></i></div>
-          <div class="status-content">
-            <span class="label">Công cụ:</span>
-            <span class="value">{{ hasTool ? currentEvent.reqTool : 'Chưa trang bị' }}</span>
+      <div class="info-scroll-area">
+        <div class="status-row">
+          <div class="icon-wrap"><i class="fas fa-graduation-cap"></i></div>
+          <div class="stat-detail">
+            <span class="label">Kỹ năng</span>
+            <span class="val" :class="{ 'text-red': playerLevel < currentEvent.reqLevel }">
+              Cấp {{ playerLevel }} / {{ currentEvent.reqLevel }}
+            </span>
           </div>
         </div>
 
         <div class="status-row">
-          <div class="icon-box"><i class="fas fa-cubes"></i></div>
-          <div class="status-content">
-            <span class="label">Trữ lượng:</span>
-            <span class="value highlight">{{ remainingNode }} / {{ maxNode }}</span>
+          <div class="icon-wrap"><i class="fas fa-hammer"></i></div>
+          <div class="stat-detail">
+            <span class="label">Công cụ</span>
+            <span class="val" :class="{ 'text-red': !hasTool }">
+              {{ hasTool ? currentEvent.reqTool : 'Chưa có' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="icon-wrap"><i class="fas fa-cubes"></i></div>
+          <div class="stat-detail">
+            <span class="label">Trữ lượng</span>
+            <span class="val gold-text">{{ remainingNode }} / {{ maxNode }}</span>
           </div>
         </div>
       </div>
 
-      <div class="progress-section">
-        <div class="progress-info">
-          <span>Tiến độ khai thác</span>
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Tiến độ</span>
           <span>{{ Math.round((1 - remainingNode / maxNode) * 100) }}%</span>
         </div>
         <div class="progress-track">
-          <div class="progress-bar" :style="{ width: ((1 - remainingNode / maxNode) * 100) + '%' }"></div>
+          <div 
+            class="progress-fill" 
+            :style="{ width: ((1 - remainingNode / maxNode) * 100) + '%' }"
+          ></div>
         </div>
       </div>
 
-      <div class="action-section">
-        <div class="energy-display">
-          Năng lượng: <span class="energy-val">{{ charStore.character?.energy || 0 }} ⚡</span>
+      <div class="action-zone">
+        <div class="energy-tag">
+          <i class="fas fa-bolt"></i> Nội Năng: {{ charStore.character?.energy || 0 }}
         </div>
 
-        <div class="buttons-grid">
-          <button class="btn-gather primary" @click="handleGather(1)"
-            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1">
-            <div class="btn-content">
-              <span class="btn-title">KHAI THÁC</span>
-              <span class="btn-sub">Tiêu hao 1 ⚡</span>
-            </div>
+        <div class="btn-grid">
+          <button 
+            class="btn-wood action-btn" 
+            @click="handleGather(1)"
+            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1"
+          >
+            <span class="btn-main">KHAI THÁC</span>
+            <span class="btn-sub">Tốn 1 <i class="fas fa-bolt"></i></span>
           </button>
 
-          <button class="btn-gather secondary" @click="handleGatherAll"
-            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1">
-            <div class="btn-content">
-              <span class="btn-title">AUTO (MAX 10)</span>
-              <span class="btn-sub">Gom nhanh</span>
-            </div>
+          <button 
+            class="btn-seal action-btn" 
+            @click="handleGatherAll"
+            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1"
+          >
+            <span class="btn-main">TỰ ĐỘNG</span>
+            <span class="btn-sub">Gom nhanh (Max 10)</span>
           </button>
         </div>
 
-        <div class="feedback-msg" v-if="feedbackMsg">
+        <div class="feedback-text" v-if="feedbackMsg">
           {{ feedbackMsg }}
         </div>
       </div>
     </div>
 
-    <div class="floating-container">
+    <div class="floating-layer">
       <transition-group name="float-up">
         <div v-for="loot in floatingLoots" :key="loot.id" class="float-item">
-          +{{ loot.amount }} {{ loot.name }}
+          <span class="plus">+{{ loot.amount }}</span> {{ loot.name }}
         </div>
       </transition-group>
     </div>
@@ -104,6 +124,7 @@ import { useCharacterStore } from '@/stores/characterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
+// Import ảnh (giữ nguyên logic của bạn)
 import copperNodeImg from '@/assets/resources/r_copper_node.png';
 import woodNodeImg from '@/assets/resources/r_go.png';
 import stoneNodeImg from '@/assets/resources/stone_1.png';
@@ -121,9 +142,8 @@ const feedbackMsg = ref("");
 const floatingLoots = ref([]);
 
 const playerLevel = computed(() => charStore.character?.lv || 1);
-const hasTool = ref(true);
+const hasTool = ref(true); // Logic check tool giả định
 
-// [CẬP NHẬT] Tăng trữ lượng lên 10 - 25 để phù hợp cày cuốc
 const EVENT_TYPES = [
   {
     id: 'mining', name: 'Mỏ Đồng Lộ Thiên', image: copperNodeImg,
@@ -147,7 +167,7 @@ const EVENT_TYPES = [
     id: 'special', name: 'Gỗ Hóa Thạch', image: mysteryNodeImg,
     rarityClass: 'epic', rarityText: 'Cực Phẩm',
     reqLevel: 5, reqTool: 'Găng Tay',
-    minYield: 3, maxYield: 8, lootName: 'Mảnh Hóa Thạch' // Hiếm thì ít hơn chút
+    minYield: 3, maxYield: 8, lootName: 'Mảnh Hóa Thạch'
   }
 ];
 
@@ -156,11 +176,10 @@ const initEvent = () => {
   const evt = EVENT_TYPES[rnd];
   currentEvent.value = evt;
 
-  // Random số lượng tài nguyên
   const amount = Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) + evt.minYield;
   maxNode.value = amount;
   remainingNode.value = amount;
-  feedbackMsg.value = "Bạn phát hiện một nguồn tài nguyên dồi dào!";
+  feedbackMsg.value = "Phát hiện tài nguyên!";
 };
 
 const handleGather = async (times) => {
@@ -168,27 +187,24 @@ const handleGather = async (times) => {
 
   const cost = times;
   if ((charStore.character?.energy || 0) < cost) {
-    feedbackMsg.value = "⚠️ Không đủ năng lượng!";
+    feedbackMsg.value = "⚠️ Nội năng không đủ!";
     return;
   }
 
   isGathering.value = true;
-  feedbackMsg.value = times > 1 ? "Đang khai thác liên tục..." : "Đang khai thác...";
+  feedbackMsg.value = times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
 
-  // Thời gian khai thác: Nhiều thì lâu hơn chút
   const delay = times > 1 ? 800 : 500;
 
   setTimeout(() => {
-    // Đảm bảo không lấy quá số còn lại
     const actualGathered = Math.min(times, remainingNode.value);
-
     remainingNode.value -= actualGathered;
 
     if (charStore.character) charStore.character.energy -= actualGathered;
 
     if (actualGathered > 0) {
       showFloatingText(`+${actualGathered} ${currentEvent.value.lootName}`);
-      feedbackMsg.value = `Thu hoạch thành công: ${actualGathered} ${currentEvent.value.lootName}`;
+      feedbackMsg.value = `Thu hoạch: ${actualGathered} ${currentEvent.value.lootName}`;
     }
 
     if (remainingNode.value <= 0) {
@@ -202,16 +218,14 @@ const handleGather = async (times) => {
   }, delay);
 };
 
-// [UPDATE] Auto Gather: Lấy tối đa 10 cái hoặc hết số còn lại
 const handleGatherAll = () => {
   const currentEnergy = charStore.character?.energy || 0;
-  // Lấy max 10, hoặc số còn lại, hoặc số energy đang có
   const times = Math.min(10, remainingNode.value, currentEnergy);
 
   if (times > 0) {
     handleGather(times);
   } else {
-    feedbackMsg.value = "⚠️ Năng lượng không đủ!";
+    feedbackMsg.value = "⚠️ Nội năng cạn kiệt!";
   }
 };
 
@@ -230,363 +244,248 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cinzel:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 
-.page-container {
+/* --- PALETTE --- */
+:root {
+  --wood-dark: #3e2723;
+  --wood-light: #5d4037;
+  --bg-dark: #212121;
+  --gold: #ffecb3;
+  --red-seal: #b71c1c;
+  --text-light: #f3f4f6;
+  --text-dim: #bdbdbd;
+  --jade: #43a047;
+}
+
+/* --- BASE LAYOUT --- */
+.dark-theme {
+  background-color: var(--bg-dark);
   min-height: 100vh;
+  font-family: "Noto Serif TC", serif;
+  color: var(--text-light);
   position: relative;
-  font-family: 'Inter', sans-serif;
-  color: #e0e0e0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
 }
 
-.bg-layer {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle, #2c2c2c 0%, #121212 90%);
-  z-index: -1;
+/* Background Layers */
+.ink-bg-layer { position: absolute; inset: 0; z-index: 0; background-color: #3e2723; }
+.mountain-bg {
+    position: absolute; inset: 0;
+    background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
+    background-size: cover; filter: sepia(40%) brightness(0.5) contrast(1.2); opacity: 0.6;
+}
+.fog-anim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, #261815 10%, transparent 90%);
 }
 
+/* NAVIGATION */
 .nav-header {
   width: 100%;
   max-width: 500px;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
 }
 
-.btn-back {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid #444;
-  color: #ccc;
+.btn-wood-back {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--wood-light);
+  color: var(--text-dim);
   padding: 8px 15px;
-  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: inherit; font-weight: bold;
+  transition: 0.3s;
+}
+.btn-wood-back:hover {
+  background: var(--wood-light);
+  color: var(--gold);
+  border-color: var(--gold);
 }
 
-.btn-back:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.gathering-card {
+/* --- MAIN PANEL --- */
+.gathering-panel {
+  position: relative;
+  z-index: 10;
   width: 100%;
-  max-width: 500px;
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid #444;
-  border-radius: 16px;
+  max-width: 450px;
+  background: rgba(30, 20, 15, 0.95);
+  border: 4px double var(--wood-light);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
   padding: 25px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: flex; flex-direction: column; gap: 20px;
 }
 
-.event-header {
-  text-align: center;
+/* EVENT HEADER */
+.event-header { text-align: center; position: relative; }
+
+.node-frame {
+  position: relative;
+  width: 120px; height: 120px; margin: 0 auto 15px;
 }
 
-.node-icon-frame {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 15px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+.node-circle {
+  width: 100%; height: 100%;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 80%);
+  border: 3px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 20px rgba(255, 236, 179, 0.2);
 }
+.node-img { width: 70%; height: 70%; object-fit: contain; }
 
-.node-img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-  image-rendering: pixelated;
+.rarity-seal {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  padding: 2px 10px; font-size: 0.75rem; font-weight: bold;
+  border-radius: 10px; border: 1px solid #fff;
+  white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  text-transform: uppercase;
 }
-
-.shake-anim {
-  animation: shake 0.5s infinite;
-}
+.bg-common { background: #757575; color: #fff; }
+.bg-rare { background: #1976d2; color: #fff; }
+.bg-epic { background: #7b1fa2; color: #fff; border-color: var(--gold); }
 
 .node-name {
-  font-family: 'Cinzel', serif;
-  font-size: 1.5em;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 1.6rem; font-weight: 900; margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-transform: uppercase; letter-spacing: 1px;
 }
+.text-common { color: var(--text-dim); }
+.text-rare { color: #42a5f5; }
+.text-epic { color: #ab47bc; text-shadow: 0 0 10px rgba(171, 71, 188, 0.6); }
 
-.node-name.common {
-  color: #bdbdbd;
+.req-box {
+  margin-top: 5px; font-size: 0.9rem; color: #aaa; font-style: italic;
 }
+.highlight { color: var(--gold); font-weight: bold; }
 
-.node-name.rare {
-  color: #42a5f5;
-}
-
-.node-name.epic {
-  color: #ab47bc;
-  text-shadow: 0 0 10px rgba(171, 71, 188, 0.5);
-}
-
-.rarity-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75em;
-  font-weight: bold;
-  margin-top: 5px;
-  border: 1px solid currentColor;
-}
-
-.rarity-badge.common {
-  color: #bdbdbd;
-}
-
-.rarity-badge.rare {
-  color: #42a5f5;
-}
-
-.rarity-badge.epic {
-  color: #ab47bc;
-}
-
-.requirement-text {
-  margin-top: 8px;
-  font-size: 0.85em;
-  color: #757575;
-  font-style: italic;
-}
-
-.status-section {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+/* STATUS AREA */
+.info-scroll-area {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--wood-light);
   padding: 10px;
-  border: 1px solid #333;
+  border-radius: 4px;
 }
 
 .status-row {
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px dashed #444;
+  display: flex; align-items: center; gap: 15px;
+  padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.1);
 }
+.status-row:last-child { border-bottom: none; }
 
-.status-row:last-child {
-  border-bottom: none;
+.icon-wrap {
+  width: 30px; text-align: center; color: var(--gold); font-size: 1.1rem;
 }
-
-.icon-box {
-  width: 30px;
-  text-align: center;
-  color: #8d6e63;
+.stat-detail {
+  flex: 1; display: flex; justify-content: space-between; font-size: 0.95rem;
 }
+.label { color: #aaa; }
+.val { font-weight: bold; color: var(--text-light); }
+.text-red { color: #ef5350; }
+.gold-text { color: var(--gold); }
 
-.status-content {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9em;
+/* PROGRESS */
+.progress-container { margin-top: 5px; }
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.85rem; color: #ccc; margin-bottom: 5px;
 }
-
-.label {
-  color: #aaa;
-}
-
-.value {
-  font-weight: bold;
-}
-
-.value.highlight {
-  color: #ffca28;
-}
-
-.error-text .value {
-  color: #ef5350;
-}
-
-.progress-section {
-  margin-top: 5px;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8em;
-  margin-bottom: 5px;
-  color: #ccc;
-}
-
 .progress-track {
-  height: 10px;
-  background: #222;
-  border-radius: 5px;
-  overflow: hidden;
-  border: 1px solid #444;
+  height: 12px; background: #1a1a1a;
+  border: 1px solid var(--wood-light); border-radius: 6px; overflow: hidden;
 }
-
-.progress-bar {
+.progress-fill {
   height: 100%;
-  background: linear-gradient(to right, #66bb6a, #43a047);
+  background: linear-gradient(90deg, #43a047, #66bb6a);
+  box-shadow: 0 0 10px rgba(67, 160, 71, 0.5);
   transition: width 0.3s ease;
 }
 
-.action-section {
-  margin-top: 10px;
-  text-align: center;
+/* ACTIONS */
+.action-zone { text-align: center; margin-top: 10px; }
+.energy-tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px; border-radius: 15px;
+  color: #4fc3f7; font-weight: bold; font-size: 0.9rem;
+  margin-bottom: 15px; border: 1px solid rgba(79, 195, 247, 0.3);
 }
 
-.energy-display {
-  margin-bottom: 15px;
-  font-size: 0.9em;
-  color: #42a5f5;
-  font-weight: bold;
+.btn-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
 }
 
-.buttons-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.action-btn {
+  padding: 12px; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  border-radius: 4px; transition: 0.2s; position: relative;
 }
+.action-btn:active:not(:disabled) { transform: translateY(2px); }
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
-.btn-gather {
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.2s;
-  position: relative;
-  overflow: hidden;
+.btn-main { font-weight: 900; font-size: 1rem; margin-bottom: 2px; }
+.btn-sub { font-size: 0.75rem; opacity: 0.8; }
+
+.btn-wood {
+  background: var(--wood-light); color: var(--gold);
+  border: 1px solid var(--gold);
+  box-shadow: 0 4px 0 #3e2723;
 }
+.btn-wood:hover:not(:disabled) { background: var(--wood-dark); }
 
-.btn-gather:active:not(:disabled) {
-  transform: scale(0.98);
+.btn-seal {
+  background: var(--red-seal); color: #fff;
+  border: 1px solid #d32f2f;
+  box-shadow: 0 4px 0 #8b0000;
 }
+.btn-seal:hover:not(:disabled) { background: #d32f2f; }
 
-.btn-gather:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-.primary {
-  background: linear-gradient(to bottom, #2e7d32, #1b5e20);
-  color: white;
-  border: 1px solid #43a047;
-  box-shadow: 0 4px 0 #1b5e20;
-}
-
-.secondary {
-  background: #37474f;
-  color: #cfd8dc;
-  border: 1px solid #546e7a;
-  box-shadow: 0 4px 0 #263238;
-}
-
-.btn-content {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.btn-title {
-  font-weight: bold;
-  font-size: 1em;
-}
-
-.btn-sub {
-  font-size: 0.75em;
-  opacity: 0.8;
-}
-
-.feedback-msg {
-  margin-top: 15px;
-  min-height: 20px;
-  font-size: 0.9em;
-  color: #81c784;
-  font-weight: bold;
+.feedback-text {
+  margin-top: 15px; height: 20px; font-size: 0.9rem;
+  color: var(--jade); font-weight: bold; font-style: italic;
   animation: fadeIn 0.3s;
 }
 
-.floating-container {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: none;
-  width: 100%;
-  text-align: center;
-  z-index: 100;
+/* FLOATING LOOT */
+.floating-layer {
+  position: absolute; top: 35%; left: 50%; transform: translateX(-50%);
+  pointer-events: none; width: 100%; text-align: center; z-index: 100;
 }
-
 .float-item {
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #ffeb3b;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  margin-bottom: 5px;
+  font-size: 1.8rem; font-weight: 900; color: var(--gold);
+  text-shadow: 0 2px 5px rgba(0,0,0,0.9); margin-bottom: 5px;
+  font-family: 'Cinzel', serif;
 }
+.plus { color: #fff; }
 
+/* ANIMATIONS */
+.shake-anim { animation: shake 0.5s infinite; }
 @keyframes shake {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(-5deg);
-  }
-
-  75% {
-    transform: rotate(5deg);
-  }
-
-  100% {
-    transform: rotate(0deg);
-  }
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.float-up-enter-active {
-  animation: floatUp 1s ease-out forwards;
-}
-
+.float-up-enter-active { animation: floatUp 1s ease-out forwards; }
 @keyframes floatUp {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-50px);
-  }
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
 }
 
+/* RESPONSIVE */
 @media (max-width: 480px) {
-  .gathering-card {
-    padding: 15px;
-  }
-
-  .buttons-grid {
-    grid-template-columns: 1fr;
-  }
+  .gathering-panel { padding: 15px; }
+  .btn-grid { grid-template-columns: 1fr; }
+  .action-btn { flex-direction: row; justify-content: space-between; padding: 15px; }
 }
 </style>

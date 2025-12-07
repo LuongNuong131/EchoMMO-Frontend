@@ -13,8 +13,13 @@
       <div class="char-select-container">
 
         <div class="skin-list custom-scroll">
-          <div v-for="skin in skins" :key="skin.id" class="skin-card" :class="{ active: selectedSkinId === skin.id }"
-            @click="selectSkin(skin.id)">
+          <div 
+            v-for="skin in skins" 
+            :key="skin.id" 
+            class="skin-card" 
+            :class="{ active: selectedSkinId === skin.id }"
+            @click="selectSkin(skin.id)"
+          >
             <div class="skin-icon">
               <img :src="skin.sprites.idle" />
             </div>
@@ -22,7 +27,9 @@
               <div class="skin-name">{{ skin.name }}</div>
               <div class="skin-desc">{{ skin.description }}</div>
             </div>
-            <div v-if="currentSkinId === skin.id" class="equipped-icon"><i class="fas fa-check-circle"></i></div>
+            <div v-if="currentSkinId === skin.id" class="equipped-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
           </div>
         </div>
 
@@ -31,8 +38,7 @@
             <div class="preview-actor">
               <img :src="previewImage" class="actor-img" :class="previewState" />
             </div>
-            <div class="platform"></div>
-          </div>
+            </div>
 
           <div class="control-bar">
             <div class="main-action">
@@ -136,11 +142,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
+
 .profile-page {
   background: #1a1a1a;
   min-height: 100vh;
   color: #d7ccc8;
-  font-family: "Noto Serif TC";
+  font-family: "Noto Serif TC", serif;
 }
 
 .wood-bg-layer {
@@ -173,6 +182,7 @@ onUnmounted(() => {
   color: #fbc02d;
   font-weight: 900;
   margin: 0;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .wood-btn {
@@ -181,6 +191,8 @@ onUnmounted(() => {
   border: 1px solid #5d4037;
   padding: 8px 15px;
   cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
 }
 
 .char-select-container {
@@ -190,6 +202,7 @@ onUnmounted(() => {
   height: 70vh;
 }
 
+/* LIST SKINS */
 .skin-list {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid #5d4037;
@@ -216,10 +229,9 @@ onUnmounted(() => {
   background: #3e2723;
 }
 
-/* Active state: Bỏ viền vàng, dùng nền sáng hơn */
 .skin-card.active {
   background: #4e342e;
-  border-color: #8d6e63;
+  border-color: #fbc02d;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -262,6 +274,7 @@ onUnmounted(() => {
   font-size: 1.2em;
 }
 
+/* PREVIEW STAGE */
 .preview-stage {
   display: flex;
   flex-direction: column;
@@ -278,6 +291,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   background-image: radial-gradient(circle, #261815 0%, #000 80%);
+  overflow: hidden;
 }
 
 .preview-actor {
@@ -285,6 +299,8 @@ onUnmounted(() => {
   height: 128px;
   position: relative;
   z-index: 5;
+  /* Đẩy nhân vật xuống một chút cho cân đối vì đã bỏ đế */
+  margin-top: 20px; 
 }
 
 .actor-img {
@@ -294,25 +310,10 @@ onUnmounted(() => {
   transform: scale(2);
   image-rendering: pixelated;
   transition: 0.3s ease;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.8)); /* Thêm bóng đổ tự nhiên */
 }
 
-/* Animation classes if needed */
-.actor-img.attack {
-  transform: scale(2.2);
-}
-
-.platform {
-  position: absolute;
-  bottom: 40px;
-  width: 200px;
-  height: 40px;
-  background: #1a1a1a;
-  border-radius: 50%;
-  transform: scaleY(0.3);
-  border: 2px solid #5d4037;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-}
-
+/* Control & Info */
 .control-bar {
   display: flex;
   justify-content: center;
@@ -320,6 +321,7 @@ onUnmounted(() => {
   background: #261815;
   padding: 10px;
   border-radius: 8px;
+  border: 1px solid #3e2723;
 }
 
 .main-action {
@@ -337,21 +339,24 @@ onUnmounted(() => {
   cursor: pointer;
   border-radius: 4px;
   width: 100%;
+  transition: 0.2s;
 }
 
 .btn-equip:hover {
   background: #fdd835;
+  transform: translateY(-2px);
 }
 
 .btn-equipped {
   background: #3e2723;
-  color: #aaa;
+  color: #757575;
   border: 1px solid #5d4037;
   padding: 10px 20px;
   border-radius: 4px;
   opacity: 1;
   cursor: default;
   width: 100%;
+  font-weight: bold;
 }
 
 .char-stats-box {
@@ -361,13 +366,21 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
+.char-stats-box h3 {
+  margin: 0 0 10px 0;
+  color: #fbc02d;
+  font-size: 1.1em;
+  border-bottom: 1px solid #3e2723;
+  padding-bottom: 5px;
+}
+
 .stat-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 0.9em;
+  margin-bottom: 8px;
+  font-size: 0.95em;
   border-bottom: 1px dashed #3e2723;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
 }
 
 .hl {
@@ -377,23 +390,32 @@ onUnmounted(() => {
 
 .rename-box {
   display: flex;
-  margin-top: 10px;
+  margin-top: 15px;
   gap: 5px;
 }
 
 .rename-box input {
   flex: 1;
   background: #1a1a1a;
-  border: 1px solid #3e2723;
+  border: 1px solid #5d4037;
   color: #fff;
-  padding: 5px;
+  padding: 8px;
+  font-family: inherit;
 }
 
 .rename-box button {
   background: #3e2723;
-  color: #fff;
+  color: #fbc02d;
   border: 1px solid #5d4037;
   cursor: pointer;
-  width: 30px;
+  width: 40px;
 }
+.rename-box button:hover {
+  background: #4e342e;
+}
+
+/* Scrollbar */
+.custom-scroll::-webkit-scrollbar { width: 6px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 3px; }
+.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
 </style>

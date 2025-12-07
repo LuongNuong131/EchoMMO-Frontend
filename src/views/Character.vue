@@ -1,126 +1,170 @@
 <template>
-    <div class="page-container character-page dark-fantasy-theme">
-        <div class="char-grid">
+  <div class="page-container character-page wuxia-dark-theme">
+    <div class="ink-bg-layer">
+      <div class="mountain-bg"></div>
+      <div class="fog-anim"></div>
+    </div>
+
+    <div class="char-wrapper">
+      <div class="char-grid">
+        
+        <div class="panel stats-panel">
+          <div class="panel-header">
+            <div class="decor-line"></div>
+            <h3>BẢN SẮC</h3>
+            <div class="decor-line"></div>
+          </div>
+          
+          <div class="stats-body">
+            <div class="stat-row level-row">
+              <span class="label">CẢNH GIỚI</span>
+              <span class="value highlight">Luyện Khí Tầng {{ charStore.character?.lv || 1 }}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-fist-raised"></i> Công Lực</span>
+              <span class="value atk">{{ charStore.character?.baseAtk || 0 }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-shield-alt"></i> Hộ Thể</span>
+              <span class="value def">{{ charStore.character?.baseDef || 0 }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-wind"></i> Thân Pháp</span>
+              <span class="value speed">{{ charStore.character?.baseSpeed || 0 }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-bolt"></i> Bạo Kích</span>
+              <span class="value crit">{{ charStore.character?.baseCritRate || 0 }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel hero-panel">
+          <div class="aura-bg"></div>
+          
+          <div class="char-figure">
+            <i class="fas fa-user-ninja"></i>
+          </div>
+
+          <div 
+            class="equip-slot head-slot" 
+            :class="{ filled: equipment.HELMET }"
+            @mousedown.left="unequipSlow('HELMET')" 
+            @contextmenu.prevent="unequipFast('HELMET')"
+            title="Mũ"
+          >
+            <div class="slot-frame">
+              <img v-if="equipment.HELMET" :src="equipment.HELMET.item.imageUrl" />
+              <i v-else class="fas fa-hat-cowboy-side placeholder"></i>
+            </div>
+            <div class="slot-label">Mão</div>
+          </div>
+
+          <div 
+            class="equip-slot weapon-slot" 
+            :class="{ filled: equipment.WEAPON }"
+            @mousedown.left="unequipSlow('WEAPON')" 
+            @contextmenu.prevent="unequipFast('WEAPON')"
+            title="Vũ Khí"
+          >
+            <div class="slot-frame">
+              <img v-if="equipment.WEAPON" :src="equipment.WEAPON.item.imageUrl" />
+              <i v-else class="fas fa-gavel placeholder"></i>
+            </div>
+            <div class="slot-label">Binh Khí</div>
+          </div>
+
+          <div 
+            class="equip-slot body-slot" 
+            :class="{ filled: equipment.ARMOR }"
+            @mousedown.left="unequipSlow('ARMOR')" 
+            @contextmenu.prevent="unequipFast('ARMOR')"
+            title="Y Phục"
+          >
+            <div class="slot-frame">
+              <img v-if="equipment.ARMOR" :src="equipment.ARMOR.item.imageUrl" />
+              <i v-else class="fas fa-tshirt placeholder"></i>
+            </div>
+            <div class="slot-label">Y Phục</div>
+          </div>
+
+          <div 
+            class="equip-slot boots-slot" 
+            :class="{ filled: equipment.BOOTS }"
+            @mousedown.left="unequipSlow('BOOTS')" 
+            @contextmenu.prevent="unequipFast('BOOTS')"
+            title="Giày"
+          >
+            <div class="slot-frame">
+              <img v-if="equipment.BOOTS" :src="equipment.BOOTS.item.imageUrl" />
+              <i v-else class="fas fa-socks placeholder"></i>
+            </div>
+            <div class="slot-label">Hài</div>
+          </div>
+        </div>
+
+        <div class="panel bag-panel">
+          <div class="panel-header">
+            <div class="decor-line"></div>
+            <h3>HÀNH NANG</h3>
+            <div class="decor-line"></div>
+          </div>
+          <div class="bag-info">
+            Sức chứa: {{ inventoryStore.items.length }} / 50
+          </div>
+          
+          <div class="mini-grid custom-scroll">
+            <div 
+              v-for="item in inventoryStore.items" 
+              :key="item.userItemId" 
+              class="mini-slot"
+              :class="[
+                'rarity-' + (item.item.rarity || 'C'),
+                { 'is-equipped': item.isEquipped }
+              ]" 
+              @click="equip(item)" 
+              :title="item.item.name"
+            >
+              <img :src="item.item.imageUrl" />
+              <span class="qty" v-if="item.quantity > 1">{{ item.quantity }}</span>
+              <div class="equipped-dot" v-if="item.isEquipped"></div>
+            </div>
+            <div v-for="n in (20 - (inventoryStore.items.length % 20))" :key="'e'+n" class="mini-slot empty"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <transition name="fade">
+      <div v-if="showUnequipModal" class="modal-overlay" @click.self="closeModal">
+        <div class="dark-modal">
+          <div class="modal-border-top"></div>
+          <div class="modal-content">
+            <h3 class="modal-title">GỠ BỎ TRANG BỊ</h3>
             
-            <div class="panel stats stat-panel-glow">
-                <h3 class="panel-title-glow">❖ CHỈ SỐ ❖</h3>
-                <div class="stat-row">
-                    <span>Cấp Độ</span> 
-                    <span class="hl">Lv.{{ charStore.character?.lv }}</span>
-                </div>
-                <div class="stat-row">
-                    <span>CÔNG LỰC</span> 
-                    <span class="val atk-val">{{ charStore.character?.baseAtk }}</span>
-                </div>
-                <div class="stat-row">
-                    <span>PHÒNG THỦ</span> 
-                    <span class="val def-val">{{ charStore.character?.baseDef }}</span>
-                </div>
-                <div class="stat-row">
-                    <span>TỐC ĐỘ</span> 
-                    <span class="val speed-val">{{ charStore.character?.baseSpeed }}</span>
-                </div>
-                <div class="stat-row">
-                    <span>BẠO KÍCH</span> 
-                    <span class="val crit-val">{{ charStore.character?.baseCritRate }}%</span>
-                </div>
+            <div class="item-preview-box">
+               <img v-if="itemToUnequip" :src="itemToUnequip.item.imageUrl" class="preview-img">
+               <div class="preview-info" v-if="itemToUnequip">
+                 <span class="p-name">{{ itemToUnequip.item.name }}</span>
+                 <span class="p-type">Sẽ trở về hành trang</span>
+               </div>
             </div>
 
-            <div class="panel equip-center">
-                <div class="char-model">
-                    <div class="model-placeholder">⚔️</div>
-                </div>
-                
-                <div 
-                    class="slot head" 
-                    @mousedown.left="unequipSlow('HELMET')" 
-                    @contextmenu.prevent="unequipFast('HELMET')"
-                    title="Mũ (Chuột trái: Hỏi, Chuột phải: Tháo nhanh)" 
-                    :class="{ filled: equipment.HELMET }"
-                >
-                    <img v-if="equipment.HELMET" :src="equipment.HELMET.item.imageUrl" />
-                    <i v-else class="fas fa-helmet placeholder-icon"></i>
-                    <div class="item-glow" v-if="equipment.HELMET"></div>
-                </div>
-                <div 
-                    class="slot weapon" 
-                    @mousedown.left="unequipSlow('WEAPON')" 
-                    @contextmenu.prevent="unequipFast('WEAPON')"
-                    title="Vũ Khí (Chuột trái: Hỏi, Chuột phải: Tháo nhanh)" 
-                    :class="{ filled: equipment.WEAPON }"
-                >
-                    <img v-if="equipment.WEAPON" :src="equipment.WEAPON.item.imageUrl" />
-                    <i v-else class="fas fa-sword placeholder-icon"></i>
-                    <div class="item-glow" v-if="equipment.WEAPON"></div>
-                </div>
-                <div 
-                    class="slot body" 
-                    @mousedown.left="unequipSlow('ARMOR')" 
-                    @contextmenu.prevent="unequipFast('ARMOR')"
-                    title="Áo (Chuột trái: Hỏi, Chuột phải: Tháo nhanh)" 
-                    :class="{ filled: equipment.ARMOR }"
-                >
-                    <img v-if="equipment.ARMOR" :src="equipment.ARMOR.item.imageUrl" />
-                    <i v-else class="fas fa-shield-alt placeholder-icon"></i>
-                    <div class="item-glow" v-if="equipment.ARMOR"></div>
-                </div>
-                <div 
-                    class="slot boots" 
-                    @mousedown.left="unequipSlow('BOOTS')" 
-                    @contextmenu.prevent="unequipFast('BOOTS')"
-                    title="Giày (Chuột trái: Hỏi, Chuột phải: Tháo nhanh)" 
-                    :class="{ filled: equipment.BOOTS }"
-                >
-                    <img v-if="equipment.BOOTS" :src="equipment.BOOTS.item.imageUrl" />
-                    <i v-else class="fas fa-boot placeholder-icon"></i>
-                    <div class="item-glow" v-if="equipment.BOOTS"></div>
-                </div>
+            <div class="modal-actions">
+              <button class="btn-wood cancel" @click="closeModal">HỦY BỎ</button>
+              <button class="btn-wood confirm" @click="confirmUnequip">XÁC NHẬN</button>
             </div>
-
-            <div class="panel bag inventory-panel-glow">
-                <div class="panel-head">
-                    <i class="fas fa-sack-dollar"></i> TÚI ĐỒ 
-                    <small>({{ inventoryStore.items.length }})</small>
-                </div>
-                <div class="bag-grid custom-scroll">
-                    <div 
-                        v-for="item in inventoryStore.items" 
-                        :key="item.userItemId" 
-                        class="bag-slot"
-                        :class="{ 'equipped': item.isEquipped }" 
-                        @click="equip(item)" 
-                        :title="item.item.name"
-                    >
-                        <img :src="item.item.imageUrl || '/src/assets/item/ring_wood.png'" />
-                        <span class="qty" v-if="item.quantity > 1">{{ item.quantity }}</span>
-                        <div class="equipped-marker" v-if="item.isEquipped"></div>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <div class="modal-border-bot"></div>
         </div>
+      </div>
+    </transition>
 
-        <transition name="fade">
-            <div v-if="showUnequipModal" class="custom-modal-overlay" @click.self="closeModal">
-                <div class="custom-modal dark-fantasy-modal">
-                    <div class="modal-header">
-                        <i class="fas fa-exclamation-triangle"></i> XÁC NHẬN THÁO BỎ
-                    </div>
-                    <div class="modal-body" v-if="itemToUnequip">
-                        <p class="modal-text">Bạn chắc chắn muốn **tháo bỏ** trang bị này?</p>
-                        <div class="item-preview">
-                            <img :src="itemToUnequip.item.imageUrl" :alt="itemToUnequip.item.name" class="item-thumb-modal">
-                            <span class="item-name">{{ itemToUnequip.item.name }}</span>
-                        </div>
-                        <p class="warning-text">Trang bị này sẽ trở lại **Túi đồ** của bạn.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn-cancel" @click="closeModal">HỦY BỎ</button>
-                        <button class="btn-confirm-unequip" @click="confirmUnequip">XÁC NHẬN THÁO</button>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        </div>
+  </div>
 </template>
 
 <script setup>
@@ -132,12 +176,11 @@ const charStore = useCharacterStore();
 const inventoryStore = useInventoryStore();
 const equipment = computed(() => inventoryStore.equippedItems);
 
-// LOGIC MODAL (Dùng cho chuột trái)
+// LOGIC MODAL
 const showUnequipModal = ref(false);
 const itemToUnequip = ref(null);
 const slotToUnequip = ref(null);
 
-// Hàm tháo trang bị chậm (Mở Modal xác nhận) - Dùng cho chuột trái
 const unequipSlow = (slotType) => {
     const item = equipment.value[slotType];
     if (item) {
@@ -147,7 +190,6 @@ const unequipSlow = (slotType) => {
     }
 };
 
-// Hàm tháo trang bị nhanh (Tháo ngay lập tức) - Dùng cho chuột phải
 const unequipFast = async (slotType) => {
     const item = equipment.value[slotType];
     if (item) {
@@ -167,415 +209,319 @@ const closeModal = () => {
     itemToUnequip.value = null;
     slotToUnequip.value = null;
 };
-// KẾT THÚC LOGIC MODAL
 
 const equip = async (item) => {
-    // Logic trang bị (thường là chuột trái hoặc click)
-    if (item.item.type === 'WEAPON' || item.item.type === 'ARMOR' || item.item.type === 'HELMET' || item.item.type === 'BOOTS') {
+    const types = ['WEAPON', 'ARMOR', 'HELMET', 'BOOTS'];
+    if (types.includes(item.item.type)) {
         if (!item.isEquipped) await inventoryStore.equipItem(item.userItemId);
     }
 };
 
-onMounted(() => { charStore.fetchCharacter(); inventoryStore.fetchInventory(); });
+onMounted(() => { 
+    charStore.fetchCharacter(); 
+    inventoryStore.fetchInventory(); 
+});
 </script>
 
 <style scoped>
-/* Nhúng icon font awesome để có icon đẹp hơn */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap");
 
-/* Biến màu mới */
+/* --- PALETTE --- */
 :root {
-    --bg-dark: #0f0f1a;
-    --panel-dark: #1c1c2b;
-    --highlight-gold: #ffc857;
-    --highlight-red: #ff3366;
-    --text-light: #f5f5f5;
-    --border-dark: #3a3a50;
-    --equipped-green: #37d399;
+  --wood-dark: #3e2723;
+  --wood-mid: #4e342e;
+  --wood-light: #5d4037;
+  --gold: #ffecb3;
+  --gold-dim: #ffe082;
+  --text-light: #f3f4f6;
+  --red-seal: #b71c1c;
 }
 
-.character-page {
-    padding: 30px; 
-    background: var(--bg-dark);
+.wuxia-dark-theme {
+    background-color: #212121;
     min-height: 100vh;
+    font-family: "Noto Serif TC", serif;
+    color: var(--text-light);
+    position: relative;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--text-light);
-    font-family: "Noto Serif TC", serif;
+}
+
+/* Background Layers */
+.ink-bg-layer { position: absolute; inset: 0; z-index: 0; background-color: #3e2723; }
+.mountain-bg {
+    position: absolute; inset: 0;
+    background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
+    background-size: cover; filter: sepia(40%) brightness(0.5) contrast(1.2); opacity: 0.6;
+}
+.fog-anim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, #261815 10%, transparent 90%);
+}
+
+.char-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1100px;
+    padding: 20px;
 }
 
 .char-grid {
     display: grid;
-    grid-template-columns: 280px 320px 280px; 
-    gap: 30px; 
-    width: 100%;
-    max-width: 1000px;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 20px;
+    height: 600px;
 }
 
+/* --- PANELS COMMON --- */
 .panel {
-    background: var(--panel-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: 12px;
-    padding: 20px;
+    background: rgba(30, 20, 15, 0.95);
+    border: 3px solid var(--wood-light);
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-/* HIỆU ỨNG GLOW CHO PANEL CHỈ SỐ VÀ TÚI ĐỒ */
-.stat-panel-glow {
-    box-shadow: 0 0 10px rgba(255, 51, 102, 0.3); /* Red glow cho stats */
-}
-.inventory-panel-glow {
-    box-shadow: 0 0 10px rgba(55, 211, 153, 0.3); /* Green glow cho inventory */
-}
-
-.panel-title-glow {
-    text-align: center;
-    font-weight: 700;
-    color: var(--highlight-red);
-    text-shadow: 0 0 5px var(--highlight-red);
-    border-bottom: 2px solid var(--border-dark);
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    font-size: 1.2em;
-}
-
-.panel-head {
-    text-align: center;
-    font-weight: 700;
-    color: var(--highlight-gold);
-    text-shadow: 0 0 5px rgba(255, 200, 87, 0.5);
-    border-bottom: 2px solid var(--border-dark);
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    font-size: 1.1em;
-}
-.panel-head small {
-    color: var(--border-dark);
-    margin-left: 5px;
-    font-weight: 400;
-}
-
-/* CHỈ SỐ */
-.stat-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 1em;
-    padding: 5px 0;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-    transition: background 0.3s;
-}
-.stat-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.hl {
-    color: var(--highlight-gold);
-    font-weight: bold;
-}
-.val {
-    font-weight: bold;
-    color: var(--text-light);
-}
-
-.atk-val { color: var(--highlight-red); }
-.def-val { color: #5d8aa8; } 
-.speed-val { color: #bdbd00; } 
-.crit-val { color: var(--highlight-gold); }
-
-/* TRANG BỊ VÀ NHÂN VẬT */
-.equip-center {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     position: relative;
-    align-items: center;
-    justify-content: center;
-    background-image: radial-gradient(circle, #3a3a50 0%, var(--bg-dark) 80%);
-    min-height: 450px;
 }
 
-.char-model {
-    width: 100%;
-    height: 100%;
+.panel-header {
     display: flex;
-    justify-content: center;
     align-items: center;
-}
-
-.model-placeholder {
-    font-size: 8em;
-    opacity: 0.15;
-    filter: grayscale(1);
-}
-
-.slot {
-    position: absolute;
-    width: 60px; 
-    height: 60px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid var(--border-dark);
-    border-radius: 8px;
-    display: flex;
     justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease-out;
-    overflow: hidden;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 2px solid var(--wood-light);
+    gap: 10px;
 }
 
-.slot:hover {
-    border-color: var(--highlight-gold);
-    box-shadow: 0 0 15px rgba(255, 200, 87, 0.5);
-    transform: scale(1.05);
+.panel-header h3 {
+    margin: 0;
+    color: var(--gold);
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 2px #000;
 }
 
-.slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 4px;
-    z-index: 10;
-}
-.slot.filled {
-    border-color: var(--equipped-green);
+.decor-line {
+    height: 2px;
+    width: 30px;
+    background: var(--gold-dim);
+    opacity: 0.5;
 }
 
-.placeholder-icon {
-    font-size: 1.8em;
-    color: var(--border-dark);
-}
-
-/* Ánh sáng glow cho item khi được trang bị */
-.item-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-    animation: itemPulse 3s infinite;
-}
-@keyframes itemPulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-}
-
-/* TỌA ĐỘ SLOT */
-.head {
-    top: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-.weapon {
-    left: 40px;
-    top: 65%;
-    transform: translateY(-50%);
-}
-.body {
-    right: 40px;
-    top: 65%;
-    transform: translateY(-50%);
-}
-.boots {
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* TÚI ĐỒ */
-.bag-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px; 
-    overflow-y: auto;
-    max-height: 350px; 
-    padding-right: 5px;
-}
-
-.bag-slot {
-    width: 60px;
-    height: 60px;
-    background: #2a2a3b;
-    border: 1px solid var(--border-dark);
-    position: relative;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.6);
-}
-
-.bag-slot:hover {
-    border-color: var(--highlight-gold);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
-}
-
-.bag-slot img {
-    width: 100%;
-    height: 100%;
-    padding: 4px;
-    object-fit: contain;
-}
-
-.equipped {
-    border-color: var(--equipped-green);
-    opacity: 0.7; 
-}
-
-.equipped-marker {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 8px;
-    height: 8px;
-    background-color: var(--equipped-green);
-    border-radius: 50%;
-    box-shadow: 0 0 5px var(--equipped-green);
-    z-index: 10;
-}
-
-.qty {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    font-size: 0.7em;
-    padding: 0 3px;
-    border-radius: 2px;
-}
-
-/* CUSTOM SCROLLBAR (cho Túi đồ) */
-.custom-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-    background: #8d6e63;
-    border-radius: 3px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* --- CUSTOM MODAL STYLES --- */
-.custom-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.custom-modal.dark-fantasy-modal {
-    background: var(--panel-dark);
-    border: 2px solid var(--highlight-red);
-    border-radius: 10px;
-    box-shadow: 0 0 25px rgba(255, 51, 102, 0.5);
-    width: 350px;
+/* --- LEFT PANEL: STATS --- */
+.stats-body {
     padding: 20px;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    animation: modal-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@keyframes modal-in {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.modal-header {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: var(--highlight-red);
-    border-bottom: 2px solid var(--border-dark);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.modal-body {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.modal-text {
-    margin-bottom: 10px;
-    color: var(--text-light);
-    font-size: 0.95em;
-}
-
-.item-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 10px 0;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 5px;
-}
-
-.item-thumb-modal {
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--equipped-green);
-    border-radius: 3px;
-    margin-right: 10px;
-    padding: 2px;
-}
-
-.item-name {
-    font-weight: bold;
-    color: var(--highlight-gold);
-}
-
-.warning-text {
-    font-size: 0.8em;
-    color: var(--border-dark);
-    margin-top: 10px;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: space-between;
     gap: 15px;
 }
 
-.btn-cancel, .btn-confirm-unequip {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.label {
+    color: #a1887f;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.label i { width: 20px; text-align: center; color: var(--gold); }
+
+.value { font-weight: bold; font-size: 1.1rem; }
+.highlight { color: var(--gold); text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+.atk { color: #ef5350; }
+.def { color: #42a5f5; }
+.speed { color: #66bb6a; }
+.crit { color: #ab47bc; }
+
+.divider { height: 2px; background: var(--wood-light); margin: 5px 0; }
+
+/* --- CENTER PANEL: HERO --- */
+.hero-panel {
+    background: radial-gradient(circle at center, #4e342e 0%, #261815 100%);
+    position: relative;
+    border-color: var(--gold); /* Viền vàng nổi bật */
+    overflow: hidden;
+}
+
+.aura-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255, 236, 179, 0.1) 0%, transparent 70%);
+    animation: pulseAura 4s infinite;
+}
+
+.char-figure {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10rem;
+    color: rgba(0,0,0,0.5);
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+    z-index: 1;
+}
+
+/* Slots Positioning */
+.equip-slot {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    flex-grow: 1;
+    transition: transform 0.2s;
+}
+.equip-slot:hover { transform: scale(1.1); }
+
+.slot-frame {
+    width: 64px;
+    height: 64px;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid #8d6e63;
+    border-radius: 8px; /* Bo góc nhẹ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.8);
+    transition: 0.3s;
 }
 
-.btn-cancel {
-    background: var(--border-dark);
-    color: var(--text-light);
+.equip-slot.filled .slot-frame {
+    border-color: var(--gold);
+    background: rgba(255, 236, 179, 0.05);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
-.btn-cancel:hover {
-    background: #5a5a70;
+.slot-frame img { width: 90%; height: 90%; object-fit: contain; }
+.placeholder { font-size: 1.5rem; color: #5d4037; }
+.slot-label {
+    font-size: 0.8rem;
+    color: var(--gold-dim);
+    text-shadow: 1px 1px 2px #000;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
-.btn-confirm-unequip {
-    background: var(--highlight-red);
-    color: white;
-    box-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+/* Positions */
+.head-slot { top: 40px; left: 50%; transform: translateX(-50%); }
+.head-slot:hover { transform: translateX(-50%) scale(1.1); }
+
+.weapon-slot { top: 50%; left: 30px; transform: translateY(-50%); }
+.weapon-slot:hover { transform: translateY(-50%) scale(1.1); }
+
+.body-slot { top: 50%; right: 30px; transform: translateY(-50%); }
+.body-slot:hover { transform: translateY(-50%) scale(1.1); }
+
+.boots-slot { bottom: 40px; left: 50%; transform: translateX(-50%); }
+.boots-slot:hover { transform: translateX(-50%) scale(1.1); }
+
+/* --- RIGHT PANEL: BAG --- */
+.bag-info {
+    text-align: right;
+    padding: 5px 15px;
+    font-size: 0.8rem;
+    color: #a1887f;
 }
 
-.btn-confirm-unequip:hover {
-    background: #e62250;
-    transform: translateY(-1px);
+.mini-grid {
+    flex: 1;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 60px;
+    gap: 8px;
+    overflow-y: auto;
+    align-content: start;
+}
+
+.mini-slot {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #4e342e;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.mini-slot.empty { opacity: 0.2; pointer-events: none; }
+
+.mini-slot:hover { border-color: var(--gold); background: rgba(255,255,255,0.05); }
+
+.mini-slot img { width: 100%; height: 100%; padding: 4px; object-fit: contain; }
+.qty {
+    position: absolute; bottom: 2px; right: 2px;
+    background: rgba(0,0,0,0.8); color: #fff;
+    font-size: 0.7rem; padding: 0 4px; border-radius: 2px;
+}
+.equipped-dot {
+    position: absolute; top: 3px; left: 3px;
+    width: 6px; height: 6px; background: #4caf50;
+    border-radius: 50%; box-shadow: 0 0 5px #4caf50;
+}
+
+/* Rarity Borders */
+.rarity-C { border-bottom: 2px solid #9e9e9e; }
+.rarity-S { border-bottom: 2px solid var(--gold); }
+
+/* --- MODAL --- */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000; backdrop-filter: blur(2px);
+}
+.dark-modal {
+    width: 350px; background: var(--wood-dark);
+    position: relative; box-shadow: 0 0 30px #000;
+}
+.modal-border-top { height: 10px; background: #2d1e1b; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.5); }
+.modal-border-bot { height: 10px; background: #2d1e1b; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+.modal-content { padding: 20px; text-align: center; }
+
+.modal-title { color: var(--red-seal); margin: 0 0 15px 0; border-bottom: 1px solid #5d4037; padding-bottom: 10px; }
+
+.item-preview-box {
+    background: rgba(0,0,0,0.3); border: 1px solid #5d4037;
+    padding: 10px; display: flex; align-items: center; gap: 15px; margin-bottom: 20px;
+}
+.preview-img { width: 50px; height: 50px; border: 1px solid var(--gold); padding: 2px; }
+.preview-info { display: flex; flex-direction: column; text-align: left; }
+.p-name { color: var(--gold); font-weight: bold; }
+.p-type { font-size: 0.8rem; color: #9e9e9e; }
+
+.modal-actions { display: flex; gap: 10px; }
+.btn-wood { flex: 1; padding: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.cancel { background: #4e342e; color: #bdbdbd; }
+.confirm { background: var(--red-seal); color: #fff; }
+.confirm:hover { background: #d32f2f; }
+
+@keyframes pulseAura {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .char-grid { grid-template-columns: 1fr; height: auto; }
+    .hero-panel { height: 400px; }
 }
 </style>
