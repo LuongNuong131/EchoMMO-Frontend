@@ -160,7 +160,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  height: 100vh;
 }
 
 /* --- BACKGROUND EFFECTS --- */
@@ -1290,7 +1289,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  height: 100vh;
 }
 
 .ink-bg-layer {
