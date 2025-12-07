@@ -92,6 +92,7 @@
             </div>
             <div class="slot-label-tag">GIÀY</div>
           </div>
+<<<<<<< HEAD
           
           <div
             class="wood-slot necklace"
@@ -124,15 +125,20 @@
             </div>
             <div class="slot-label-tag">NHẪN</div>
           </div>
+=======
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 
           <svg class="connection-lines" viewBox="0 0 400 400">
             <line x1="200" y1="60" x2="60" y2="200" class="connector" />
             <line x1="200" y1="60" x2="340" y2="200" class="connector" />
             <line x1="200" y1="340" x2="60" y2="200" class="connector" />
             <line x1="200" y1="340" x2="340" y2="200" class="connector" />
+<<<<<<< HEAD
             
             <line x1="130" y1="200" x2="270" y2="200" class="connector" />
             <line x1="200" y1="130" x2="200" y2="270" class="connector" />
+=======
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
           </svg>
         </div>
 
@@ -360,6 +366,7 @@ const filter = ref("ALL");
 const selectedItem = ref(null);
 const equipment = computed(() => inventoryStore.equippedItems);
 
+<<<<<<< HEAD
 // Định nghĩa các loại Item có thể trang bị
 const EQUIP_TYPES = ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"];
 // Định nghĩa các loại Item không thể trang bị (Vật phẩm/Nguyên liệu)
@@ -378,6 +385,20 @@ const filteredItems = computed(() => {
     items = items.filter((i) => MATERIAL_TYPES.includes(i.item.type));
   }
   
+=======
+const filteredItems = computed(() => {
+  let items = inventoryStore.items;
+  if (filter.value === "EQUIP")
+    items = items.filter((i) =>
+      ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"].includes(
+        i.item.type
+      )
+    );
+  if (filter.value === "MAT")
+    items = items.filter((i) =>
+      ["MATERIAL", "CONSUMABLE"].includes(i.item.type)
+    );
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   return items;
 });
 
@@ -408,7 +429,14 @@ const confirmP2P = async () => {
   selectedItem.value = null;
 };
 
+<<<<<<< HEAD
 const canEquip = (u) => EQUIP_TYPES.includes(u.item.type);
+=======
+const canEquip = (u) =>
+  ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"].includes(
+    u.item.type
+  );
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 const unequip = (slot) => {
   if (equipment.value[slot])
     inventoryStore.unequipItem(equipment.value[slot].userItemId);
@@ -420,8 +448,11 @@ const translateType = (type) => {
     ARMOR: "Y Phục",
     HELMET: "Mũ",
     BOOTS: "Giày",
+<<<<<<< HEAD
     RING: "Nhẫn",
     NECKLACE: "Dây Chuyền",
+=======
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
     CONSUMABLE: "Tiêu Hao",
     MATERIAL: "Nguyên Liệu",
   };
@@ -634,7 +665,11 @@ onMounted(() => {
   font-weight: bold;
 }
 
+<<<<<<< HEAD
 /* TỌA ĐỘ 6 Ô */
+=======
+/* TỌA ĐỘ 4 Ô - CÁCH TÂM 120px */
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 .helmet {
   top: 30px;
   left: 50%;
@@ -655,6 +690,7 @@ onMounted(() => {
   right: 30px;
   transform: translateY(-50%);
 }
+<<<<<<< HEAD
 /* New Slots Positioning */
 .necklace {
   top: 130px; /* Above Weapon/Armor line */
@@ -667,6 +703,8 @@ onMounted(() => {
   transform: translateY(-50%);
 }
 
+=======
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 
 /* ĐƯỜNG NỐI SVG */
 .connection-lines {
@@ -1072,4 +1110,8 @@ onMounted(() => {
 .custom-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
 }
+<<<<<<< HEAD
 </style>
+=======
+</style>
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f

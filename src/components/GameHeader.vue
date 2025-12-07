@@ -2,6 +2,10 @@
   <header class="game-header">
     <div class="header-texture"></div>
     <div class="header-border-bot"></div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
     <div class="spacer"></div>
 
     <div class="hud-container" v-if="authStore.token">
@@ -11,10 +15,18 @@
           <div class="res-icon"><i class="fas fa-coins"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.gold || 0) }}</div>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
         <div class="res-module jade mobile-hide" title="Linh Thạch">
           <div class="res-icon"><i class="fas fa-gem"></i></div>
           <div class="res-val">{{ formatNumber(authStore.wallet?.diamonds || 0) }}</div>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
         <div class="res-module energy" title="Chân Khí">
           <div class="res-icon"><i class="fas fa-bolt"></i></div>
           <div class="energy-track">
@@ -296,20 +308,32 @@ onMounted(() => {
   transition: width 0.5s;
 }
 
+<<<<<<< HEAD
 /* [CSS MỚI CHO AVATAR] */
 .avatar-frame {
   width: 56px;
   height: 56px;
   /* Kích thước to hơn */
+=======
+/* [UPDATE] AVATAR: To hơn, rõ nét hơn, bỏ viền vàng */
+.avatar-frame {
+  width: 56px;
+  height: 56px;
+  /* Tăng kích thước (cũ là 40px) */
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
   position: relative;
   border-radius: 50%;
   background: #1a1510;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
   overflow: hidden;
+<<<<<<< HEAD
   /* Đã xóa border vàng */
   display: flex;
   align-items: center;
   justify-content: center;
+=======
+  /* Đã xóa border viền vàng */
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 }
 
 .frame-content {
@@ -321,11 +345,19 @@ onMounted(() => {
 }
 
 .avatar-img {
+<<<<<<< HEAD
   width: 85%;
   height: 85%;
   object-fit: contain;
   image-rendering: pixelated;
   /* Ảnh nét, không mờ */
+=======
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  /* [QUAN TRỌNG] Giúp ảnh pixel art nét căng khi phóng to */
+>>>>>>> 7b6ce4b93e8b5d770974f65684ff1190a720583f
 }
 
 @media (max-width: 600px) {
