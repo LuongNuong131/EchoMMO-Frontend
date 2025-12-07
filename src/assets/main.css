@@ -36,6 +36,12 @@
   --header-height: 80px;
   --sidebar-width: 280px; /* Default */
   --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Định nghĩa màu phẩm chất Neon */
+  --neon-c: #00ff9d; /* Xanh lá */
+  --neon-b: #0099ff; /* Xanh dương */
+  --neon-a: #b700ff; /* Tím */
+  --neon-s: #ffd700; /* Vàng kim */
 }
 
 /* --- BASE RESET --- */
@@ -283,3 +289,62 @@ button {
     padding-bottom: 80px; /* Space for bottom nav if needed */
   }
 }
+
+/* Ghi đè style cũ để tạo khung full viền */
+.grid-slot.rarity-C,
+.grid-slot.rarity-B,
+.grid-slot.rarity-A,
+.grid-slot.rarity-S {
+  border-bottom: none !important; /* Bỏ viền dưới cũ nếu có */
+  transition: all 0.3s ease;
+}
+
+/* --- CẤP C (COMMON) --- */
+.rarity-C {
+  border: 1px solid var(--neon-c) !important;
+  box-shadow: 0 0 5px rgba(0, 255, 157, 0.3), inset 0 0 10px rgba(0, 255, 157, 0.1);
+}
+
+/* --- CẤP B (RARE) --- */
+.rarity-B {
+  border: 1px solid var(--neon-b) !important;
+  box-shadow: 0 0 8px rgba(0, 153, 255, 0.5), inset 0 0 15px rgba(0, 153, 255, 0.15);
+}
+
+/* --- CẤP A (EPIC) - Có hiệu ứng thở --- */
+.rarity-A {
+  border: 1px solid var(--neon-a) !important;
+  box-shadow: 0 0 10px var(--neon-a), inset 0 0 20px rgba(183, 0, 255, 0.2);
+  animation: neon-pulse-purple 3s infinite alternate;
+}
+
+/* --- CẤP S (LEGENDARY) - Có hiệu ứng hào quang --- */
+.rarity-S {
+  border: 1px solid var(--neon-s) !important;
+  box-shadow: 0 0 15px var(--neon-s), inset 0 0 30px rgba(255, 215, 0, 0.25);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent 60%);
+  animation: neon-pulse-gold 1.5s infinite alternate;
+}
+
+/* --- KEYFRAMES ANIMATION --- */
+@keyframes neon-pulse-purple {
+  from { box-shadow: 0 0 8px var(--neon-a), inset 0 0 10px rgba(183, 0, 255, 0.1); }
+  to { box-shadow: 0 0 18px var(--neon-a), inset 0 0 25px rgba(183, 0, 255, 0.3); }
+}
+
+@keyframes neon-pulse-gold {
+  from { 
+    box-shadow: 0 0 10px var(--neon-s), inset 0 0 15px rgba(255, 215, 0, 0.2); 
+    border-color: var(--neon-s);
+  }
+  to { 
+    box-shadow: 0 0 25px var(--neon-s), 0 0 5px #fff, inset 0 0 35px rgba(255, 215, 0, 0.4); 
+    border-color: #fff; /* Chớp trắng */
+  }
+}
+
+/* Màu chữ theo phẩm chất (Áp dụng cho tên vật phẩm) */
+.text-rarity-C { color: var(--neon-c) !important; text-shadow: 0 0 5px var(--neon-c); }
+.text-rarity-B { color: var(--neon-b) !important; text-shadow: 0 0 8px var(--neon-b); }
+.text-rarity-A { color: var(--neon-a) !important; text-shadow: 0 0 10px var(--neon-a); }
+.text-rarity-S { color: var(--neon-s) !important; text-shadow: 0 0 15px var(--neon-s); font-weight: 800; }
