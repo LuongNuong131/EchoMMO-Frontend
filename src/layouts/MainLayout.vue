@@ -1605,18 +1605,18 @@ const handleScroll = () => { /* Logic scroll */ };
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Orbitron:wght@400;700&display=swap");
 /* --- CORE VARIABLES (Ancient/Wood Theme) --- */
 :root {
-  /* Thay thế màu Cyberpunk/Jade bằng màu Wuxia */
-  --sidebar-bg: #1a100e;       /* Màu Nền Gỗ/Mực Cực Đậm */
-  --sidebar-border: #3e2723;   /* Màu Gỗ Đậm */
-  --text-main: #fdf5e6;        /* Màu Giấy Sáng */
+  /* ĐÃ CHỈNH: Tông màu nâu đậm chủ đạo cho toàn bộ ứng dụng */
+  --sidebar-bg: #2C1E18;       /* Màu Nền Sidebar/Wood Darkest */
+  --sidebar-border: #4E342E;   /* Màu viền gỗ tối */
+  --text-main: #fdf5e6;        /* Màu Giấy Sáng (Text Primary) */
   --text-dim: #a1887f;         /* Màu Chữ Mờ */
   
-  --accent-wuxia: #fbc02d;     /* Màu Chủ Đạo (Vàng Cổ) */
-  --accent-red: #b71c1c;       /* Màu Đỏ Ấn Triện (Red Seal) */
+  --accent-wuxia: #C5A059;     /* ĐÃ CHỈNH: Màu Chủ Đạo (Antique Gold) */
+  --accent-red: #8A1C1C;       /* ĐÃ CHỈNH: Màu Đỏ Ấn Triện (Rich Red Seal) */
   --hover-bg: #3e2723;         /* Màu Gỗ Đậm cho hover */
   
   --accent-gold: #f59e0b;      
-  --bg-deep: #020617;
+  --bg-deep: #0A0706;          /* Nền sâu nhất (Deep Ink) */
 }
 
 .wuxia-theme {
@@ -1661,9 +1661,9 @@ const handleScroll = () => { /* Logic scroll */ };
   display: flex;
   flex-direction: column;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background: var(--sidebar-bg); /* SỬ DỤNG MÀU GỖ */
-  border-right: 1px solid var(--sidebar-border); /* SỬ DỤNG MÀU GỖ */
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  background: var(--sidebar-bg); /* MÀU NỀN NÂU ĐẬM MỚI */
+  border-right: 1px solid var(--sidebar-border); /* VIỀN MỚI */
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.9); /* SHADOW ĐEN RÕ RÀNG */
 }
 
 .logo-area {
@@ -1679,12 +1679,12 @@ const handleScroll = () => { /* Logic scroll */ };
 .logo-seal {
   width: 40px;
   height: 40px;
-  background: var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  background: var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px var(--accent-wuxia); /* GLOW VÀNG */
+  box-shadow: 0 0 15px var(--accent-wuxia);
   flex-shrink: 0;
   transform: rotate(45deg);
 }
@@ -1716,7 +1716,7 @@ const handleScroll = () => { /* Logic scroll */ };
 .logo-text .sub {
   font-family: "Orbitron", sans-serif;
   font-size: 0.7em;
-  color: var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  color: var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
   letter-spacing: 2px;
   margin-top: 2px;
 }
@@ -1779,15 +1779,15 @@ const handleScroll = () => { /* Logic scroll */ };
   top: 10%;
   bottom: 10%;
   width: 3px;
-  background: var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  background: var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
   border-radius: 0 4px 4px 0;
   transform: scaleY(0);
   transition: 0.3s;
-  box-shadow: 2px 0 8px var(--accent-wuxia); /* GLOW VÀNG */
+  box-shadow: 2px 0 8px var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
 }
 
 .nav-item:hover {
-  background: var(--hover-bg); /* DÙNG MÀU GỖ HOVER */
+  background: var(--hover-bg);
   color: #fff;
 }
 
@@ -1797,12 +1797,12 @@ const handleScroll = () => { /* Logic scroll */ };
 }
 
 .nav-item.router-link-active {
-  background: rgba(251, 192, 45, 0.1); /* NỀN VÀNG TRONG SUỐT */
-  color: var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  background: rgba(197, 160, 89, 0.1); /* Nền vàng (từ new gold) trong suốt */
+  color: var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
 }
 
 .nav-item.router-link-active .nav-icon {
-  color: var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  color: var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
 }
 
 .nav-item.router-link-active .active-glow {
@@ -1810,8 +1810,8 @@ const handleScroll = () => { /* Logic scroll */ };
 }
 
 .admin-link.router-link-active {
-  color: var(--accent-red); /* DÙNG MÀU ĐỎ */
-  background: rgba(183, 28, 28, 0.1); /* NỀN ĐỎ TRONG SUỐT */
+  color: var(--accent-red); /* MÀU ĐỎ MỚI */
+  background: rgba(138, 28, 28, 0.1); /* NỀN ĐỎ MỚI TRONG SUỐT */
 }
 
 .admin-link.router-link-active .nav-icon {
@@ -1833,7 +1833,7 @@ const handleScroll = () => { /* Logic scroll */ };
 }
 
 .control-btn {
-  background: var(--hover-bg); /* DÙNG MÀU GỖ HOVER */
+  background: var(--hover-bg);
   border: 1px solid var(--sidebar-border);
   color: var(--text-dim);
   padding: 10px;
@@ -1855,9 +1855,9 @@ const handleScroll = () => { /* Logic scroll */ };
 }
 
 .logout:hover {
-  border-color: var(--accent-red); /* DÙNG MÀU ĐỎ */
+  border-color: var(--accent-red);
   color: var(--accent-red);
-  background: rgba(183, 28, 28, 0.1); /* NỀN ĐỎ TRONG SUỐT */
+  background: rgba(138, 28, 28, 0.1);
 }
 
 .btn-text {
@@ -1880,7 +1880,8 @@ const handleScroll = () => { /* Logic scroll */ };
   inset: 15px;
   pointer-events: none;
   z-index: 50;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  /* Dùng màu Vàng Cổ cho khung chính */
+  border: 1px solid rgba(197, 160, 89, 0.4); 
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
@@ -1888,9 +1889,9 @@ const handleScroll = () => { /* Logic scroll */ };
   position: absolute;
   width: 30px;
   height: 30px;
-  border: 2px solid var(--accent-wuxia); /* DÙNG MÀU VÀNG CỔ */
+  border: 2px solid var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
   transition: 0.3s;
-  box-shadow: 0 0 10px var(--accent-wuxia); /* GLOW VÀNG */
+  box-shadow: 0 0 10px var(--accent-wuxia); /* MÀU VÀNG CỔ MỚI */
 }
 
 .top-left {

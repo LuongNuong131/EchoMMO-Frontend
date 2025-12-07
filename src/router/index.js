@@ -142,6 +142,7 @@ import Notifications from "../views/Notifications.vue";
 import Friends from "../views/Friends.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import Village from "../views/Village.vue";
+import Gathering from "../views/Gathering.vue";
 import Explore from "../views/Explore.vue";
 import Character from "../views/Character.vue";
 
@@ -152,6 +153,12 @@ const routes = [
   { path: "/create-character", name: "CreateCharacter", component: CreateCharacter, meta: { requiresAuth: true } },
   { path: "/village", name: "Village", component: Village, meta: { requiresAuth: true } },
   { path: "/explore", name: "Explore", component: Explore, meta: { requiresAuth: true } },
+  {
+    path: '/gathering',
+    name: 'Gathering',
+    component: Gathering,
+    meta: { requiresAuth: true }
+  },
   { path: "/inventory", name: "Inventory", component: Inventory, meta: { requiresAuth: true } },
   { path: "/market", name: "Marketplace", component: Marketplace, meta: { requiresAuth: true } },
   { path: "/leaderboard", name: "Leaderboard", component: Leaderboard, meta: { requiresAuth: true } },

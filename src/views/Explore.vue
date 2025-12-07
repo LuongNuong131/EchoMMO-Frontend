@@ -307,7 +307,8 @@ onUnmounted(() => clearInterval(moveInterval));
 }
 
 .progress-fill.energy {
-  background: linear-gradient(to right, #1565c0, #42a5f5);
+  /* ĐÃ CHỈNH: Đổi màu Energy từ xanh sang Đỏ Ấn Triện */
+  background: linear-gradient(to right, #8A1C1C, #B71C1C); 
 }
 
 .stat-text {
@@ -333,6 +334,7 @@ onUnmounted(() => clearInterval(moveInterval));
 
 .exp-fill {
   height: 100%;
+  /* Giữ nguyên màu xanh EXP vì nó là secondary accent */
   background: #00e676;
 }
 
@@ -469,9 +471,11 @@ onUnmounted(() => clearInterval(moveInterval));
 
 .main-btn {
   flex: 2;
-  background: linear-gradient(to bottom, #2e7d32, #1b5e20);
-  border: 1px solid #43a047;
-  color: #fff;
+  /* ĐÃ CHỈNH: Đổi màu nút Hành Tẩu từ xanh lá sang Tông Gỗ/Vàng Cổ */
+  background: linear-gradient(to bottom, #4E342E, #3E2723); 
+  border: 1px solid #C5A059; /* Antique Gold Border */
+  color: #C5A059; /* Antique Gold Text */
+  box-shadow: 0 3px 0 #261815;
 }
 
 .sub-btn {

@@ -97,3 +97,6 @@ button {
 .fade-leave-to {
   opacity: 0;
 }
+.slide-up-enter-active {
+  transition: transform 0.3s ease-out;
+}
