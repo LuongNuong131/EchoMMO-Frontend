@@ -43,7 +43,7 @@
             </div>
           </div>
 
-          <div class="fighter-card player" :class="{ 'hit-anim': isPlayerHit }">
+          <div class="fighter-card player" :class="{ 'hit-anim': isPlayerHit, 'attacking': isPlayerAttacking }">
             <div class="fighter-visual">
               <div class="fighter-circle green-ring">
                 <img :src="playerImage" class="fighter-img" />
@@ -108,7 +108,6 @@
       </main>
 
       <aside class="side-panel right-panel">
-
         <div class="char-detail-card">
           <div class="panel-header">THÔNG TIN</div>
           <div class="detail-row">
@@ -137,7 +136,6 @@
             </div>
           </div>
         </div>
-
       </aside>
 
     </div>
@@ -160,8 +158,9 @@ const router = useRouter();
 const isPlayerHit = ref(false);
 const isEnemyHit = ref(false);
 const nextAttackBuffed = ref(false);
+const isPlayerAttacking = ref(false); // [NEW] Biến trạng thái tấn công
 const logContainer = ref(null);
-const lastDamage = ref(0); // Mock để hiện số damage
+const lastDamage = ref(0);
 const lastDamageTaken = ref(0);
 
 let autoInterval = null;
@@ -182,9 +181,10 @@ const enemyImage = computed(() => {
   return getEnemyImage(battleStore.enemy?.name);
 });
 
+// [LOGIC MỚI] Đổi ảnh: Attack khi đánh, Idle khi đứng
 const playerImage = computed(() => {
   const skin = getCurrentSkin(authStore.user?.avatarUrl);
-  return skin.sprites.idle;
+  return isPlayerAttacking.value ? skin.sprites.attack : skin.sprites.idle;
 });
 
 const battleResultText = computed(() => {
@@ -212,16 +212,25 @@ const activateBuff = () => {
   }
 };
 
-// --- AUTO BATTLE LOGIC ---
+// --- AUTO BATTLE LOGIC [CẬP NHẬT] ---
 const runAutoBattle = async () => {
   if (battleStore.status !== 'ONGOING') {
     clearInterval(autoInterval);
     return;
   }
 
+  // 1. Kích hoạt trạng thái tấn công (đổi ảnh sang atk_)
+  isPlayerAttacking.value = true;
+
+  // 2. Sau 500ms (khi đánh xong) thì trả về trạng thái đứng (idle_)
+  setTimeout(() => {
+    isPlayerAttacking.value = false;
+  }, 500);
+
   const prevEnemyHp = battleStore.enemyHp;
   const prevPlayerHp = battleStore.playerHp;
 
+  // Gọi API đánh
   const result = await battleStore.autoTurn(nextAttackBuffed.value);
   if (nextAttackBuffed.value) nextAttackBuffed.value = false;
 
@@ -229,9 +238,12 @@ const runAutoBattle = async () => {
     // Tính toán damage để hiện số floating text
     const dmgDealt = prevEnemyHp - result.enemyHp;
     if (dmgDealt > 0) {
-      lastDamage.value = dmgDealt;
-      isEnemyHit.value = true;
-      setTimeout(() => isEnemyHit.value = false, 300);
+      // Delay xíu để khớp với animation đánh
+      setTimeout(() => {
+        lastDamage.value = dmgDealt;
+        isEnemyHit.value = true;
+        setTimeout(() => isEnemyHit.value = false, 300);
+      }, 300);
     }
 
     const dmgTaken = prevPlayerHp - result.playerHp;
@@ -240,7 +252,7 @@ const runAutoBattle = async () => {
         lastDamageTaken.value = dmgTaken;
         isPlayerHit.value = true;
         setTimeout(() => isPlayerHit.value = false, 300);
-      }, 400); // Enemy đánh trễ hơn xíu
+      }, 600); // Enemy đánh trễ hơn xíu
     }
   }
 };
@@ -256,9 +268,7 @@ watch(() => battleStore.combatLogs.length, () => {
 
 onMounted(async () => {
   await charStore.fetchCharacter();
-
   if (!battleStore.enemy) await battleStore.startBattle();
-
   if (battleStore.status === 'ONGOING') {
     autoInterval = setInterval(runAutoBattle, 1500);
   }
@@ -268,7 +278,7 @@ onUnmounted(() => clearInterval(autoInterval));
 </script>
 
 <style scoped>
-/* --- 7. MÀU SẮC & PHONG CÁCH --- */
+/* (Phần CSS giữ nguyên như cũ của bạn) */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cinzel:wght@700&display=swap");
 
 :root {
@@ -286,7 +296,6 @@ onUnmounted(() => clearInterval(autoInterval));
 .battle-page {
   background-color: var(--bg-dark);
   min-height: calc(100vh - 60px);
-  /* Trừ header */
   color: var(--text-main);
   font-family: 'Inter', sans-serif;
   overflow: hidden;
@@ -297,7 +306,6 @@ onUnmounted(() => clearInterval(autoInterval));
   position: absolute;
   inset: 0;
   background-image: url("@/assets/Background/b_doanhtrai.png");
-  /* Background mờ */
   background-size: cover;
   background-position: center;
   opacity: 0.15;
@@ -305,13 +313,11 @@ onUnmounted(() => clearInterval(autoInterval));
   pointer-events: none;
 }
 
-/* --- 6. BỐ CỤC & GRID --- */
 .battle-layout {
   position: relative;
   z-index: 10;
   display: grid;
   grid-template-columns: 250px 1fr 250px;
-  /* 3 Cột: 250px - Auto - 250px */
   gap: 15px;
   max-width: 1400px;
   margin: 0 auto;
@@ -329,10 +335,8 @@ onUnmounted(() => clearInterval(autoInterval));
   flex-direction: column;
   gap: 15px;
   min-width: 0;
-  /* Fix flex overflow */
 }
 
-/* KHUNG CHUNG CHO CÁC PANEL */
 .leaderboard-list,
 .combat-arena,
 .chat-section,
@@ -357,7 +361,6 @@ onUnmounted(() => clearInterval(autoInterval));
   letter-spacing: 1px;
 }
 
-/* --- 2. BẢNG XẾP HẠNG --- */
 .leaderboard-list {
   flex: 1;
   overflow-y: auto;
@@ -419,19 +422,15 @@ onUnmounted(() => clearInterval(autoInterval));
   color: var(--text-muted);
 }
 
-/* --- 4. KHUNG COMBAT (TRUNG TÂM) --- */
 .combat-arena {
   flex: 2;
-  /* Chiếm phần lớn chiều cao */
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: radial-gradient(circle, #2a1a1a 0%, #1a0f0f 80%);
-  /* Nền tối đỏ nhẹ */
   border: 1px solid #5c2b2b;
-  /* Viền đỏ tối */
   padding: 20px;
 }
 
@@ -449,7 +448,6 @@ onUnmounted(() => clearInterval(autoInterval));
   opacity: 0.5;
 }
 
-/* FIGHTER CARDS */
 .fighter-card {
   position: absolute;
   display: flex;
@@ -457,6 +455,12 @@ onUnmounted(() => clearInterval(autoInterval));
   align-items: center;
   width: 140px;
   z-index: 5;
+  transition: transform 0.1s;
+}
+
+/* Hiệu ứng lao lên khi tấn công */
+.fighter-card.player.attacking {
+  transform: translateX(40px) scale(1.1);
 }
 
 .fighter-card.player {
@@ -464,13 +468,10 @@ onUnmounted(() => clearInterval(autoInterval));
   left: 10%;
 }
 
-/* Cân đối trái */
 .fighter-card.enemy {
   top: 60px;
   right: 10%;
 }
-
-/* Cân đối phải */
 
 .fighter-visual {
   position: relative;
@@ -485,6 +486,7 @@ onUnmounted(() => clearInterval(autoInterval));
   justify-content: center;
   align-items: center;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 }
 
 .green-ring {
@@ -496,14 +498,12 @@ onUnmounted(() => clearInterval(autoInterval));
 }
 
 .fighter-img {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
-  transition: transform 0.1s;
 }
 
-/* Hiệu ứng trúng đòn */
 .hit-anim .fighter-img {
   filter: brightness(2) sepia(1) hue-rotate(-50deg);
   transform: translateX(-5px);
@@ -524,8 +524,6 @@ onUnmounted(() => clearInterval(autoInterval));
 .player-dmg {
   color: #ff5252;
 }
-
-/* Máu mình mất màu đỏ */
 
 .fighter-stats {
   width: 100%;
@@ -685,14 +683,11 @@ onUnmounted(() => clearInterval(autoInterval));
   cursor: pointer;
 }
 
-/* --- 3. KHUNG CHAT (BOTTOM CENTER) --- */
 .chat-section {
   flex: 1;
-  /* Chiếm 1 phần nhỏ bên dưới */
   display: flex;
   flex-direction: column;
   background: rgba(30, 20, 10, 0.9);
-  /* Tone cam/nâu tối */
   border-color: #d84315;
   min-height: 150px;
 }
@@ -755,7 +750,6 @@ onUnmounted(() => clearInterval(autoInterval));
   cursor: pointer;
 }
 
-/* --- 1. & 5. CỘT PHẢI: INFO & LOG --- */
 .char-detail-card {
   padding: 10px;
   margin-bottom: 15px;
@@ -796,12 +790,10 @@ onUnmounted(() => clearInterval(autoInterval));
   color: #fff176;
 }
 
-/* Vàng nhạt */
 .log-enemy {
   color: #ef9a9a;
 }
 
-/* Đỏ nhạt */
 .log-win {
   color: #a5d6a7;
   font-weight: bold;
@@ -811,33 +803,26 @@ onUnmounted(() => clearInterval(autoInterval));
   color: #bdbdbd;
 }
 
-/* --- 9. RESPONSIVE --- */
 @media (max-width: 900px) {
   .battle-layout {
     grid-template-columns: 1fr;
-    /* 1 Cột dọc */
     grid-template-rows: auto auto auto auto;
     height: auto;
     padding-bottom: 60px;
   }
 
-  /* Thứ tự hiển thị trên Mobile */
   .center-panel {
     order: 1;
   }
 
-  /* Combat lên đầu */
   .right-panel {
     order: 2;
   }
 
-  /* Stats & Log thứ 2 */
   .left-panel {
     order: 3;
     display: none;
   }
-
-  /* Ẩn rank trên mobile cho gọn */
 
   .combat-arena {
     height: 400px;
