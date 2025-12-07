@@ -1111,19 +1111,17 @@ const handleScroll = () => { /* Logic scroll */ };
 </script>
 
 <style scoped>
-/* CSS cũ giữ nguyên */
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Orbitron:wght@400;700&display=swap");
-
+/* --- CORE VARIABLES (Ancient/Wood Theme) --- */
 :root {
-  --sidebar-bg: #111827;
-  --sidebar-border: #1f2937;
-  --text-main: #f3f4f6;
-  --text-dim: #9ca3af;
-  --accent-jade: #10b981;
-  --accent-gold: #f59e0b;
-  --accent-red: #ef4444;
-  --bg-deep: #020617;
-  --hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-bg: #1a100e;       /* Màu Nền Gỗ/Mực Cực Đậm (Deepest Ink/Wood) */
+  --sidebar-border: #3e2723;   /* Màu Gỗ Đậm (Wood Dark) */
+  --text-main: #fdf5e6;        /* Màu Giấy Sáng (Paper White) */
+  --text-dim: #a1887f;         /* Màu Chữ Mờ (Dim Wood Grey) */
+  --accent-wuxia: #fbc02d;     /* Màu Vàng Cổ (Gold Accent) - Thay thế cho Jade */
+  --accent-red: #ef4444;       /* Màu Đỏ (Red) */
+  --bg-deep: #020617;          /* Màu Nền Sâu */
+  --hover-bg: #3e2723;         /* Màu Gỗ Đậm (Wood Dark) */
 }
 
 .wuxia-theme {
