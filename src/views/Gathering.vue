@@ -49,16 +49,6 @@
         </div>
 
         <div class="status-row">
-          <div class="icon-wrap"><i class="fas fa-hammer"></i></div>
-          <div class="stat-detail">
-            <span class="label">Công cụ</span>
-            <span class="val" :class="{ 'text-red': !hasTool }">
-              {{ hasTool ? currentEvent.reqTool : "Chưa có" }}
-            </span>
-          </div>
-        </div>
-
-        <div class="status-row">
           <div class="icon-wrap"><i class="fas fa-cubes"></i></div>
           <div class="stat-detail">
             <span class="label">Trữ lượng</span>
@@ -137,8 +127,8 @@ import { ref, computed, onMounted } from "vue";
 import { useCharacterStore } from "@/stores/characterStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import axiosClient from "@/api/axiosClient"; // [QUAN TRỌNG] Import để gọi API
 
-// Import ảnh (giữ nguyên logic của bạn)
 import copperNodeImg from "@/assets/resources/r_copper_node.png";
 import woodNodeImg from "@/assets/resources/r_go.png";
 import stoneNodeImg from "@/assets/resources/stone_1.png";
@@ -156,7 +146,7 @@ const feedbackMsg = ref("");
 const floatingLoots = ref([]);
 
 const playerLevel = computed(() => charStore.character?.lv || 1);
-const hasTool = ref(true); // Logic check tool giả định
+const hasTool = ref(true);
 
 const EVENT_TYPES = [
   {
@@ -167,9 +157,7 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Cuốc Chim",
-    minYield: 10,
-    maxYield: 20,
-    lootName: "Quặng Đồng",
+    minYield: 10, maxYield: 20, lootName: "Đá/Khoáng",
   },
   {
     id: "wood",
@@ -179,9 +167,7 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Rìu Sắt",
-    minYield: 15,
-    maxYield: 25,
-    lootName: "Gỗ Sồi",
+    minYield: 15, maxYield: 25, lootName: "Gỗ",
   },
   {
     id: "stone",
@@ -191,9 +177,7 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Búa Tạ",
-    minYield: 10,
-    maxYield: 20,
-    lootName: "Đá Tảng",
+    minYield: 10, maxYield: 20, lootName: "Đá",
   },
   {
     id: "special",
@@ -203,9 +187,7 @@ const EVENT_TYPES = [
     rarityText: "Cực Phẩm",
     reqLevel: 5,
     reqTool: "Găng Tay",
-    minYield: 3,
-    maxYield: 8,
-    lootName: "Mảnh Hóa Thạch",
+    minYield: 3, maxYield: 8, lootName: "Gỗ Quý",
   },
 ];
 
@@ -214,9 +196,7 @@ const initEvent = () => {
   const evt = EVENT_TYPES[rnd];
   currentEvent.value = evt;
 
-  const amount =
-    Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) +
-    evt.minYield;
+  const amount = Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) + evt.minYield;
   maxNode.value = amount;
   remainingNode.value = amount;
   feedbackMsg.value = "Phát hiện tài nguyên!";
@@ -232,31 +212,47 @@ const handleGather = async (times) => {
   }
 
   isGathering.value = true;
-  feedbackMsg.value =
-    times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
+  feedbackMsg.value = times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
 
-  const delay = times > 1 ? 800 : 500;
+  // Tính số lượng thực tế có thể đào (không vượt quá trữ lượng còn lại)
+  const actualGathered = Math.min(times, remainingNode.value);
 
-  setTimeout(() => {
-    const actualGathered = Math.min(times, remainingNode.value);
+  try {
+    // [GỌI API] Gửi yêu cầu xuống Backend
+    const res = await axiosClient.post('/exploration/gather', {
+      type: currentEvent.value.id, // wood, stone, mining...
+      amount: actualGathered
+    });
+
+    // Cập nhật UI sau khi Backend xác nhận
     remainingNode.value -= actualGathered;
-
-    if (charStore.character) charStore.character.energy -= actualGathered;
+    
+    // Cập nhật Store (Năng lượng & Ví)
+    if (charStore.character) {
+      charStore.character.energy = res.data.currentEnergy;
+    }
+    // Update Wallet trong AuthStore để Inventory hiển thị đúng
+    if (authStore.wallet) {
+      authStore.wallet.wood = res.data.wood;
+      authStore.wallet.stone = res.data.stone;
+    }
 
     if (actualGathered > 0) {
       showFloatingText(`+${actualGathered} ${currentEvent.value.lootName}`);
-      feedbackMsg.value = `Thu hoạch: ${actualGathered} ${currentEvent.value.lootName}`;
+      feedbackMsg.value = `Thu hoạch thành công!`;
     }
 
     if (remainingNode.value <= 0) {
       feedbackMsg.value = "Tài nguyên đã cạn kiệt!";
-      setTimeout(() => {
-        router.push("/explore");
-      }, 1500);
+      setTimeout(() => { router.push("/explore"); }, 1500);
     }
 
+  } catch (error) {
+    console.error(error);
+    feedbackMsg.value = error.response?.data || "Lỗi khai thác!";
+  } finally {
     isGathering.value = false;
-  }, delay);
+  }
 };
 
 const handleGatherAll = () => {
@@ -284,6 +280,7 @@ const showFloatingText = (text) => {
 
 onMounted(() => {
   charStore.fetchCharacter();
+  authStore.fetchProfile(); // [FIX] Load ví để đồng bộ
   initEvent();
 });
 </script>

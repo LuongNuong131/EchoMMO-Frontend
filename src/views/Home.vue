@@ -574,7 +574,6 @@ p {
 }
 </style> -->
 
-
 <!-- trương khang thêm -->
 <!-- <template>
   <div class="page-container wuxia-dashboard">
@@ -1137,8 +1136,6 @@ p {
   }
 }
 </style> -->
-
-
 
 <!-- 4h16 -->
 <!-- <template>
@@ -1704,7 +1701,7 @@ p {
 </style> -->
 
 <!-- 5h09 -->
- <!-- <template>
+<!-- <template>
   <div class="page-container wuxia-dashboard">
     <div class="ink-bg-layer">
       <div class="mountain-bg"></div>
@@ -2268,7 +2265,7 @@ p {
 </style> -->
 
 <!-- 5:52 -->
- <template>
+<template>
   <div class="page-container wuxia-dashboard">
     <div class="ink-bg-layer">
       <img :src="bgImage" class="bg-image-full" />
@@ -2584,7 +2581,9 @@ onMounted(() => {
 .cmd-card:hover {
   transform: translateY(-5px);
   border-color: var(--gold);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.4);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 .card-content {

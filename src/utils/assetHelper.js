@@ -255,3 +255,6 @@ export const getItemImage = (type) => {
     if (type === 'GOLD') return resolveItemImage('r_gold_coin.png');
     return resolveItemImage('r_copper_bar.png');
 };
+
+// [FIX QUAN TRỌNG] Thêm dòng này để fix lỗi Combat.vue gọi getAssetUrl
+export const getAssetUrl = resolveItemImage;

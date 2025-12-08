@@ -135,7 +135,7 @@ import appLogo from "@/assets/logo/Logo.png";
 
 .team-name {
   /* Font tên team không dấu nên giữ Cinzel cho đẹp, hoặc đổi nếu muốn */
-  font-family: "Cinzel", serif; 
+  font-family: "Cinzel", serif;
   font-size: 1.5em;
   color: #fbc02d;
   margin: 0;
@@ -164,7 +164,7 @@ import appLogo from "@/assets/logo/Logo.png";
 /* --- [ĐÃ SỬA] Đổi font tiêu đề cột --- */
 .col-title {
   /* Đổi từ Cinzel sang Playfair Display hoặc Roboto Slab */
-  font-family: "Playfair Display", serif; 
+  font-family: "Playfair Display", serif;
   font-weight: 700; /* Tăng độ đậm */
   font-size: 1.1em;
   color: #fbc02d;

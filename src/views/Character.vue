@@ -526,8 +526,6 @@ onMounted(() => {
 }
 </style> -->
 
-
-
 <!-- code moi -->
 <template>
   <div class="page-container character-page wuxia-dark-theme">
@@ -538,7 +536,6 @@ onMounted(() => {
 
     <div class="char-wrapper">
       <div class="char-grid">
-
         <div class="panel stats-panel">
           <div class="panel-header">
             <div class="decor-line"></div>
@@ -549,17 +546,36 @@ onMounted(() => {
           <div class="stats-body">
             <div class="stat-row level-row">
               <span class="label">CẢNH GIỚI</span>
-              <span class="value highlight">Luyện Khí Tầng {{ charStore.character?.lv || 1 }}</span>
+              <span class="value highlight"
+                >Luyện Khí Tầng {{ charStore.character?.lv || 1 }}</span
+              >
             </div>
             <div class="divider"></div>
-            <div class="stat-row"><span class="label"><i class="fas fa-fist-raised"></i> Công Lực</span><span
-                class="value atk">{{ charStore.character?.baseAtk || 0 }}</span></div>
-            <div class="stat-row"><span class="label"><i class="fas fa-shield-alt"></i> Hộ Thể</span><span
-                class="value def">{{ charStore.character?.baseDef || 0 }}</span></div>
-            <div class="stat-row"><span class="label"><i class="fas fa-wind"></i> Thân Pháp</span><span
-                class="value speed">{{ charStore.character?.baseSpeed || 0 }}</span></div>
-            <div class="stat-row"><span class="label"><i class="fas fa-bolt"></i> Bạo Kích</span><span
-                class="value crit">{{ charStore.character?.baseCritRate || 0 }}%</span></div>
+            <div class="stat-row">
+              <span class="label"
+                ><i class="fas fa-fist-raised"></i> Công Lực</span
+              ><span class="value atk">{{
+                charStore.character?.baseAtk || 0
+              }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-shield-alt"></i> Hộ Thể</span
+              ><span class="value def">{{
+                charStore.character?.baseDef || 0
+              }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-wind"></i> Thân Pháp</span
+              ><span class="value speed">{{
+                charStore.character?.baseSpeed || 0
+              }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label"><i class="fas fa-bolt"></i> Bạo Kích</span
+              ><span class="value crit"
+                >{{ charStore.character?.baseCritRate || 0 }}%</span
+              >
+            </div>
           </div>
         </div>
 
@@ -570,50 +586,92 @@ onMounted(() => {
             <img :src="userSkinImg" class="skin-preview" />
           </div>
 
-          <div class="equip-slot necklace-slot" :class="{ filled: equipment.NECKLACE }"
-            @mousedown.left="unequipSlow('NECKLACE')" title="Dây Chuyền">
+          <div
+            class="equip-slot necklace-slot"
+            :class="{ filled: equipment.NECKLACE }"
+            @mousedown.left="unequipSlow('NECKLACE')"
+            title="Dây Chuyền"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.NECKLACE" :src="resolveItemImage(equipment.NECKLACE.item.imageUrl)" />
+              <img
+                v-if="equipment.NECKLACE"
+                :src="resolveItemImage(equipment.NECKLACE.item.imageUrl)"
+              />
               <i v-else class="fas fa-gem placeholder"></i>
             </div>
           </div>
 
-          <div class="equip-slot weapon-slot" :class="{ filled: equipment.WEAPON }"
-            @mousedown.left="unequipSlow('WEAPON')" title="Vũ Khí">
+          <div
+            class="equip-slot weapon-slot"
+            :class="{ filled: equipment.WEAPON }"
+            @mousedown.left="unequipSlow('WEAPON')"
+            title="Vũ Khí"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.WEAPON" :src="resolveItemImage(equipment.WEAPON.item.imageUrl)" />
+              <img
+                v-if="equipment.WEAPON"
+                :src="resolveItemImage(equipment.WEAPON.item.imageUrl)"
+              />
               <i v-else class="fas fa-gavel placeholder"></i>
             </div>
           </div>
 
-          <div class="equip-slot ring-slot" :class="{ filled: equipment.RING }" @mousedown.left="unequipSlow('RING')"
-            title="Nhẫn">
+          <div
+            class="equip-slot ring-slot"
+            :class="{ filled: equipment.RING }"
+            @mousedown.left="unequipSlow('RING')"
+            title="Nhẫn"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.RING" :src="resolveItemImage(equipment.RING.item.imageUrl)" />
+              <img
+                v-if="equipment.RING"
+                :src="resolveItemImage(equipment.RING.item.imageUrl)"
+              />
               <i v-else class="fas fa-ring placeholder"></i>
             </div>
           </div>
 
-          <div class="equip-slot head-slot" :class="{ filled: equipment.HELMET }"
-            @mousedown.left="unequipSlow('HELMET')" title="Mũ">
+          <div
+            class="equip-slot head-slot"
+            :class="{ filled: equipment.HELMET }"
+            @mousedown.left="unequipSlow('HELMET')"
+            title="Mũ"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.HELMET" :src="resolveItemImage(equipment.HELMET.item.imageUrl)" />
+              <img
+                v-if="equipment.HELMET"
+                :src="resolveItemImage(equipment.HELMET.item.imageUrl)"
+              />
               <i v-else class="fas fa-hat-cowboy-side placeholder"></i>
             </div>
           </div>
 
-          <div class="equip-slot body-slot" :class="{ filled: equipment.ARMOR }" @mousedown.left="unequipSlow('ARMOR')"
-            title="Y Phục">
+          <div
+            class="equip-slot body-slot"
+            :class="{ filled: equipment.ARMOR }"
+            @mousedown.left="unequipSlow('ARMOR')"
+            title="Y Phục"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.ARMOR" :src="resolveItemImage(equipment.ARMOR.item.imageUrl)" />
+              <img
+                v-if="equipment.ARMOR"
+                :src="resolveItemImage(equipment.ARMOR.item.imageUrl)"
+              />
               <i v-else class="fas fa-tshirt placeholder"></i>
             </div>
           </div>
 
-          <div class="equip-slot boots-slot" :class="{ filled: equipment.BOOTS }" @mousedown.left="unequipSlow('BOOTS')"
-            title="Giày">
+          <div
+            class="equip-slot boots-slot"
+            :class="{ filled: equipment.BOOTS }"
+            @mousedown.left="unequipSlow('BOOTS')"
+            title="Giày"
+          >
             <div class="slot-frame">
-              <img v-if="equipment.BOOTS" :src="resolveItemImage(equipment.BOOTS.item.imageUrl)" />
+              <img
+                v-if="equipment.BOOTS"
+                :src="resolveItemImage(equipment.BOOTS.item.imageUrl)"
+              />
               <i v-else class="fas fa-socks placeholder"></i>
             </div>
           </div>
@@ -625,39 +683,66 @@ onMounted(() => {
             <h3>HÀNH NANG</h3>
             <div class="decor-line"></div>
           </div>
-          <div class="bag-info">Sức chứa: {{ inventoryStore.items.length }} / 50</div>
+          <div class="bag-info">
+            Sức chứa: {{ inventoryStore.items.length }} / 50
+          </div>
 
           <div class="mini-grid custom-scroll">
-            <div v-for="item in inventoryStore.items" :key="item.userItemId" class="mini-slot"
-              :class="['rarity-' + (item.item.rarity || 'C'), { 'is-equipped': item.isEquipped }]" @click="equip(item)"
-              :title="item.item.name">
+            <div
+              v-for="item in inventoryStore.items"
+              :key="item.userItemId"
+              class="mini-slot"
+              :class="[
+                'rarity-' + (item.item.rarity || 'C'),
+                { 'is-equipped': item.isEquipped },
+              ]"
+              @click="equip(item)"
+              :title="item.item.name"
+            >
               <img :src="resolveItemImage(item.item.imageUrl)" />
-              <span class="qty" v-if="item.quantity > 1">{{ item.quantity }}</span>
+              <span class="qty" v-if="item.quantity > 1">{{
+                item.quantity
+              }}</span>
               <div class="equipped-dot" v-if="item.isEquipped"></div>
             </div>
-            <div v-for="n in (20 - (inventoryStore.items.length % 20))" :key="'e' + n" class="mini-slot empty"></div>
+            <div
+              v-for="n in 20 - (inventoryStore.items.length % 20)"
+              :key="'e' + n"
+              class="mini-slot empty"
+            ></div>
           </div>
         </div>
-
       </div>
     </div>
 
     <transition name="fade">
-      <div v-if="showUnequipModal" class="modal-overlay" @click.self="closeModal">
+      <div
+        v-if="showUnequipModal"
+        class="modal-overlay"
+        @click.self="closeModal"
+      >
         <div class="dark-modal">
           <div class="modal-border-top"></div>
           <div class="modal-content">
             <h3 class="modal-title">GỠ BỎ TRANG BỊ</h3>
             <div class="item-preview-box">
-              <img v-if="itemToUnequip" :src="resolveItemImage(itemToUnequip.item.imageUrl)" class="preview-img">
+              <img
+                v-if="itemToUnequip"
+                :src="resolveItemImage(itemToUnequip.item.imageUrl)"
+                class="preview-img"
+              />
               <div class="preview-info" v-if="itemToUnequip">
                 <span class="p-name">{{ itemToUnequip.item.name }}</span>
                 <span class="p-type">Sẽ trở về hành trang</span>
               </div>
             </div>
             <div class="modal-actions">
-              <button class="btn-wood cancel" @click="closeModal">HỦY BỎ</button>
-              <button class="btn-wood confirm" @click="confirmUnequip">XÁC NHẬN</button>
+              <button class="btn-wood cancel" @click="closeModal">
+                HỦY BỎ
+              </button>
+              <button class="btn-wood confirm" @click="confirmUnequip">
+                XÁC NHẬN
+              </button>
             </div>
           </div>
           <div class="modal-border-bot"></div>
@@ -668,18 +753,20 @@ onMounted(() => {
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useCharacterStore } from '@/stores/characterStore';
-import { useInventoryStore } from '@/stores/inventoryStore';
-import { useAuthStore } from '@/stores/authStore';
-import { resolveItemImage, getCurrentSkin } from '@/utils/assetHelper'; // Import hàm helper mới
+import { computed, onMounted, ref } from "vue";
+import { useCharacterStore } from "@/stores/characterStore";
+import { useInventoryStore } from "@/stores/inventoryStore";
+import { useAuthStore } from "@/stores/authStore";
+import { resolveItemImage, getCurrentSkin } from "@/utils/assetHelper"; // Import hàm helper mới
 
 const charStore = useCharacterStore();
 const inventoryStore = useInventoryStore();
 const authStore = useAuthStore();
 const equipment = computed(() => inventoryStore.equippedItems);
 
-const userSkinImg = computed(() => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle);
+const userSkinImg = computed(
+  () => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle,
+);
 
 // --- LOGIC MODAL & EQUIP (Giữ nguyên) ---
 const showUnequipModal = ref(false);
@@ -694,14 +781,18 @@ const unequipSlow = (slotType) => {
 };
 
 const confirmUnequip = async () => {
-  if (itemToUnequip.value) await inventoryStore.unequipItem(itemToUnequip.value.userItemId);
+  if (itemToUnequip.value)
+    await inventoryStore.unequipItem(itemToUnequip.value.userItemId);
   closeModal();
 };
 
-const closeModal = () => { showUnequipModal.value = false; itemToUnequip.value = null; };
+const closeModal = () => {
+  showUnequipModal.value = false;
+  itemToUnequip.value = null;
+};
 
 const equip = async (item) => {
-  const types = ['WEAPON', 'ARMOR', 'HELMET', 'BOOTS', 'RING', 'NECKLACE'];
+  const types = ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"];
   if (types.includes(item.item.type)) {
     if (!item.isEquipped) await inventoryStore.equipItem(item.userItemId);
   }
@@ -891,7 +982,11 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(255, 236, 179, 0.1) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 236, 179, 0.1) 0%,
+    transparent 70%
+  );
   animation: pulseAura 4s infinite;
 }
 
@@ -999,7 +1094,6 @@ onMounted(() => {
 .body-slot:hover {
   transform: translateY(-50%) scale(1.1);
 }
-
 
 /* --- RIGHT PANEL & MODAL (Giữ nguyên) --- */
 .bag-info {

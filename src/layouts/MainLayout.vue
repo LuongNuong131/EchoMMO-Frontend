@@ -97,7 +97,11 @@
 
       <div class="sidebar-footer">
         <button class="control-btn toggle" @click="toggleSidebar">
-          <i :class="isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+          <i
+            :class="
+              isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'
+            "
+          ></i>
         </button>
         <button class="control-btn logout" @click="authStore.logout">
           <i class="fas fa-power-off"></i>
@@ -107,7 +111,6 @@
     </aside>
 
     <div class="content-wrapper">
-      
       <GameHeader />
 
       <main
@@ -126,7 +129,6 @@
         <GameFooter />
       </main>
     </div>
-
   </div>
 </template>
 

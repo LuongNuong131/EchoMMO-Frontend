@@ -1,15 +1,19 @@
 <template>
-  <div class="chat-trigger" @click="chatStore.toggleChat" v-if="!chatStore.isChatOpen">
+  <div
+    class="chat-trigger"
+    @click="chatStore.toggleChat"
+    v-if="!chatStore.isChatOpen"
+  >
     <div class="trigger-icon"><i class="fas fa-comment-dots"></i></div>
     <div class="trigger-glow"></div>
   </div>
 
   <transition name="pop-up">
     <div v-if="chatStore.isChatOpen" class="dark-chat-window">
-      
       <div class="chat-header">
         <div class="chat-title">
-          <span class="decor">❖</span> Quan Phủ (Admin) <span class="decor">❖</span>
+          <span class="decor">❖</span> Quan Phủ (Admin)
+          <span class="decor">❖</span>
         </div>
         <button @click="chatStore.closeChat" class="btn-close">
           <i class="fas fa-times"></i>
@@ -19,7 +23,7 @@
       <div class="chat-stream custom-scroll" ref="msgBox">
         <div v-if="messages.length === 0" class="chat-init">
           <span class="divider">-- Kết nối thành công --</span>
-          <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+          <p style="margin-top: 10px; font-size: 0.9em; color: #888">
             Đại hiệp có việc gì cần bẩm báo?
           </p>
         </div>
@@ -53,21 +57,20 @@
           <i class="fas fa-paper-plane"></i>
         </button>
       </div>
-
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
-import { useChatStore } from '@/stores/chatStore';
+import { ref, onMounted, watch, nextTick } from "vue";
+import { useChatStore } from "@/stores/chatStore";
 
 const chatStore = useChatStore();
 const inputMsg = ref("");
 const messages = ref([]);
 const msgBox = ref(null);
 const inputFocus = ref(null);
-const chatKey = 'chat_history_admin';
+const chatKey = "chat_history_admin";
 
 // --- LOGIC GIỐNG CŨ ---
 const loadMessages = () => {
@@ -83,8 +86,11 @@ const scrollToBottom = async () => {
 };
 
 const formatTime = (isoString) => {
-  if (!isoString) return '';
-  return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (!isoString) return "";
+  return new Date(isoString).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const sendMessage = () => {
@@ -93,8 +99,8 @@ const sendMessage = () => {
   const newMsg = {
     id: Date.now(),
     text: inputMsg.value,
-    sender: 'me',
-    timestamp: new Date().toISOString()
+    sender: "me",
+    timestamp: new Date().toISOString(),
   };
 
   messages.value.push(newMsg);
@@ -107,8 +113,8 @@ const sendMessage = () => {
     const replyMsg = {
       id: Date.now(),
       text: "Bổn phủ đã nhận được tin. Sẽ xử lý ngay!",
-      sender: 'admin',
-      timestamp: new Date().toISOString()
+      sender: "admin",
+      timestamp: new Date().toISOString(),
     };
     messages.value.push(replyMsg);
     localStorage.setItem(chatKey, JSON.stringify(messages.value));
@@ -117,15 +123,18 @@ const sendMessage = () => {
 };
 
 // Auto scroll & focus khi mở chat
-watch(() => chatStore.isChatOpen, (newVal) => {
-  if (newVal) {
-    loadMessages();
-    nextTick(() => inputFocus.value?.focus());
-  }
-});
+watch(
+  () => chatStore.isChatOpen,
+  (newVal) => {
+    if (newVal) {
+      loadMessages();
+      nextTick(() => inputFocus.value?.focus());
+    }
+  },
+);
 
 // Lắng nghe sự kiện từ HelpView gửi sang
-window.addEventListener('storage', () => {
+window.addEventListener("storage", () => {
   loadMessages();
 });
 
@@ -169,12 +178,21 @@ onMounted(() => {
   font-weight: bold;
   font-size: 1rem;
 }
-.decor { color: #b71c1c; margin: 0 5px; } /* Red accent */
+.decor {
+  color: #b71c1c;
+  margin: 0 5px;
+} /* Red accent */
 
 .btn-close {
-  background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.1em;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 1.1em;
 }
-.btn-close:hover { color: #fff; }
+.btn-close:hover {
+  color: #fff;
+}
 
 /* BODY STREAM */
 .chat-stream {
@@ -187,9 +205,15 @@ onMounted(() => {
 }
 
 .chat-init {
-  text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 20px;
+  text-align: center;
+  color: #555;
+  font-size: 0.8rem;
+  margin-bottom: 20px;
 }
-.divider { border-bottom: 1px dashed #444; padding-bottom: 5px; }
+.divider {
+  border-bottom: 1px dashed #444;
+  padding-bottom: 5px;
+}
 
 /* MESSAGES */
 .msg-row {
@@ -218,7 +242,7 @@ onMounted(() => {
   color: #ddd;
   border: 1px solid #5d4037;
   border-bottom-left-radius: 0;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Tin nhắn của MÌNH (Bên phải) */
@@ -227,7 +251,7 @@ onMounted(() => {
   color: #ffecb3; /* Gold text */
   border: 1px solid #8d6e63;
   border-bottom-right-radius: 0;
-  box-shadow: -2px 2px 5px rgba(0,0,0,0.3);
+  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .msg-time {
@@ -238,10 +262,14 @@ onMounted(() => {
 }
 
 .sender-icon {
-  width: 24px; height: 24px;
-  background: #b71c1c; color: #fff;
+  width: 24px;
+  height: 24px;
+  background: #b71c1c;
+  color: #fff;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.7em;
   margin-right: 8px;
   margin-bottom: 2px;
@@ -298,14 +326,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   border: 2px solid #ffecb3;
   transition: transform 0.3s;
 }
-.chat-trigger:hover { transform: scale(1.1); }
-.trigger-icon { color: #ffecb3; font-size: 1.8em; z-index: 2; }
+.chat-trigger:hover {
+  transform: scale(1.1);
+}
+.trigger-icon {
+  color: #ffecb3;
+  font-size: 1.8em;
+  z-index: 2;
+}
 .trigger-glow {
-  position: absolute; inset: 0; border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   animation: pulse 2s infinite;
   border: 1px solid #ffecb3;
 }
@@ -321,10 +357,26 @@ onMounted(() => {
   opacity: 0;
 }
 
-@keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
 
 /* SCROLLBAR */
-.custom-scroll::-webkit-scrollbar { width: 5px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 3px; }
-.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #5d4037;
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
 </style>

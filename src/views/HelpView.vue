@@ -8,13 +8,12 @@
     <div class="paper-scroll-container custom-scroll">
       <div class="intro-section">
         <p class="npc-text">
-          "Tại hạ là Tiếp Dẫn Sứ. Hãy chọn vấn đề bên dưới, ta sẽ lập tức 
-          kết nối đường dây nóng (Chat) trực tiếp với Quan Phủ đại nhân."
+          "Tại hạ là Tiếp Dẫn Sứ. Hãy chọn vấn đề bên dưới, ta sẽ lập tức kết
+          nối đường dây nóng (Chat) trực tiếp với Quan Phủ đại nhân."
         </p>
       </div>
 
       <div class="form-container">
-        
         <div class="form-group">
           <label class="label-ink">Loại Sự Vụ:</label>
           <div class="custom-select-wrapper">
@@ -41,16 +40,19 @@
         </div>
 
         <div class="action-area">
-          <button 
-            class="btn-submit-seal" 
-            @click="startChatWithAdmin" 
+          <button
+            class="btn-submit-seal"
+            @click="startChatWithAdmin"
             :disabled="isSubmitting || !form.category || !form.description"
           >
-            <span v-if="!isSubmitting"><i class="fas fa-comments"></i> BẮT ĐẦU CHAT VỚI ADMIN</span>
-            <span v-else><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</span>
+            <span v-if="!isSubmitting"
+              ><i class="fas fa-comments"></i> BẮT ĐẦU CHAT VỚI ADMIN</span
+            >
+            <span v-else
+              ><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</span
+            >
           </button>
         </div>
-
       </div>
 
       <div class="faq-section">
@@ -67,24 +69,24 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { useChatStore } from '../stores/chatStore'; // 1. Import ChatStore
+import { ref, reactive } from "vue";
+import { useChatStore } from "../stores/chatStore"; // 1. Import ChatStore
 import ChatWidget from "../components/ChatWidget.vue";
 const chatStore = useChatStore(); // 2. Khởi tạo store
 const isSubmitting = ref(false);
 
 const form = reactive({
   category: "",
-  description: ""
+  description: "",
 });
 
 const getCategoryLabel = (code) => {
   const map = {
-    'BUG': 'Báo Lỗi',
-    'PAYMENT': 'Nạp Thẻ',
-    'REPORT': 'Tố Cáo',
-    'ACCOUNT': 'Tài Khoản',
-    'OTHER': 'Khác'
+    BUG: "Báo Lỗi",
+    PAYMENT: "Nạp Thẻ",
+    REPORT: "Tố Cáo",
+    ACCOUNT: "Tài Khoản",
+    OTHER: "Khác",
   };
   return map[code] || code;
 };
@@ -103,17 +105,17 @@ const startChatWithAdmin = async () => {
     const newMsg = {
       id: Date.now(),
       text: messageContent,
-      sender: 'me', // Đánh dấu là tin nhắn của mình
-      timestamp: new Date().toISOString()
+      sender: "me", // Đánh dấu là tin nhắn của mình
+      timestamp: new Date().toISOString(),
     };
 
     // Lấy lịch sử chat cũ
-    const chatKey = 'chat_history_admin'; 
+    const chatKey = "chat_history_admin";
     const history = JSON.parse(localStorage.getItem(chatKey) || "[]");
-    
+
     // Thêm tin nhắn mới vào
     history.push(newMsg);
-    
+
     // Lưu lại
     localStorage.setItem(chatKey, JSON.stringify(history));
 
@@ -121,7 +123,7 @@ const startChatWithAdmin = async () => {
     window.dispatchEvent(new Event("storage"));
 
     // 3. Giả lập delay 1 chút cho hiệu ứng (0.5s)
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     // 4. MỞ KHUNG CHAT LÊN (Thay vì chuyển trang)
     chatStore.openChat();
@@ -129,7 +131,6 @@ const startChatWithAdmin = async () => {
     // 5. Reset form
     form.category = "";
     form.description = "";
-
   } catch (error) {
     console.error("Lỗi:", error);
     alert("Không thể kết nối với Quan Phủ lúc này!");
@@ -160,7 +161,7 @@ const startChatWithAdmin = async () => {
   color: #fbc02d;
   font-size: 1.8em;
   font-weight: 900;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
   margin: 0;
   letter-spacing: 2px;
 }
@@ -178,7 +179,7 @@ const startChatWithAdmin = async () => {
   border: 1px solid #5d4037;
   border-radius: 4px;
   padding: 20px;
-  box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -187,7 +188,7 @@ const startChatWithAdmin = async () => {
 
 /* INTRO */
 .intro-section {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-left: 3px solid #fbc02d;
   border-radius: 4px;
@@ -238,7 +239,9 @@ const startChatWithAdmin = async () => {
   background: #1a100e;
 }
 
-.custom-select-wrapper { position: relative; }
+.custom-select-wrapper {
+  position: relative;
+}
 .select-arrow {
   position: absolute;
   right: 15px;
@@ -248,10 +251,17 @@ const startChatWithAdmin = async () => {
   pointer-events: none;
 }
 
-.textarea { resize: vertical; min-height: 120px; }
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
 
 /* BUTTON */
-.action-area { display: flex; justify-content: center; margin-top: 10px; }
+.action-area {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
 
 .btn-submit-seal {
   background: #b71c1c;
@@ -263,9 +273,11 @@ const startChatWithAdmin = async () => {
   font-family: "Noto Serif TC", serif;
   cursor: pointer;
   border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   transition: all 0.2s;
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .btn-submit-seal:hover:not(:disabled) {
@@ -288,12 +300,33 @@ const startChatWithAdmin = async () => {
   border-top: 1px dashed #5d4037;
   padding-top: 15px;
 }
-.faq-title { color: #ef5350; font-weight: bold; margin-bottom: 5px; }
-.faq-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; color: #a1887f; }
-.faq-list li::before { content: "•"; color: #fbc02d; margin-right: 8px; }
+.faq-title {
+  color: #ef5350;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.faq-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+  color: #a1887f;
+}
+.faq-list li::before {
+  content: "•";
+  color: #fbc02d;
+  margin-right: 8px;
+}
 
 /* SCROLLBAR */
-.custom-scroll::-webkit-scrollbar { width: 6px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 3px; }
-.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #5d4037;
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
 </style>
