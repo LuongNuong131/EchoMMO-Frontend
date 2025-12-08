@@ -30,10 +30,10 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  // baseURL: "http://localhost:8080/api",
+  baseURL: "http://localhost:8080/api",
   
-  // Radmin VPN (Hãy chắc chắn Backend đang chạy và Firewall đã mở)
-  baseURL: 'http://26.48.225.101:8080/api',
+  // // Radmin VPN (Hãy chắc chắn Backend đang chạy và Firewall đã mở)
+  // baseURL: 'http://26.48.225.101:8080/api',
   
   headers: {
     "Content-Type": "application/json",
