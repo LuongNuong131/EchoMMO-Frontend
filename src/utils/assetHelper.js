@@ -127,7 +127,7 @@ import { reactive } from 'vue';
 // ============================================================
 
 export const resolveItemImage = (imgCode) => {
-    // 1. Fallback an toàn
+    // 1. Fallback an toàn nếu null
     if (!imgCode) return new URL('../assets/resources/r_stone_3.png', import.meta.url).href;
 
     // 2. Nếu là URL online (http/https) thì giữ nguyên
@@ -143,7 +143,6 @@ export const resolveItemImage = (imgCode) => {
 
     try {
         // --- A. EQUIPMENT (Trang bị) ---
-        
         // Kiếm (s_sword)
         if (lowerName.includes('sword') || lowerName.startsWith('s_')) {
             return new URL(`../assets/equipment/sword/${fileName}`, import.meta.url).href;
@@ -174,8 +173,7 @@ export const resolveItemImage = (imgCode) => {
             return new URL(`../assets/resources/${fileName}`, import.meta.url).href;
         }
 
-        // --- C. BACKGROUND (Ảnh nền) ---
-        // Nếu bắt đầu bằng b_ mà không phải boot -> Background
+        // --- C. BACKGROUND (Ảnh nền - Folder Background viết hoa) ---
         if (lowerName.startsWith('b_')) {
             return new URL(`../assets/Background/${fileName}`, import.meta.url).href;
         }
@@ -184,8 +182,7 @@ export const resolveItemImage = (imgCode) => {
         return new URL(`../assets/${fileName}`, import.meta.url).href;
 
     } catch (e) {
-        console.error(`[Asset Error] Không tìm thấy ảnh: ${fileName}`, e);
-        // Ảnh lỗi mặc định
+        console.error(`[Asset Helper] Không tìm thấy ảnh: ${fileName}`, e);
         return new URL('../assets/resources/r_stone_3.png', import.meta.url).href;
     }
 };
@@ -194,63 +191,66 @@ export const resolveItemImage = (imgCode) => {
 // 2. CHARACTER & ENEMY HELPERS
 // ============================================================
 
-const getCharImg = (name) => new URL(`../assets/char/${name}`, import.meta.url).href;
-const getEnemyImg = (name) => new URL(`../assets/enemy/${name}`, import.meta.url).href;
+const getCharImg = (name) => {
+    try {
+        return new URL(`../assets/char/${name}`, import.meta.url).href;
+    } catch (e) {
+        return new URL('../assets/char/idle_yasou.png', import.meta.url).href;
+    }
+}
 
-// Dữ liệu Skin (Hardcode mapping)
+const getEnemyImg = (name) => {
+    try {
+        return new URL(`../assets/enemy/${name}`, import.meta.url).href;
+    } catch (e) {
+        return new URL('../assets/enemy/idle_goblin.png', import.meta.url).href;
+    }
+}
+
+// Dữ liệu Skin
 export const CHARACTER_SKINS = reactive({
     "skin_yasou": {
-        id: "skin_yasou", name: "Yasuo", description: "Kẻ bất dung thứ.",
+        id: "skin_yasou", name: "Yasuo", 
         sprites: { idle: getCharImg('idle_yasou.png'), run: getCharImg('run_yasou.png'), attack: getCharImg('atk_yasou.png') }
     },
     "skin_demon": {
-        id: "skin_demon", name: "Huyết Quỷ", description: "Sức mạnh từ bóng tối.",
+        id: "skin_demon", name: "Huyết Quỷ", 
         sprites: { idle: getCharImg('idle_demon1.png'), run: getCharImg('run_demon1.png'), attack: getCharImg('atk_demon1.png') }
     },
     "skin_langkhach": {
-        id: "skin_langkhach", name: "Lãng Khách", description: "Kiếm khách vô danh.",
+        id: "skin_langkhach", name: "Lãng Khách", 
         sprites: { idle: getCharImg('idle_langkhach1.png'), run: getCharImg('run_langkhach1.png'), attack: getCharImg('atk_langkhach1.png') }
     }
 });
 
 export const getCurrentSkin = (avatarUrl) => {
-    // Nếu avatarUrl từ DB khớp key trong CHARACTER_SKINS -> Trả về skin đó
     if (avatarUrl && CHARACTER_SKINS[avatarUrl]) return CHARACTER_SKINS[avatarUrl];
-    // Mặc định là Yasuo
-    return CHARACTER_SKINS["skin_yasou"];
+    return CHARACTER_SKINS["skin_yasou"]; // Mặc định
 };
 
-// Map quái vật
 const enemyMap = {
     "Goblin": { idle: getEnemyImg('idle_goblin.png'), atk: getEnemyImg('atk_goblin.png') },
     "Yêu Tinh": { idle: getEnemyImg('idle_goblin.png'), atk: getEnemyImg('atk_goblin.png') },
-    
     "Skeleton": { idle: getEnemyImg('idle_skeleton.png'), atk: getEnemyImg('atk_skeleton.png') },
     "Bộ Xương": { idle: getEnemyImg('idle_skeleton.png'), atk: getEnemyImg('atk_skeleton.png') },
-    
     "Mushroom": { idle: getEnemyImg('idle_mushroom.png'), atk: getEnemyImg('atk_mushroom.png') },
     "Nấm Độc": { idle: getEnemyImg('idle_mushroom.png'), atk: getEnemyImg('atk_mushroom.png') },
-    
     "default": { idle: getEnemyImg('idle_goblin.png'), atk: getEnemyImg('atk_goblin.png') }
 };
 
 export const getEnemyImage = (name, state = 'idle') => {
     if (!name) return enemyMap['default'].idle;
-    // Tìm key khớp với tên quái
     const key = Object.keys(enemyMap).find(k => name.includes(k)) || "default";
     const target = enemyMap[key];
     return state === 'attack' ? target.atk : target.idle;
 };
 
-// [FIX] Thêm lại hàm này để Explore.vue không bị lỗi
 export const getRandomEnemyData = () => {
-    // Lọc bỏ key 'default' và các key tiếng Anh nếu muốn (hoặc giữ cả)
     const keys = Object.keys(enemyMap).filter(k => k !== 'default');
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     return { name: randomKey, img: enemyMap[randomKey].idle };
 };
 
-// Helper cho sự kiện nhặt đồ
 export const getItemImage = (type) => {
     if (type === 'GOLD') return resolveItemImage('r_gold_coin.png');
     return resolveItemImage('r_copper_bar.png');

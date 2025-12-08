@@ -526,8 +526,10 @@ onMounted(() => {
 }
 </style> -->
 
+
+
 <!-- code moi -->
-<!-- <template>
+<template>
   <div class="page-container character-page wuxia-dark-theme">
     <div class="ink-bg-layer">
       <div class="mountain-bg"></div>
@@ -1165,121 +1167,5 @@ onMounted(() => {
   .hero-panel {
     height: 400px;
   }
-}
-</style> -->
-
-<!-- 5:47 -->
-<template>
-  <div class="page-container wuxia-char dark-theme">
-    <div class="char-panel">
-      <div class="char-left">
-        <div class="char-avatar-box">
-          <div class="avatar-frame">
-            <img
-              :src="getCurrentSkin(charStore.character?.avatarUrl).sprites.idle"
-              class="char-sprite"
-            />
-          </div>
-          <h2 class="char-name">{{ charStore.character?.name }}</h2>
-          <p class="char-sect">Môn phái: Vô Danh</p>
-        </div>
-
-        <div class="char-stats"></div>
-      </div>
-
-      <div class="char-right">
-        <h3 class="equip-title">TRANG BỊ ĐANG MẶC</h3>
-        <div class="equipment-grid">
-          <div
-            v-for="(slotName, key) in equipmentSlots"
-            :key="key"
-            class="equip-slot"
-          >
-            <div class="slot-icon" v-if="!inventoryStore.equippedItems[key]">
-              <i :class="getSlotIcon(key)"></i>
-            </div>
-            <div class="slot-item" v-else>
-              <div
-                class="item-img-box"
-                :class="
-                  'border-' + inventoryStore.equippedItems[key].item.rarity
-                "
-              >
-                <img
-                  :src="
-                    resolveItemImage(
-                      inventoryStore.equippedItems[key].item.imageUrl,
-                    )
-                  "
-                />
-              </div>
-              <div class="item-detail">
-                <div class="i-name">
-                  {{ inventoryStore.equippedItems[key].item.name }} (+{{
-                    inventoryStore.equippedItems[key].enhanceLevel
-                  }})
-                </div>
-                <button
-                  @click="
-                    inventoryStore.unequipItem(
-                      inventoryStore.equippedItems[key].userItemId,
-                    )
-                  "
-                  class="btn-remove"
-                >
-                  THÁO
-                </button>
-              </div>
-            </div>
-            <div class="slot-label">{{ slotName }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup>
-import { onMounted } from "vue";
-import { useCharacterStore } from "../stores/characterStore";
-import { useInventoryStore } from "../stores/inventoryStore";
-import { resolveItemImage, getCurrentSkin } from "../utils/assetHelper"; // [QUAN TRỌNG]
-
-const charStore = useCharacterStore();
-const inventoryStore = useInventoryStore();
-
-const equipmentSlots = {
-  WEAPON: "Vũ Khí",
-  ARMOR: "Áo Giáp",
-  HELMET: "Mũ",
-  BOOTS: "Giày",
-  RING: "Nhẫn",
-  NECKLACE: "Dây Chuyền",
-};
-
-const getSlotIcon = (type) => {
-  const icons = {
-    WEAPON: "fas fa-gavel",
-    ARMOR: "fas fa-tshirt",
-    HELMET: "fas fa-hard-hat",
-    BOOTS: "fas fa-shoe-prints",
-    RING: "fas fa-ring",
-    NECKLACE: "fas fa-gem",
-  };
-  return icons[type] || "fas fa-question";
-};
-
-onMounted(async () => {
-  await charStore.fetchCharacter();
-  await inventoryStore.fetchInventory();
-});
-</script>
-
-<style scoped>
-/* (Giữ nguyên CSS cũ) */
-/* Thêm CSS cho ảnh char nếu cần */
-.char-sprite {
-  height: 100%;
-  object-fit: contain;
 }
 </style>

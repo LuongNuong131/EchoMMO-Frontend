@@ -1,299 +1,570 @@
 <template>
-  <div class="page-container wuxia-inventory dark-theme">
+  <div class="page-container inventory-page wuxia-dark-theme">
     <div class="ink-bg-layer">
       <div class="mountain-bg"></div>
       <div class="fog-anim"></div>
     </div>
 
-    <div class="inventory-overlay">
-      <div class="inventory-header">
-        <div class="header-decor left"></div>
-        <h2 class="inventory-title">HÀNH TRANG</h2>
-        <div class="header-decor right"></div>
-      </div>
+    <div class="inventory-wrapper">
+      <div class="main-chest-frame">
 
-      <div class="inventory-grid custom-scroll">
-        <div v-if="inventoryStore.items.length === 0" class="empty-state">
-          <i class="fas fa-box-open"></i>
-          <p>Túi đồ trống rỗng...</p>
+        <div class="chest-header">
+          <div class="header-decoration left"></div>
+          <h2 class="chest-title">HÀNH TRANG</h2>
+          <div class="header-decoration right"></div>
         </div>
 
-        <div
-          v-for="item in inventoryStore.items"
-          :key="item.userItemId"
-          class="inventory-slot"
-          :class="{ equipped: item.isEquipped }"
-        >
-          <div class="slot-inner">
-            <div class="img-wrapper" :class="'border-' + item.item.rarity">
-              <img :src="resolveItemImage(item.item.imageUrl)" />
-              <span class="qty-badge" v-if="item.quantity > 1">{{
-                item.quantity
-              }}</span>
-              <span class="enhance-badge" v-if="item.enhanceLevel > 0"
-                >+{{ item.enhanceLevel }}</span
-              >
-            </div>
+        <div class="tab-control-bar">
+          <button class="tab-btn" :class="{ active: filter === 'ALL' }" @click="filter = 'ALL'">TẤT CẢ</button>
+          <div class="separator">|</div>
+          <button class="tab-btn" :class="{ active: filter === 'EQUIP' }" @click="filter = 'EQUIP'">TRANG BỊ</button>
+          <div class="separator">|</div>
+          <button class="tab-btn" :class="{ active: filter === 'MAT' }" @click="filter = 'MAT'">VẬT PHẨM</button>
 
-            <div class="item-info">
-              <div class="item-name" :class="'text-' + item.item.rarity">
-                {{ item.item.name }}
-              </div>
-              <div class="item-stats">
-                <span v-if="item.item.atkBonus > 0"
-                  >ATK: {{ item.item.atkBonus }}</span
-                >
-                <span v-if="item.item.defBonus > 0"
-                  >DEF: {{ item.item.defBonus }}</span
-                >
-                <span v-if="item.item.hpBonus > 0"
-                  >HP: {{ item.item.hpBonus }}</span
-                >
+          <div class="capacity-badge">
+            <i class="fas fa-weight-hanging"></i>
+            {{ inventoryStore.items.length }} / 50
+          </div>
+        </div>
+
+        <div class="inventory-grid custom-scroll">
+          <div v-for="u in filteredItems" :key="u.userItemId" class="grid-slot" :class="[
+            'rarity-' + (u.item.rarity || 'C'), /* Class từ main.css (Neon tĩnh) */
+            {
+              selected: selectedItem?.userItemId === u.userItemId,
+              equipped: u.isEquipped
+            }
+          ]" @click="selectedItem = u">
+            <div class="slot-inner">
+              <img :src="resolveItemImage(u.item.image || u.item.imageUrl)" class="item-icon" alt="item"
+                @error="$event.target.src = resolveItemImage('r_gold_coin.png')" />
+
+              <div class="qty-tag" v-if="u.quantity > 1">{{ u.quantity }}</div>
+
+              <div class="equip-tag" v-if="u.isEquipped">
+                <i class="fas fa-shield-alt"></i> E
               </div>
             </div>
 
-            <div class="slot-actions">
-              <button
-                v-if="!item.isEquipped && item.item.type !== 'MATERIAL'"
-                @click="inventoryStore.equipItem(item.userItemId)"
-                class="btn-action btn-equip"
-              >
-                TRANG BỊ
-              </button>
-              <button
-                v-if="item.isEquipped"
-                @click="inventoryStore.unequipItem(item.userItemId)"
-                class="btn-action btn-unequip"
-              >
-                THÁO
-              </button>
+            <div class="selection-border" v-if="selectedItem?.userItemId === u.userItemId"></div>
+          </div>
+
+          <div v-for="n in (50 - filteredItems.length)" :key="'empty-' + n" class="grid-slot empty"></div>
+        </div>
+
+        <transition name="slide-up">
+          <div v-if="selectedItem" class="item-detail-panel">
+            <div class="detail-content">
+
+              <div class="detail-left">
+                <div class="item-portrait" :class="'rarity-' + (selectedItem.item.rarity || 'C')">
+                  <img :src="resolveItemImage(selectedItem.item.image || selectedItem.item.imageUrl)" />
+                </div>
+              </div>
+
+              <div class="detail-mid">
+                <div class="item-header">
+                  <h3 :class="'text-rarity-' + (selectedItem.item.rarity || 'C')">
+                    {{ selectedItem.item.name }}
+                  </h3>
+                  <span class="item-type-badge">{{ translateType(selectedItem.item.type) }}</span>
+                </div>
+
+                <div class="item-stats-row">
+                  <span v-if="selectedItem.item.atkBonus" class="stat atk">+{{ selectedItem.item.atkBonus }} CÔNG</span>
+                  <span v-if="selectedItem.item.defBonus" class="stat def">+{{ selectedItem.item.defBonus }} THỦ</span>
+                  <span v-if="selectedItem.item.hpBonus" class="stat hp">+{{ selectedItem.item.hpBonus }} HP</span>
+                </div>
+
+                <p class="item-desc">
+                  {{ selectedItem.item.description || "Vật phẩm bí ẩn." }}
+                </p>
+              </div>
+
+              <div class="detail-right actions">
+                <button v-if="selectedItem.item.type === 'CONSUMABLE'" class="action-btn use-btn"
+                  @click="inventoryStore.useItem(selectedItem.userItemId)">
+                  SỬ DỤNG
+                </button>
+
+                <template v-if="canEquip(selectedItem)">
+                  <button v-if="!selectedItem.isEquipped" class="action-btn equip-btn"
+                    @click="inventoryStore.equipItem(selectedItem.userItemId)">
+                    TRANG BỊ
+                  </button>
+                  <button v-else class="action-btn unequip-btn"
+                    @click="inventoryStore.unequipItem(selectedItem.userItemId)">
+                    GỠ BỎ
+                  </button>
+                </template>
+
+                <button v-if="!selectedItem.isEquipped" class="action-btn sell-btn"
+                  @click="openSellModal(selectedItem)">
+                  BÁN
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+      </div>
+    </div>
+
+    <div v-if="showSell" class="modal-overlay">
+      <div class="dark-modal">
+        <div class="modal-header">
+          <span class="decor">❖</span> GIAO DỊCH <span class="decor">❖</span>
+        </div>
+
+        <div class="modal-body">
+          <h3 class="trade-item-name text-gradient">{{ sellItem.item.name }}</h3>
+
+          <div class="trade-tabs">
+            <div class="trade-tab" :class="{ active: mode === 'NPC' }" @click="mode = 'NPC'">TIỆM CẦM ĐỒ</div>
+            <div class="trade-tab" :class="{ active: mode === 'P2P' }" @click="mode = 'P2P'">CHỢ TRỜI</div>
+          </div>
+
+          <div class="trade-form">
+            <div class="form-group">
+              <label>SỐ LƯỢNG</label>
+              <input type="number" v-model.number="qty" min="1" :max="sellItem.quantity" class="dark-input" />
+            </div>
+
+            <div v-if="mode === 'P2P'" class="form-group">
+              <label>ĐƠN GIÁ</label>
+              <input type="number" v-model.number="price" class="dark-input" />
+            </div>
+
+            <div class="trade-summary">
+              Tổng thu:
+              <span class="money-highlight">
+                {{ mode === "NPC" ? (sellItem.item.basePrice * 0.5 * qty) : (price * qty) }}
+                <i class="fas fa-coins"></i>
+              </span>
             </div>
           </div>
         </div>
+
+        <div class="modal-footer">
+          <button class="modal-btn cancel" @click="showSell = false">HỦY</button>
+          <button class="modal-btn confirm" @click="mode === 'NPC' ? confirmNPC() : confirmP2P()">XÁC NHẬN</button>
+        </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useInventoryStore } from "../stores/inventoryStore";
-import { resolveItemImage } from "../utils/assetHelper"; // [QUAN TRỌNG]
+import { useCharacterStore } from "../stores/characterStore";
+import { useMarketStore } from "../stores/marketStore";
+import { resolveItemImage } from "@/utils/assetHelper"; // [FIX] Import Helper
 
 const inventoryStore = useInventoryStore();
+const charStore = useCharacterStore();
+const marketStore = useMarketStore();
+
+const filter = ref("ALL");
+const selectedItem = ref(null);
+
+const EQUIP_TYPES = ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"];
+const MATERIAL_TYPES = ["MATERIAL", "CONSUMABLE"];
+
+const filteredItems = computed(() => {
+  let items = inventoryStore.items || [];
+  if (filter.value === "EQUIP") {
+    items = items.filter((i) => i.item && EQUIP_TYPES.includes(i.item.type));
+  }
+  if (filter.value === "MAT") {
+    items = items.filter((i) => i.item && MATERIAL_TYPES.includes(i.item.type));
+  }
+  return items;
+});
+
+// Logic Bán đồ
+const showSell = ref(false);
+const sellItem = ref(null);
+const mode = ref("NPC");
+const qty = ref(1);
+const price = ref(0);
+
+const openSellModal = (item) => {
+  sellItem.value = item;
+  qty.value = 1;
+  price.value = item.item.basePrice || 0;
+  showSell.value = true;
+};
+const confirmNPC = async () => {
+  await marketStore.sellItem(sellItem.value.userItemId, qty.value);
+  showSell.value = false; selectedItem.value = null;
+};
+const confirmP2P = async () => {
+  await marketStore.createListing(sellItem.value.userItemId, price.value, qty.value);
+  showSell.value = false; selectedItem.value = null;
+};
+
+const canEquip = (u) => u.item && EQUIP_TYPES.includes(u.item.type);
+
+const translateType = (type) => {
+  const map = { WEAPON: "Binh Khí", ARMOR: "Y Phục", HELMET: "Mũ", BOOTS: "Giày", RING: "Nhẫn", NECKLACE: "Dây Chuyền", CONSUMABLE: "Tiêu Hao", MATERIAL: "Nguyên Liệu" };
+  return map[type] || type;
+};
 
 onMounted(() => {
   inventoryStore.fetchInventory();
+  charStore.fetchCharacter();
 });
 </script>
 
 <style scoped>
-/* (Giữ nguyên CSS cũ của Inventory hoặc copy từ các file trước nếu chưa có) */
-@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 
-:root {
-  --wood-dark: #3e2723;
-  --wood-light: #5d4037;
-  --gold: #ffecb3;
-  --text-light: #f3f4f6;
-}
-.dark-theme {
+/* --- LAYOUT & THEME --- */
+.wuxia-dark-theme {
   background-color: #212121;
   min-height: 100vh;
-  font-family: "Noto Serif TC", serif;
-  color: var(--text-light);
+  color: #f3f4f6;
   position: relative;
   overflow: hidden;
 }
-.ink-bg-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-color: #3e2723;
-}
-.mountain-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
-  background-size: cover;
-  filter: sepia(40%) brightness(0.5) contrast(1.2);
-  opacity: 0.6;
-}
-.fog-anim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, #261815 10%, transparent 90%);
-}
-.inventory-overlay {
+
+.inventory-wrapper {
   position: relative;
   z-index: 10;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 20px;
   height: 100vh;
   display: flex;
-  flex-direction: column;
-}
-.inventory-header {
-  text-align: center;
-  margin-bottom: 20px;
-  background: rgba(30, 20, 15, 0.95);
-  padding: 15px;
-  border: 2px solid var(--wood-light);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-  position: relative;
-}
-.inventory-title {
-  font-size: 2rem;
-  color: var(--gold);
-  margin: 0;
-  letter-spacing: 3px;
-  font-weight: 900;
-}
-.header-decor {
-  width: 40px;
-  height: 2px;
-  background: var(--gold);
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.left {
-  left: 20px;
-}
-.right {
-  right: 20px;
-}
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  overflow-y: auto;
-  padding: 10px;
-}
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: #757575;
-  font-size: 1.2rem;
-  margin-top: 50px;
-}
-.inventory-slot {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #444;
-  padding: 10px;
-  border-radius: 4px;
-  transition: 0.2s;
-  position: relative;
-}
-.inventory-slot:hover {
-  border-color: var(--gold);
-  background: rgba(255, 236, 179, 0.05);
-}
-.inventory-slot.equipped {
-  border-color: #4caf50;
-  background: rgba(76, 175, 80, 0.1);
-}
-.slot-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.img-wrapper {
-  width: 64px;
-  height: 64px;
-  background: #222;
-  border: 2px solid #555;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* --- CHEST FRAME --- */
+.main-chest-frame {
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  background: rgba(20, 20, 25, 0.95);
+  border: 1px solid #444;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.chest-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.chest-title {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--gold, #ffd700);
+  font-size: 1.5rem;
+  margin: 0 20px;
+}
+
+/* Tabs */
+.tab-control-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px;
+  transition: 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--gold, #ffd700);
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.capacity-badge {
+  margin-left: auto;
+  color: #666;
+}
+
+/* --- GRID --- */
+.inventory-grid {
+  flex: 1;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  grid-auto-rows: 70px;
+  gap: 10px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.grid-slot {
   position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  cursor: pointer;
+  /* Border colors are handled by main.css utility classes (rarity-X) */
 }
-.img-wrapper img {
-  max-width: 90%;
-  max-height: 90%;
+
+.grid-slot.empty {
+  border: 1px dashed #333;
+  opacity: 0.3;
+  pointer-events: none;
 }
-.qty-badge {
+
+.slot-inner {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.item-icon {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Selection Border (White outline) */
+.selection-border {
+  position: absolute;
+  inset: -2px;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Badges */
+.qty-tag {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  font-size: 0.7rem;
   background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 10px;
   padding: 1px 4px;
   border-radius: 2px;
 }
-.enhance-badge {
+
+.equip-tag {
   position: absolute;
   top: 2px;
   left: 2px;
-  font-size: 0.7rem;
-  color: #ffd700;
-  text-shadow: 0 0 2px #000;
-  font-weight: bold;
+  color: #00ff9d;
+  font-size: 10px;
 }
-.border-C {
-  border-color: #bdbdbd;
+
+/* --- DETAIL PANEL --- */
+.item-detail-panel {
+  height: 220px;
+  background: #1a1a1a;
+  border-top: 1px solid #444;
+  padding: 20px;
 }
-.border-A {
-  border-color: #ab47bc;
+
+.detail-content {
+  display: flex;
+  gap: 20px;
+  height: 100%;
 }
-.border-S {
-  border-color: var(--gold);
-  box-shadow: 0 0 5px var(--gold);
+
+.item-portrait {
+  width: 100px;
+  height: 100px;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Border color handled by class from main.css */
 }
-.item-info {
-  text-align: center;
+
+.item-portrait img {
+  max-width: 80%;
+  max-height: 80%;
 }
-.item-name {
-  font-size: 0.9rem;
-  font-weight: bold;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
+
+.detail-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-.text-C {
-  color: #bdbdbd;
+
+.item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.text-A {
-  color: #ab47bc;
-}
-.text-S {
-  color: var(--gold);
-}
-.item-stats {
-  font-size: 0.75rem;
+
+.item-type-badge {
+  font-size: 12px;
+  background: #333;
+  padding: 2px 6px;
   color: #aaa;
 }
-.slot-actions {
-  width: 100%;
-  display: flex;
-  gap: 5px;
+
+.item-desc {
+  font-style: italic;
+  color: #888;
+  font-size: 0.9rem;
 }
-.btn-action {
-  flex: 1;
+
+.item-stats-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.stat.atk {
+  color: #ff5252;
+}
+
+.stat.def {
+  color: #448aff;
+}
+
+.stat.hp {
+  color: #69f0ae;
+}
+
+.detail-right {
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 10px;
   border: none;
-  padding: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+  text-transform: uppercase;
+  transition: 0.2s;
+}
+
+.action-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.use-btn {
+  background: #ffa000;
+}
+
+.equip-btn {
+  background: #00e676;
+}
+
+.unequip-btn {
+  background: #757575;
+  color: #fff;
+}
+
+.sell-btn {
+  background: #ff1744;
+  color: #fff;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark-modal {
+  background: #222;
+  border: 1px solid #555;
+  width: 400px;
+  padding: 0;
+}
+
+.modal-header {
+  background: #333;
+  color: #eee;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.trade-tabs {
+  display: flex;
+  margin-bottom: 15px;
+  border: 1px solid #444;
+}
+
+.trade-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  background: #111;
+  color: #777;
+}
+
+.trade-tab.active {
+  background: #444;
+  color: #fff;
+}
+
+.dark-input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.modal-footer {
+  display: flex;
+  border-top: 1px solid #333;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
   cursor: pointer;
   font-weight: bold;
-  font-size: 0.8rem;
-  border-radius: 2px;
 }
-.btn-equip {
-  background: #2e7d32;
-  color: #fff;
+
+.modal-btn.cancel {
+  background: #333;
+  color: #aaa;
 }
-.btn-unequip {
-  background: #c62828;
-  color: #fff;
-}
-.custom-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #5d4037;
+
+.modal-btn.confirm {
+  background: #00e676;
+  color: #000;
 }
 </style>
