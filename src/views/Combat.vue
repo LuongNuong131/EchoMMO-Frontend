@@ -609,177 +609,128 @@ onUnmounted(() => {
 <template>
   <div class="combat-container page-container">
     <div class="battle-arena">
-      <div class="enemy-section">
-        <div class="enemy-info">
-          <h3>{{ battleState.enemyName }} (Lv.{{ battleState.enemyLv || '??' }})</h3>
-          <div class="health-bar-container">
-            <div class="health-bar enemy-hp"
-              :style="{ width: (battleState.enemyHp / battleState.enemyMaxHp * 100) + '%' }"></div>
-            <span class="hp-text">{{ battleState.enemyHp }} / {{ battleState.enemyMaxHp }}</span>
-          </div>
-        </div>
-        <div class="enemy-sprite" :class="{ 'shake-anim': isTakingDamage }">
-          <img src="@/assets/enemy/idle_goblin.png" alt="Enemy" class="pixel-art" />
-        </div>
-      </div>
-
-      <div class="center-stage">
-        <div v-if="showQTE" class="qte-overlay">
-          <button ref="qteBtn" class="qte-button pixel-btn danger" @click="handleBlock">
-            🛡️ ĐỠ ĐÒN! ({{ qteTimer }}s)
-          </button>
-        </div>
-
-        <div v-if="battleState.status === 'VICTORY'" class="victory-modal">
-          <h2>🏆 CHIẾN THẮNG!</h2>
-          <p>Nhận được: {{ battleState.expEarned }} EXP - {{ battleState.goldEarned }} Vàng</p>
-
-          <div v-if="battleState.droppedItemName" class="loot-box">
-            <p class="loot-title">🎁 Rơi vật phẩm:</p>
-            <div class="item-card" :class="'rarity-' + battleState.droppedItemRarity">
-              <img
-                :src="getAssetPath('equipment/' + getFolderByType(battleState.droppedItemName) + '/' + battleState.droppedItemImage)"
-                alt="Loot" />
-              <span>{{ battleState.droppedItemName }}</span>
+      <template v-if="battleStore.isReady && battleStore.enemy">
+        <div class="enemy-section">
+          <div class="enemy-info">
+            <h3>{{ battleStore.enemy.name }}</h3>
+            <div class="health-bar-container">
+              <div class="health-bar enemy-hp"
+                :style="{ width: calculatePercent(battleStore.enemyHp, battleStore.enemyMaxHp) + '%' }"></div>
+              <span class="hp-text">{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</span>
             </div>
           </div>
-
-          <button @click="goHome" class="pixel-btn primary">Về Làng</button>
-        </div>
-
-        <div v-if="battleState.status === 'DEFEAT'" class="defeat-modal">
-          <h2>💀 BẠN ĐÃ GỤC NGÃ...</h2>
-          <p>Hãy cường hóa trang bị và quay lại sau.</p>
-          <button @click="goHome" class="pixel-btn secondary">Về Làng dưỡng thương</button>
-        </div>
-      </div>
-
-      <div class="player-section">
-        <div class="player-sprite">
-          <img src="@/assets/char/idle_demon1.png" alt="Player" class="pixel-art" />
-        </div>
-        <div class="player-info">
-          <h3>Đại Hiệp</h3>
-          <div class="health-bar-container">
-            <div class="health-bar player-hp"
-              :style="{ width: (battleState.playerHp / battleState.playerMaxHp * 100) + '%' }"></div>
-            <span class="hp-text">{{ battleState.playerHp }} / {{ battleState.playerMaxHp }}</span>
-          </div>
-          <div class="energy-bar-container">
-            <div class="energy-bar" :style="{ width: (battleState.playerEnergy / 100 * 100) + '%' }"></div>
+          <div class="enemy-sprite" :class="{ 'shake-anim': isTakingDamage }">
+            <img :src="getEnemyAsset(battleStore.enemy.name)" alt="Enemy" class="pixel-art" />
           </div>
         </div>
+
+        <div class="center-stage">
+          <div v-if="showQTE" class="qte-overlay">
+            <button class="qte-button pixel-btn danger" @click="handleBlock">
+              🛡️ ĐỠ ĐÒN! ({{ qteTimer.toFixed(1) }}s)
+            </button>
+          </div>
+
+          <div v-if="battleStore.status === 'VICTORY'" class="victory-modal">
+            <h2>🏆 CHIẾN THẮNG!</h2>
+            <p>Nhận: {{ battleStore.expEarned }} EXP | {{ battleStore.goldEarned }} Vàng</p>
+
+            <div v-if="battleStore.droppedItem" class="loot-box">
+              <div class="item-card" :class="'rarity-' + battleStore.droppedItem.rarity">
+                <span>🎁 {{ battleStore.droppedItem.name }}</span>
+              </div>
+            </div>
+            <button @click="goHome" class="pixel-btn primary">Về Làng</button>
+          </div>
+
+          <div v-if="battleStore.status === 'DEFEAT'" class="defeat-modal">
+            <h2>💀 THẤT BẠI...</h2>
+            <button @click="goHome" class="pixel-btn secondary">Về dưỡng thương</button>
+          </div>
+        </div>
+
+        <div class="player-section">
+          <div class="player-sprite">
+            <img src="@/assets/char/idle_demon1.png" class="pixel-art" />
+          </div>
+          <div class="player-info">
+            <h3>Đại Hiệp</h3>
+            <div class="health-bar-container">
+              <div class="health-bar player-hp"
+                :style="{ width: calculatePercent(battleStore.playerHp, battleStore.playerMaxHp) + '%' }"></div>
+              <span class="hp-text">{{ battleStore.playerHp }} / {{ battleStore.playerMaxHp }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="loading-screen">
+        <h2 v-if="battleStore.status === 'ERROR'" class="text-red">Lỗi kết nối máy chủ!</h2>
+        <h2 v-else>⚔️ Đang tìm đối thủ...</h2>
       </div>
     </div>
 
     <div class="combat-log" ref="logContainer">
-      <p v-for="(log, index) in battleLogs" :key="index" class="log-entry">
-        {{ log }}
-      </p>
+      <p v-for="(log, index) in battleStore.combatLogs" :key="index" class="log-entry">{{ log }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import axiosClient from '../api/axiosClient';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { useBattleStore } from '@/stores/battleStore';
 import { useRouter } from 'vue-router';
-import { getAssetUrl } from '../utils/assetHelper'; // Helper lấy ảnh nếu có
 
+const battleStore = useBattleStore();
 const router = useRouter();
-
-// State trận đấu
-const battleState = ref({
-  enemyName: 'Đang tải...',
-  enemyHp: 100, enemyMaxHp: 100,
-  playerHp: 100, playerMaxHp: 100,
-  playerEnergy: 0,
-  status: 'LOADING'
-});
-
-const battleLogs = ref([]);
 const logContainer = ref(null);
-const isTakingDamage = ref(false); // Để kích hoạt animation rung lắc
 
-// Logic QTE
+const isTakingDamage = ref(false);
 const showQTE = ref(false);
-const qteTimer = ref(0.0);
+const qteTimer = ref(0);
 let qteInterval = null;
-let autoAttackInterval = null;
+let autoInterval = null;
 
-// Hàm bắt đầu trận đấu
+// --- ASSET HELPER ---
+const getEnemyAsset = (name) => {
+  if (!name) return new URL('@/assets/enemy/idle_goblin.png', import.meta.url).href;
+  const n = name.toLowerCase();
+  if (n.includes('nấm')) return new URL('@/assets/enemy/idle_mushroom.png', import.meta.url).href;
+  if (n.includes('xương')) return new URL('@/assets/enemy/idle_skeleton.png', import.meta.url).href;
+  return new URL('@/assets/enemy/idle_goblin.png', import.meta.url).href;
+};
+
+const calculatePercent = (cur, max) => (max > 0 ? (cur / max) * 100 : 0);
+const goHome = () => router.push('/village');
+
+// --- GAME LOGIC ---
 const startBattle = async () => {
-  try {
-    const res = await axiosClient.post('/battle/start');
-    updateBattleState(res.data);
-    startAutoAttack(); // Bắt đầu auto đánh ngay
-  } catch (error) {
-    console.error(error);
-    alert("Lỗi vào trận: " + (error.response?.data || error.message));
-    router.push('/village');
+  await battleStore.startBattle();
+  if (battleStore.isReady) {
+    startAutoLoop();
   }
 };
 
-// Hàm gửi hành động (Attack / Block)
-const sendAction = async (actionType) => {
-  try {
-    const res = await axiosClient.post('/battle/action', { action: actionType });
-    updateBattleState(res.data);
-  } catch (error) {
-    console.error("Lỗi Action:", error);
-    stopAutoAttack(); // Dừng nếu lỗi mạng
-  }
-};
+const startAutoLoop = () => {
+  if (autoInterval) clearInterval(autoInterval);
+  autoInterval = setInterval(async () => {
+    // Chỉ đánh khi đang ONGOING và không có QTE
+    if (battleStore.status === 'ONGOING' && !showQTE.value) {
+      const res = await battleStore.autoTurn(false);
 
-// Cập nhật UI từ response Backend
-const updateBattleState = (data) => {
-  battleState.value = { ...battleState.value, ...data };
-
-  // Thêm log mới
-  if (data.combatLog && data.combatLog.length > 0) {
-    battleLogs.value.push(...data.combatLog);
-    scrollToBottom();
-  }
-
-  // 1. Xử lý QTE
-  if (data.status === 'QTE_ACTION' || data.qteTriggered) {
-    triggerQTE();
-    return; // Dừng các logic khác để chờ user bấm
-  }
-
-  // 2. Xử lý Kết thúc trận
-  if (data.status === 'VICTORY' || data.status === 'DEFEAT') {
-    stopAutoAttack();
-  }
-
-  // 3. Hiệu ứng bị đánh (Nếu máu giảm)
-  // (Ở đây làm đơn giản, nếu turn vừa rồi enemy đánh thì rung)
-  // Thực tế nên check oldHp vs newHp
-};
-
-// Logic Auto Attack Loop
-const startAutoAttack = () => {
-  if (autoAttackInterval) clearInterval(autoAttackInterval);
-
-  autoAttackInterval = setInterval(() => {
-    // Chỉ đánh nếu đang trạng thái ONGOING
-    if (battleState.value.status === 'ONGOING' && !showQTE.value) {
-      sendAction('ATTACK');
+      // Nếu server báo có QTE -> Dừng đánh, hiện nút
+      if (res && (res.status === 'QTE_ACTION' || res.qteTriggered)) {
+        triggerQTE();
+      }
     }
-  }, 1500); // 1.5 giây đánh 1 cái
+  }, 1500);
 };
 
-const stopAutoAttack = () => {
-  if (autoAttackInterval) clearInterval(autoAttackInterval);
-};
-
-// Logic QTE (Quick Time Event)
 const triggerQTE = () => {
-  stopAutoAttack(); // Dừng auto đánh
+  clearInterval(autoInterval); // Dừng auto
   showQTE.value = true;
-  qteTimer.value = 0.75; // 0.75 giây để phản xạ (khó!)
+  qteTimer.value = 0.75; // 0.75s
 
-  // Đếm ngược visual
   qteInterval = setInterval(() => {
     qteTimer.value -= 0.05;
     if (qteTimer.value <= 0) {
@@ -788,79 +739,71 @@ const triggerQTE = () => {
   }, 50);
 };
 
-const handleBlock = () => {
-  if (!showQTE.value) return;
+const handleBlock = async () => {
   clearInterval(qteInterval);
   showQTE.value = false;
-
-  // Gửi lệnh Block lên server
-  sendAction('BLOCK');
-
-  // Resume auto sau 1s
-  setTimeout(startAutoAttack, 1000);
+  await battleStore.sendAction('BLOCK');
+  startAutoLoop(); // Tiếp tục đánh
 };
 
-const failQTE = () => {
+const failQTE = async () => {
   clearInterval(qteInterval);
   showQTE.value = false;
-
-  // Gửi lệnh lờ đi (Bị ăn đòn)
-  sendAction('IGNORE_QTE');
-
-  // Rung màn hình vì bị đánh đau
-  isTakingDamage.value = true;
+  isTakingDamage.value = true; // Rung màn hình
   setTimeout(() => isTakingDamage.value = false, 500);
 
-  setTimeout(startAutoAttack, 1000);
+  await battleStore.sendAction('IGNORE_QTE');
+  startAutoLoop();
 };
 
-// Helper
-const scrollToBottom = () => {
+// --- WATCHERS ---
+watch(() => battleStore.combatLogs, () => {
   nextTick(() => {
-    if (logContainer.value) {
-      logContainer.value.scrollTop = logContainer.value.scrollHeight;
-    }
+    if (logContainer.value) logContainer.value.scrollTop = logContainer.value.scrollHeight;
   });
-};
+}, { deep: true });
 
-const goHome = () => router.push('/village');
-
-// Hàm tạm để map folder ảnh (Backend trả về tên file, nhưng Frontend chia folder)
-const getFolderByType = (itemName) => {
-  if (!itemName) return 'sword';
-  const lower = itemName.toLowerCase();
-  if (lower.includes('kiếm')) return 'sword';
-  if (lower.includes('giáp')) return 'armor';
-  if (lower.includes('mũ')) return 'helmet';
-  if (lower.includes('giày')) return 'boots';
-  if (lower.includes('nhẫn')) return 'ring';
-  if (lower.includes('dây')) return 'necklace';
-  return 'sword';
-};
-
-// Helper load ảnh
-const getAssetPath = (path) => {
-  // Logic import ảnh động của Vite
-  return new URL(`../assets/${path}`, import.meta.url).href;
-};
+// Check kết thúc trận để dừng Auto
+watch(() => battleStore.status, (newStatus) => {
+  if (newStatus === 'VICTORY' || newStatus === 'DEFEAT') {
+    clearInterval(autoInterval);
+    if (qteInterval) clearInterval(qteInterval);
+  }
+});
 
 onMounted(() => {
   startBattle();
 });
 
 onUnmounted(() => {
-  stopAutoAttack();
+  clearInterval(autoInterval);
   if (qteInterval) clearInterval(qteInterval);
+  battleStore.resetBattle();
 });
 </script>
 
 <style scoped>
+/* Copy CSS cũ vào đây, bổ sung thêm .text-red */
+.text-red {
+  color: #ff5252;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #aaa;
+}
+
+/* ... (Giữ nguyên các class CSS combat-container, battle-arena... từ file cũ) */
 .combat-container {
   display: flex;
   flex-direction: column;
   height: 90vh;
   background-image: url('@/assets/Background/b_doanhtrai.png');
-  /* Thay background chiến đấu */
   background-size: cover;
   color: white;
   padding: 10px;
@@ -874,19 +817,40 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* Thanh máu */
+.enemy-section,
+.player-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.enemy-section {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+/* Quái bên phải */
+.pixel-art {
+  width: 80px;
+  height: 80px;
+  image-rendering: pixelated;
+}
+
 .health-bar-container {
-  width: 100%;
-  height: 20px;
+  width: 150px;
+  height: 15px;
   background: #333;
-  border: 2px solid #000;
+  border: 1px solid #000;
   position: relative;
-  margin-top: 5px;
 }
 
 .health-bar {
   height: 100%;
-  transition: width 0.3s ease-in-out;
+  transition: width 0.3s;
 }
 
 .enemy-hp {
@@ -899,32 +863,79 @@ onUnmounted(() => {
 
 .hp-text {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: -2px;
+  width: 100%;
   text-align: center;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
-  text-shadow: 1px 1px 0 #000;
 }
 
-/* QTE Button */
-.qte-overlay {
+.center-stage {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.qte-overlay,
+.victory-modal,
+.defeat-modal {
+  pointer-events: auto;
   z-index: 100;
+  text-align: center;
 }
 
 .qte-button {
   font-size: 2rem;
-  padding: 20px 40px;
-  background: #e74c3c;
+  padding: 15px 30px;
+  background: red;
   color: white;
-  border: 4px solid #c0392b;
-  animation: pulse 0.5s infinite;
+  border: 3px solid white;
+  border-radius: 50px;
   cursor: pointer;
+  animation: pulse 0.5s infinite;
+}
+
+.victory-modal {
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border: 2px solid gold;
+  border-radius: 10px;
+}
+
+.combat-log {
+  height: 120px;
+  background: rgba(0, 0, 0, 0.8);
+  overflow-y: auto;
+  padding: 10px;
+  border-top: 2px solid #555;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.shake-anim {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes pulse {
@@ -939,99 +950,5 @@ onUnmounted(() => {
   100% {
     transform: scale(1);
   }
-}
-
-/* Animation Rung lắc khi bị đánh */
-.shake-anim {
-  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
-}
-
-@keyframes shake {
-
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-
-  40%,
-  60% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-
-/* Log chiến đấu */
-.combat-log {
-  height: 150px;
-  background: rgba(0, 0, 0, 0.7);
-  overflow-y: auto;
-  padding: 10px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  border-top: 2px solid #fff;
-}
-
-.log-entry {
-  margin: 2px 0;
-  border-bottom: 1px dashed #555;
-}
-
-/* Modal Victory/Defeat */
-.victory-modal,
-.defeat-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.9);
-  padding: 30px;
-  border: 4px solid gold;
-  text-align: center;
-  z-index: 200;
-}
-
-.item-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #222;
-  padding: 5px;
-  margin-top: 10px;
-  border: 1px solid #555;
-}
-
-.item-card img {
-  width: 40px;
-  height: 40px;
-}
-
-.rarity-S {
-  border-color: gold;
-  color: gold;
-}
-
-.rarity-A {
-  border-color: purple;
-  color: purple;
-}
-
-.rarity-B {
-  border-color: blue;
-  color: cyan;
-}
-
-.rarity-C {
-  border-color: gray;
-  color: white;
 }
 </style>
