@@ -214,7 +214,7 @@ import Profile from '../views/Profile.vue';
 import AboutView from '../views/AboutView.vue';
 import RulesView from '../views/RulesView.vue';
 import UpdatesView from '../views/UpdatesView.vue';
-// import HelpView from '../views/HelpView.vue';
+import HelpView from '../views/HelpView.vue';
 import ReportView from '../views/ReportView.vue';
 import PrivacyView from '../views/PrivacyView.vue';
 
@@ -247,7 +247,7 @@ const routes = [
   { path: '/updates', name: 'updates', component: UpdatesView },
 
   // Footer Routes - Hỗ Trợ
-  // { path: '/help', name: 'help', component: HelpView },
+  { path: '/help', name: 'help', component: HelpView },
   { path: '/report', name: 'report', component: ReportView },
   { path: '/privacy', name: 'privacy', component: PrivacyView },
 

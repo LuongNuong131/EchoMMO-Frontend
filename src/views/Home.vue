@@ -574,6 +574,7 @@ p {
 }
 </style> -->
 
+
 <!-- trương khang thêm -->
 <!-- <template>
   <div class="page-container wuxia-dashboard">
@@ -1136,6 +1137,8 @@ p {
   }
 }
 </style> -->
+
+
 
 <!-- 4h16 -->
 <!-- <template>
@@ -1701,7 +1704,7 @@ p {
 </style> -->
 
 <!-- 5h09 -->
-<!-- <template>
+ <!-- <template>
   <div class="page-container wuxia-dashboard">
     <div class="ink-bg-layer">
       <div class="mountain-bg"></div>
@@ -2265,7 +2268,7 @@ p {
 </style> -->
 
 <!-- 5:52 -->
-<template>
+ <template>
   <div class="page-container wuxia-dashboard">
     <div class="ink-bg-layer">
       <img :src="bgImage" class="bg-image-full" />
@@ -2384,11 +2387,11 @@ p {
 <script setup>
 import { onMounted } from "vue";
 import { useAuthStore } from "../stores/authStore";
-import { resolveItemImage } from "../utils/assetHelper"; // Import helper
+import { resolveItemImage } from "../utils/assetHelper"; // [FIX] Import helper
 
 const authStore = useAuthStore();
 
-// Load ảnh nền thông qua assetHelper để Vite xử lý đường dẫn đúng
+// [FIX] Load ảnh nền thông qua assetHelper để Vite xử lý đường dẫn đúng
 const bgImage = resolveItemImage("b_doanhtrai.png");
 
 onMounted(() => {
@@ -2410,6 +2413,7 @@ onMounted(() => {
 }
 
 .wuxia-dashboard {
+  /* Cho phép cuộn trên mobile */
   min-height: 100vh;
   background-color: var(--wood-dark);
   color: var(--text-light);
@@ -2444,7 +2448,7 @@ onMounted(() => {
   object-fit: cover;
   position: absolute;
   inset: 0;
-  filter: sepia(30%) brightness(0.6) contrast(1.1);
+  filter: sepia(30%) brightness(0.6) contrast(1.1); /* Làm tối nền để nổi chữ */
 }
 
 .fog-anim {
@@ -2580,9 +2584,7 @@ onMounted(() => {
 .cmd-card:hover {
   transform: translateY(-5px);
   border-color: var(--gold);
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.5),
-    0 0 10px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 .card-content {
@@ -2643,7 +2645,7 @@ p {
   grid-column: span 2;
   grid-row: span 2;
   background: var(--wood-dark);
-  border-color: var(--gold);
+  /* border-color: var(--gold); */
 }
 
 .play-card h2 {

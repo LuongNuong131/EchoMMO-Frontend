@@ -5,10 +5,7 @@
     <div class="footer-container">
       <div class="footer-brand">
         <div class="brand-logo">
-          <img
-            src="https://via.placeholder.com/64/3e2723/fbc02d?text=RPG"
-            alt="Logo"
-          />
+          <img :src="appLogo" alt="Logo" />
         </div>
         <div class="brand-info">
           <h2 class="team-name">Aurix Team</h2>
@@ -67,11 +64,12 @@
 </template>
 
 <script setup>
-// Không cần logic phức tạp, chỉ hiển thị
+import appLogo from "@/assets/logo/Logo.png";
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cinzel:wght@700&display=swap");
+/* Import font Playfair Display (đã có sẵn) và thêm Roboto Slab cho chắc chắn */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cinzel:wght@700&family=Roboto+Slab:wght@500;700&display=swap");
 
 :root {
   --wood-dark: #3e2723;
@@ -84,16 +82,15 @@
 .game-footer {
   position: relative;
   width: 100%;
-  background: #3e2723; /* Đồng bộ màu nền với Header */
+  background: #3e2723;
   color: #d7ccc8;
   font-family: "Playfair Display", serif;
   border-top: 2px solid #5d4037;
-  margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ít */
+  margin-top: auto;
   padding-top: 20px;
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Hiệu ứng viền sáng bên trên (ngược lại với Header) */
 .footer-border-top {
   position: absolute;
   top: 0;
@@ -112,7 +109,6 @@
   gap: 30px;
 }
 
-/* --- TRÁI: BRANDING --- */
 .footer-brand {
   display: flex;
   align-items: center;
@@ -122,11 +118,14 @@
 }
 
 .brand-logo img {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  border: 1px solid #5d4037;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  width: 80px;
+  height: auto;
+  max-height: 80px;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
 }
 
 .brand-info {
@@ -135,7 +134,8 @@
 }
 
 .team-name {
-  font-family: "Cinzel", serif;
+  /* Font tên team không dấu nên giữ Cinzel cho đẹp, hoặc đổi nếu muốn */
+  font-family: "Cinzel", serif; 
   font-size: 1.5em;
   color: #fbc02d;
   margin: 0;
@@ -149,7 +149,6 @@
   font-style: italic;
 }
 
-/* --- PHẢI: NAVIGATION --- */
 .footer-nav {
   display: flex;
   gap: 50px;
@@ -162,15 +161,20 @@
   flex-direction: column;
 }
 
+/* --- [ĐÃ SỬA] Đổi font tiêu đề cột --- */
 .col-title {
-  font-family: "Cinzel", serif;
+  /* Đổi từ Cinzel sang Playfair Display hoặc Roboto Slab */
+  font-family: "Playfair Display", serif; 
+  font-weight: 700; /* Tăng độ đậm */
   font-size: 1.1em;
   color: #fbc02d;
   margin-bottom: 15px;
   border-bottom: 1px solid #5d4037;
   padding-bottom: 5px;
   display: inline-block;
+  letter-spacing: 0.5px; /* Giãn chữ ra một chút cho thoáng */
 }
+/* ------------------------------------- */
 
 .nav-col ul {
   list-style: none;
@@ -194,7 +198,7 @@
 
 .nav-col a:hover {
   color: #fbc02d;
-  transform: translateX(5px); /* Hiệu ứng di chuyển nhẹ khi hover */
+  transform: translateX(5px);
   text-shadow: 0 0 5px rgba(251, 192, 45, 0.4);
 }
 
@@ -203,7 +207,6 @@
   text-align: center;
 }
 
-/* --- COPYRIGHT ROW --- */
 .copyright-row {
   background: rgba(0, 0, 0, 0.3);
   text-align: center;
@@ -213,26 +216,22 @@
   border-top: 1px solid #4e342e;
 }
 
-/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
   .footer-container {
     flex-direction: column;
     align-items: center;
     padding: 20px;
   }
-
   .footer-brand {
     text-align: center;
     flex-direction: column;
     margin-bottom: 20px;
   }
-
   .footer-nav {
     width: 100%;
     justify-content: space-between;
     gap: 20px;
   }
-
   .col-title {
     font-size: 1em;
   }
@@ -244,14 +243,12 @@
     align-items: center;
     text-align: center;
   }
-
   .nav-col {
     width: 100%;
     align-items: center;
   }
-
   .nav-col a:hover {
-    transform: none; /* Tắt hiệu ứng di chuyển trên mobile cho đỡ rối */
+    transform: none;
   }
 }
 </style>
