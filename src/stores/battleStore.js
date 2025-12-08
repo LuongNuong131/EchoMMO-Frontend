@@ -4,18 +4,17 @@ import { useCharacterStore } from "./characterStore";
 
 export const useBattleStore = defineStore("battle", {
   state: () => ({
-    enemy: null, // Object chứa ID, Name
+    enemy: null,
     enemyHp: 0,
     enemyMaxHp: 100,
     playerHp: 0,
     playerMaxHp: 100,
-    combatLogs: [], // [FIX] Đổi tên thành combatLogs cho khớp với Vue
+    combatLogs: [],
     status: "IDLE",
     goldEarned: 0,
     expEarned: 0,
     droppedItem: null,
-
-    isReady: false // Cờ đánh dấu đã load xong dữ liệu trận đấu
+    isReady: false
   }),
 
   actions: {
@@ -36,7 +35,6 @@ export const useBattleStore = defineStore("battle", {
     },
 
     async autoTurn(isBuffed) {
-      // [FIX] Chỉ đánh khi đã có ID đối thủ
       if (!this.isReady || !this.enemy || !this.enemy.enemyId) return null;
 
       try {
@@ -49,6 +47,13 @@ export const useBattleStore = defineStore("battle", {
         return res.data;
       } catch (e) {
         console.error("Lỗi turn:", e);
+        
+        // [FIX] Nếu lỗi 403 (Cấm) hoặc 401 (Hết phiên) -> Dừng ngay lập tức
+        if (e.response && (e.response.status === 403 || e.response.status === 401)) {
+            this.status = "ERROR";
+            this.combatLogs.push("Phiên đăng nhập hết hạn hoặc lỗi quyền truy cập.");
+            this.isReady = false; 
+        }
         return null;
       }
     },
@@ -65,11 +70,6 @@ export const useBattleStore = defineStore("battle", {
     handleResult(data) {
       if (!data) return;
 
-      // Map dữ liệu từ API (BattleResult) vào Store
-      // Backend trả về: enemyId, enemyName... (dạng phẳng)
-      // Frontend Store cũ dùng: this.enemy = { enemyId: ..., name: ... }
-
-      // Tạo object enemy giả lập nếu backend trả về dạng phẳng
       if (data.enemyId) {
         this.enemy = {
           enemyId: data.enemyId,
@@ -77,7 +77,7 @@ export const useBattleStore = defineStore("battle", {
           level: data.enemyLv || '??'
         };
       } else if (data.enemy) {
-        this.enemy = data.enemy; // Fallback nếu backend trả nguyên object enemy
+        this.enemy = data.enemy;
       }
 
       this.enemyHp = data.enemyHp;
@@ -86,9 +86,8 @@ export const useBattleStore = defineStore("battle", {
       this.playerMaxHp = data.playerMaxHp || this.playerMaxHp;
       this.status = data.status;
 
-      // Xử lý Log (Tránh lỗi undefined length)
       if (data.combatLog && Array.isArray(data.combatLog)) {
-        this.combatLogs = [...this.combatLogs, ...data.combatLog].slice(-20); // Giữ 20 dòng cuối
+        this.combatLogs = [...this.combatLogs, ...data.combatLog].slice(-20);
       }
 
       if (data.status === "VICTORY") {
@@ -106,7 +105,6 @@ export const useBattleStore = defineStore("battle", {
         this.isReady = false;
       }
 
-      // Sync máu player
       const charStore = useCharacterStore();
       if (charStore.character) {
         charStore.character.hp = data.playerHp;
