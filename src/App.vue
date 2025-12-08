@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div id="app" class="cyber-root">
     <div class="static-noise"></div>
 
@@ -87,5 +87,60 @@ html {
 .page-fade-enter-from,
 .page-fade-leave-to {
   opacity: 0;
+}
+</style> -->
+<!-- 5:28 -->
+ <template>
+  <component :is="layout">
+    <router-view />
+  </component>
+  
+  <CaptchaModal 
+    v-if="showCaptcha" 
+    :is-visible="showCaptcha" 
+    @success="onCaptchaSuccess"
+    @close="showCaptcha = false"
+  />
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from './stores/authStore';
+import MainLayout from './layouts/MainLayout.vue';
+
+const route = useRoute();
+const authStore = useAuthStore();
+const showCaptcha = ref(false);
+
+// Layout: Nếu route có meta.guest (Login/Register) thì dùng div thường, ngược lại dùng MainLayout
+const layout = computed(() => {
+  return route.meta.guest ? 'div' : MainLayout;
+});
+
+// [FIX] Khi App vừa load (F5), kiểm tra auth và fetch dữ liệu mới nhất
+onMounted(async () => {
+  // 1. Khôi phục state từ localStorage
+  authStore.initialize();
+
+  // 2. Nếu đã đăng nhập, gọi API để lấy thông tin mới nhất (Gold, Level, Stats...)
+  if (authStore.isAuthenticated) {
+    await authStore.fetchProfile();
+  }
+});
+
+const onCaptchaSuccess = () => {
+  showCaptcha.value = false;
+  // Logic xử lý sau khi giải captcha xong (nếu có)
+};
+</script>
+
+<style>
+/* CSS toàn cục nếu cần */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
 }
 </style>

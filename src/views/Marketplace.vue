@@ -67,6 +67,15 @@
               <div class="seller-badge">
                 <i class="fas fa-user-tag"></i> {{ listing.seller.username }}
               </div>
+              
+              <div class="card-top p2p-img-top">
+                <div class="img-frame" :class="'border-' + listing.item.rarity">
+                  <img v-if="listing.item.imageUrl" :src="listing.item.imageUrl" />
+                  <i v-else class="fas fa-box-open placeholder-icon"></i>
+                  <span class="rarity-tag" :class="'bg-' + listing.item.rarity">{{ listing.item.rarity }}</span>
+                </div>
+              </div>
+
               <div class="card-body p2p-body">
                 <div class="item-name gold-glow">
                   {{ listing.item.name }}
@@ -91,9 +100,17 @@
               <i class="fas fa-scroll"></i> <p>Chưa bày bán vật phẩm nào.</p>
             </div>
             <div v-for="listing in marketStore.myListings" :key="listing.listingId" class="item-card my-card">
+              
+              <div class="card-top">
+                <div class="img-frame" :class="'border-' + listing.item.rarity">
+                  <img v-if="listing.item.imageUrl" :src="listing.item.imageUrl" />
+                  <i v-else class="fas fa-box-open placeholder-icon"></i>
+                  <span class="qty-badge-corner">x{{ listing.quantity }}</span>
+                </div>
+              </div>
+
               <div class="card-body">
-                <div class="item-name">{{ listing.item.name }}</div>
-                <div class="stock-info">Đang bán: {{ listing.quantity }}</div>
+                <div class="item-name">{{ listing.item.name }} <span v-if="listing.enhanceLevel > 0">(+{{listing.enhanceLevel}})</span></div>
                 <div class="price-row">
                   <span class="val gold-text">{{ formatNumber(listing.price) }} <i class="fas fa-coins"></i></span>
                 </div>
@@ -233,7 +250,7 @@ const openConfirm = (type, data) => {
 };
 const closeConfirm = () => { confirmModal.visible = false; };
 
-// --- LOGIC MUA HÀNG & XỬ LÝ LỖI (ĐÃ CẬP NHẬT) ---
+// --- LOGIC MUA HÀNG & XỬ LÝ LỖI ---
 const confirmTransaction = async () => {
   const { type, data } = confirmModal;
   
@@ -241,26 +258,17 @@ const confirmTransaction = async () => {
     if (type === 'SYS') {
       await marketStore.buyItem(data.id, data.qty);
       buyQty[data.id] = 1;
-      // alert("Mua thành công!"); // Có thể mở lại nếu cần
     } else if (type === 'P2P') {
       await marketStore.buyPlayerListing(data.id, data.qty);
       p2pQty[data.id] = 1;
-      // alert("Mua thành công!");
     }
     closeConfirm();
   } catch (e) {
-    // Đóng modal xác nhận trước
     closeConfirm();
-
-    // Xử lý lỗi đặc biệt cho P2P (Hàng đã bị mua mất)
     if (type === 'P2P') {
-      // Refresh lại danh sách để xóa món hàng ảo
       await marketStore.fetchPlayerListings();
-      
-      // Thông báo đậm chất kiếm hiệp
       alert("Đại hiệp chậm tay mất òi!");
     } else {
-      // Các lỗi khác (ví dụ thiếu tiền)
       alert(e.response?.data?.message || "Giao dịch thất bại.");
     }
   }
@@ -298,7 +306,7 @@ onMounted(() => {
   --text-light: #f3f4f6;
   --text-dim: #bdbdbd;
   --red-seal: #b71c1c;
-  --jade-green: #2e7d32; /* Màu xanh ngọc cho nút P2P */
+  --jade-green: #2e7d32;
   --jade-light: #4caf50;
   --card-bg: #261815;
   --panel-bg: rgba(30, 20, 15, 0.95);
@@ -393,6 +401,10 @@ onMounted(() => {
   position: absolute; bottom: -8px; font-size: 0.7rem; font-weight: bold;
   padding: 2px 6px; border-radius: 3px; color: #000;
 }
+.qty-badge-corner {
+  position: absolute; top: -5px; right: -5px; background: #b71c1c; color: #fff;
+  font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; font-weight: bold;
+}
 
 .card-body { flex: 1; text-align: center; }
 .item-name { font-size: 1.1rem; font-weight: bold; color: var(--text-light); margin-bottom: 5px; }
@@ -421,7 +433,7 @@ onMounted(() => {
 .btn-sell { background: #c62828; border: 1px solid #b71c1c; }
 .btn-cancel { background: #4e342e; width: 100%; padding: 10px; }
 
-/* --- P2P BUTTON STYLE (UPDATED: JADE GREEN) --- */
+/* --- P2P BUTTON STYLE --- */
 .btn-buy-p2p {
   background: linear-gradient(to bottom, var(--jade-light), var(--jade-green));
   border: 1px solid var(--jade-green);
@@ -429,12 +441,14 @@ onMounted(() => {
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   display: flex; align-items: center; justify-content: center; gap: 5px;
 }
-.p2p-card { border-color: #81c784; } /* Viền xanh nhạt cho thẻ P2P */
+.p2p-card { border-color: #81c784; } 
 .seller-badge {
   position: absolute; top: 0; left: 0; right: 0; background: rgba(46, 125, 50, 0.2);
   font-size: 0.75rem; color: #a5d6a7; text-align: center; padding: 2px;
 }
-.p2p-body { padding-top: 15px; }
+/* [FIX] Đẩy hình ảnh xuống một chút để không bị nhãn che */
+.p2p-img-top { margin-top: 20px; border-bottom: none; padding-bottom: 0; }
+.p2p-body { padding-top: 10px; }
 .stock-info { font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
 .highlight { color: #fff; }
 
@@ -446,7 +460,7 @@ onMounted(() => {
 }
 
 .bill-modal {
-  width: 400px; background: #fdf5e6; /* Giấy cũ sáng màu để dễ đọc */
+  width: 400px; background: #fdf5e6;
   background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
   color: #3e2723; border: 4px double #3e2723;
   box-shadow: 0 0 50px rgba(0,0,0,0.9);

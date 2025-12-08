@@ -4,25 +4,40 @@ import router from "../router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: null,
-    token: null,
+    // Cố gắng lấy từ localStorage ngay khi khởi tạo
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    token: localStorage.getItem("token") || null,
     wallet: null,
     isLoading: false,
     error: null,
   }),
+  
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    // Chỉ coi là đã đăng nhập nếu có token hợp lệ
+    isAuthenticated: (state) => !!state.token && state.token !== "null" && state.token !== "undefined",
   },
+
   actions: {
-    // Khởi tạo state từ localStorage (gọi trong App.vue hoặc main.js)
+    // [FIX] Hàm này giúp đồng bộ lại State khi reload trang
     initialize() {
       try {
-        const t = localStorage.getItem("token");
-        const u = localStorage.getItem("user");
-        if (t && t !== "null") this.token = t;
-        if (u && u !== "null") this.user = JSON.parse(u);
+        const token = localStorage.getItem("token");
+        const user = localStorage.getItem("user");
+
+        if (token && token !== "null" && token !== "undefined") {
+          this.token = token;
+          // Set header mặc định cho mọi request sau này
+          axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+          this.token = null;
+        }
+
+        if (user && user !== "null" && user !== "undefined") {
+          this.user = JSON.parse(user);
+        }
       } catch (e) {
-        console.warn("Storage blocked");
+        console.error("Lỗi khôi phục session:", e);
+        this.logout();
       }
     },
 
@@ -36,13 +51,12 @@ export const useAuthStore = defineStore("auth", {
         this.token = token;
         this.user = { username, role };
 
-        // Lưu an toàn
-        try {
-          localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(this.user));
-        } catch (e) {
-          console.warn("Không thể lưu session vào localStorage");
-        }
+        // Lưu vào localStorage
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(this.user));
+        
+        // Cập nhật header axios ngay lập tức
+        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         await this.fetchProfile();
         router.push("/");
@@ -58,11 +72,14 @@ export const useAuthStore = defineStore("auth", {
       if (!this.token) return;
       try {
         const res = await axiosClient.get("/user/me");
-        this.user = { ...this.user, ...res.data }; 
-        this.wallet = res.data.wallet; 
+        this.user = { ...this.user, ...res.data };
+        this.wallet = res.data.wallet;
       } catch (error) {
         console.error("Lỗi tải profile:", error);
-        if (error.response?.status === 401) this.logout();
+        // Chỉ logout nếu lỗi 401 (Unauthorized)
+        if (error.response && error.response.status === 401) {
+          this.logout();
+        }
       }
     },
 
@@ -84,10 +101,10 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       this.user = null;
       this.wallet = null;
-      try {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-      } catch(e) {}
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Xóa header
+      delete axiosClient.defaults.headers.common['Authorization'];
       router.push("/login");
     },
   },

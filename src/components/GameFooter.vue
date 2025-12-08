@@ -8,7 +8,7 @@
           <img src="https://via.placeholder.com/64/3e2723/fbc02d?text=RPG" alt="Logo" />
         </div>
         <div class="brand-info">
-          <h2 class="team-name">Immortal Team</h2>
+          <h2 class="team-name">Aurix Team</h2>
           <p class="slogan">Kiến tạo thế giới tiên hiệp</p>
         </div>
       </div>
@@ -26,7 +26,7 @@
         <div class="nav-col">
           <h3 class="col-title">Cộng Đồng</h3>
           <ul>
-            <li><a href="#" target="_blank"><i class="fab fa-discord"></i> Discord</a></li>
+            <li><a href="https://discord.gg/mdbgEPxg" target="_blank"><i class="fab fa-discord"></i> Discord</a></li>
             <li><a href="#" target="_blank"><i class="fab fa-facebook"></i> Fanpage</a></li>
             <li><a href="#" target="_blank"><i class="fas fa-users"></i> Group Thảo Luận</a></li>
           </ul>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="copyright-row">
-      <p>&copy; {{ new Date().getFullYear() }} Immortal Team. All rights reserved.</p>
+      <p>&copy; {{ new Date().getFullYear() }} AURIX Team. All rights reserved.</p>
     </div>
   </footer>
 </template>

@@ -126,51 +126,122 @@
 
 // export default router;
 
-import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../stores/authStore";
-import Login from "../views/Login.vue";
-import Register from "../views/Register.vue";
-import Home from "../views/Home.vue";
-import CreateCharacter from "../views/CreateCharacter.vue";
-import Inventory from "../views/Inventory.vue";
-import Marketplace from "../views/Marketplace.vue";
-import Leaderboard from "../views/Leaderboard.vue";
-import Admin from "../views/Admin.vue";
-import Battle from "../views/Battle.vue";
-import Profile from "../views/Profile.vue";
-import Notifications from "../views/Notifications.vue";
-import Friends from "../views/Friends.vue";
-import ForgotPassword from "../views/ForgotPassword.vue";
-import Village from "../views/Village.vue";
-import Gathering from "../views/Gathering.vue";
-import Explore from "../views/Explore.vue";
-import Character from "../views/Character.vue";
-import Forge from "../views/Forge.vue";
+// import { createRouter, createWebHistory } from "vue-router";
+// import { useAuthStore } from "../stores/authStore";
+// import Login from "../views/Login.vue";
+// import Register from "../views/Register.vue";
+// import Home from "../views/Home.vue";
+// import CreateCharacter from "../views/CreateCharacter.vue";
+// import Inventory from "../views/Inventory.vue";
+// import Marketplace from "../views/Marketplace.vue";
+// import Leaderboard from "../views/Leaderboard.vue";
+// import Admin from "../views/Admin.vue";
+// import Battle from "../views/Battle.vue";
+// import Profile from "../views/Profile.vue";
+// import Notifications from "../views/Notifications.vue";
+// import Friends from "../views/Friends.vue";
+// import ForgotPassword from "../views/ForgotPassword.vue";
+// import Village from "../views/Village.vue";
+// import Gathering from "../views/Gathering.vue";
+// import Explore from "../views/Explore.vue";
+// import Character from "../views/Character.vue";
+// import Forge from "../views/Forge.vue";
+
+// const routes = [
+//   { path: "/", name: "Home", component: Home, meta: { requiresAuth: true } },
+//   { path: "/login", name: "Login", component: Login },
+//   { path: "/register", name: "Register", component: Register },
+//   { path: "/create-character", name: "CreateCharacter", component: CreateCharacter, meta: { requiresAuth: true } },
+//   { path: "/village", name: "Village", component: Village, meta: { requiresAuth: true } },
+//   { path: "/explore", name: "Explore", component: Explore, meta: { requiresAuth: true } },
+//   {
+//     path: '/gathering',
+//     name: 'Gathering',
+//     component: Gathering,
+//     meta: { requiresAuth: true }
+//   },
+//   { path: "/inventory", name: "Inventory", component: Inventory, meta: { requiresAuth: true } },
+//   { path: "/market", name: "Marketplace", component: Marketplace, meta: { requiresAuth: true } },
+//   { path: "/leaderboard", name: "Leaderboard", component: Leaderboard, meta: { requiresAuth: true } },
+//   { path: "/admin", name: "Admin", component: Admin, meta: { requiresAuth: true } },
+//   { path: "/battle", name: "Battle", component: Battle, meta: { requiresAuth: true } },
+//   { path: "/profile", name: "Profile", component: Profile, meta: { requiresAuth: true } },
+//   { path: "/notifications", name: "Notifications", component: Notifications, meta: { requiresAuth: true } },
+//   { path: "/friends", name: "Friends", component: Friends, meta: { requiresAuth: true } },
+//   { path: "/forge", name: "Forge", component: Forge, meta: { requiresAuth: true } },
+//   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
+//   { path: "/character", name: "Character", component: Character, meta: { requiresAuth: true } }
+// ];
+
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes,
+// });
+
+// router.beforeEach((to, from, next) => {
+//   const authStore = useAuthStore();
+//   if (to.meta.requiresAuth && !authStore.token) next("/login");
+//   else next();
+// });
+
+// export default router;
+
+// 5:28
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/authStore';
+
+// Import các View
+import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
+import ForgotPassword from '../views/ForgotPassword.vue';
+import Home from '../views/Home.vue';
+import Character from '../views/Character.vue';
+import Adventure from '../views/Adventure.vue';
+import Inventory from '../views/Inventory.vue';
+import Marketplace from '../views/Marketplace.vue';
+import Friends from '../views/Friends.vue';
+import Leaderboard from '../views/Leaderboard.vue';
+import Admin from '../views/Admin.vue';
+import Explore from '../views/Explore.vue';
+import Battle from '../views/Battle.vue';
+import Combat from '../views/Combat.vue';
+import Gathering from '../views/Gathering.vue';
+import Forge from '../views/Forge.vue';
+import CreateCharacter from '../views/CreateCharacter.vue';
+import Village from '../views/Village.vue'; 
+import Notifications from '../views/Notifications.vue'; 
+import Profile from '../views/Profile.vue'; 
+
 
 const routes = [
-  { path: "/", name: "Home", component: Home, meta: { requiresAuth: true } },
-  { path: "/login", name: "Login", component: Login },
-  { path: "/register", name: "Register", component: Register },
-  { path: "/create-character", name: "CreateCharacter", component: CreateCharacter, meta: { requiresAuth: true } },
-  { path: "/village", name: "Village", component: Village, meta: { requiresAuth: true } },
-  { path: "/explore", name: "Explore", component: Explore, meta: { requiresAuth: true } },
-  {
-    path: '/gathering',
-    name: 'Gathering',
-    component: Gathering,
-    meta: { requiresAuth: true }
-  },
-  { path: "/inventory", name: "Inventory", component: Inventory, meta: { requiresAuth: true } },
-  { path: "/market", name: "Marketplace", component: Marketplace, meta: { requiresAuth: true } },
-  { path: "/leaderboard", name: "Leaderboard", component: Leaderboard, meta: { requiresAuth: true } },
-  { path: "/admin", name: "Admin", component: Admin, meta: { requiresAuth: true } },
-  { path: "/battle", name: "Battle", component: Battle, meta: { requiresAuth: true } },
-  { path: "/profile", name: "Profile", component: Profile, meta: { requiresAuth: true } },
-  { path: "/notifications", name: "Notifications", component: Notifications, meta: { requiresAuth: true } },
-  { path: "/friends", name: "Friends", component: Friends, meta: { requiresAuth: true } },
-  { path: "/forge", name: "Forge", component: Forge, meta: { requiresAuth: true } },
-  { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
-  { path: "/character", name: "Character", component: Character, meta: { requiresAuth: true } }
+  // --- PUBLIC ROUTES (Không cần đăng nhập) ---
+  { path: '/login', name: 'Login', component: Login, meta: { guest: true } },
+  { path: '/register', name: 'Register', component: Register, meta: { guest: true } },
+  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword, meta: { guest: true } },
+
+  // --- PROTECTED ROUTES (Cần đăng nhập) ---
+  { path: '/', name: 'Home', component: Home, meta: { requiresAuth: true } },
+  { path: '/character', name: 'Character', component: Character, meta: { requiresAuth: true } },
+  { path: '/create-character', name: 'CreateCharacter', component: CreateCharacter, meta: { requiresAuth: true } },
+  { path: '/adventure', name: 'Adventure', component: Adventure, meta: { requiresAuth: true } },
+  { path: '/inventory', name: 'Inventory', component: Inventory, meta: { requiresAuth: true } },
+  { path: '/marketplace', name: 'Marketplace', component: Marketplace, meta: { requiresAuth: true } },
+  { path: '/friends', name: 'Friends', component: Friends, meta: { requiresAuth: true } },
+  { path: '/leaderboard', name: 'Leaderboard', component: Leaderboard, meta: { requiresAuth: true } },
+  { path: '/explore', name: 'Explore', component: Explore, meta: { requiresAuth: true } },
+  { path: '/battle', name: 'Battle', component: Battle, meta: { requiresAuth: true } },
+  { path: '/combat/:enemyId', name: 'Combat', component: Combat, meta: { requiresAuth: true } },
+  { path: '/gathering', name: 'Gathering', component: Gathering, meta: { requiresAuth: true } },
+  { path: '/forge', name: 'Forge', component: Forge, meta: { requiresAuth: true } },
+  { path: '/village', name: 'Village', component: Village, meta: { requiresAuth: true } },
+  { path: '/notifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
+  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
+
+  // --- ADMIN ROUTES ---
+  { path: '/admin', name: 'Admin', component: Admin, meta: { requiresAuth: true, role: 'ADMIN' } },
+
+  // Catch-all (404) -> Home
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
 const router = createRouter({
@@ -178,10 +249,34 @@ const router = createRouter({
   routes,
 });
 
+// --- NAVIGATION GUARD (Gác cổng) ---
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  if (to.meta.requiresAuth && !authStore.token) next("/login");
-  else next();
+  
+  // [FIX] Luôn đảm bảo Store được đồng bộ với LocalStorage trước khi kiểm tra
+  if (!authStore.token) {
+    authStore.initialize();
+  }
+
+  const isAuthenticated = authStore.isAuthenticated;
+
+  // 1. Nếu route yêu cầu đăng nhập mà chưa có token -> Đá về Login
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return next('/login');
+  }
+
+  // 2. Nếu route dành cho khách (Login/Register) mà đã đăng nhập -> Đá về Home
+  if (to.meta.guest && isAuthenticated) {
+    return next('/');
+  }
+
+  // 3. Kiểm tra quyền Admin (nếu cần)
+  if (to.meta.role && authStore.user?.role !== to.meta.role) {
+    alert("Khu vực cấm địa! Chỉ Admin mới được vào.");
+    return next('/');
+  }
+
+  next();
 });
 
 export default router;
