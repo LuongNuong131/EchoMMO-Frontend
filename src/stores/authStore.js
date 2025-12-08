@@ -4,9 +4,9 @@ import router from "../router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: JSON.parse(localStorage.getItem("user")) || null,
-    token: localStorage.getItem("token") || null,
-    wallet: null, // Thêm state ví tiền
+    user: null,
+    token: null,
+    wallet: null,
     isLoading: false,
     error: null,
   }),
@@ -14,6 +14,18 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: (state) => !!state.token,
   },
   actions: {
+    // Khởi tạo state từ localStorage (gọi trong App.vue hoặc main.js)
+    initialize() {
+      try {
+        const t = localStorage.getItem("token");
+        const u = localStorage.getItem("user");
+        if (t && t !== "null") this.token = t;
+        if (u && u !== "null") this.user = JSON.parse(u);
+      } catch (e) {
+        console.warn("Storage blocked");
+      }
+    },
+
     async login(credentials) {
       this.isLoading = true;
       this.error = null;
@@ -24,12 +36,15 @@ export const useAuthStore = defineStore("auth", {
         this.token = token;
         this.user = { username, role };
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(this.user));
+        // Lưu an toàn
+        try {
+          localStorage.setItem("token", token);
+          localStorage.setItem("user", JSON.stringify(this.user));
+        } catch (e) {
+          console.warn("Không thể lưu session vào localStorage");
+        }
 
-        // Sau khi login, lấy luôn thông tin ví
         await this.fetchProfile();
-
         router.push("/");
       } catch (err) {
         console.error(err);
@@ -39,13 +54,12 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    // Hàm mới: Lấy thông tin User kèm Wallet
     async fetchProfile() {
       if (!this.token) return;
       try {
         const res = await axiosClient.get("/user/me");
-        this.user = { ...this.user, ...res.data }; // Merge thông tin
-        this.wallet = res.data.wallet; // Lưu ví riêng để dễ dùng
+        this.user = { ...this.user, ...res.data }; 
+        this.wallet = res.data.wallet; 
       } catch (error) {
         console.error("Lỗi tải profile:", error);
         if (error.response?.status === 401) this.logout();
@@ -70,8 +84,10 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       this.user = null;
       this.wallet = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      try {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      } catch(e) {}
       router.push("/login");
     },
   },

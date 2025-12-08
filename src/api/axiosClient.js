@@ -27,27 +27,89 @@
 
 
 
+// import axios from "axios";
+// // [FIX] Import store để lấy token từ bộ nhớ tạm
+// import { useAuthStore } from "../stores/authStore";
+
+// const axiosClient = axios.create({
+//   // Chọn IP phù hợp (dùng Radmin nếu bạn đang test qua mạng LAN ảo)
+//   baseURL: 'http://26.48.225.101:8080/api',
+//   // baseURL: "http://localhost:8080/api",
+  
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+//   timeout: 10000,
+// });
+
+// // Interceptor: Gắn Token vào header
+// axiosClient.interceptors.request.use(
+//   (config) => {
+//     // [FIX QUAN TRỌNG] Lấy token từ Pinia Store trước (ưu tiên RAM), nếu không có mới tìm trong localStorage
+//     try {
+//       const authStore = useAuthStore();
+//       const token = authStore.token || localStorage.getItem("token");
+
+//       if (token && token !== "null" && token !== "undefined") {
+//         config.headers['Authorization'] = `Bearer ${token}`;
+//       }
+//     } catch (e) {
+//       console.warn("Lỗi truy cập Token:", e);
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
+
+// // Interceptor: Xử lý lỗi trả về
+// axiosClient.interceptors.response.use(
+//   (response) => {
+//     return response;
+//   },
+//   (error) => {
+//     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+//       console.error("Token hết hạn hoặc bị từ chối.");
+//       // Không tự động logout ngay để tránh loop nếu browser chặn storage
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
+// export default axiosClient;
+
+// 5:14
 import axios from "axios";
+// [FIX] Import store để lấy token từ bộ nhớ tạm (như bài trước đã hướng dẫn)
+import { useAuthStore } from "../stores/authStore";
 
 const axiosClient = axios.create({
+  // [SỬA LẠI] Dùng localhost cho ổn định nếu chạy cùng máy
   baseURL: "http://localhost:8080/api",
   
-  // // Radmin VPN (Hãy chắc chắn Backend đang chạy và Firewall đã mở)
+  // Chỉ dùng dòng dưới nếu bạn test qua mạng LAN/Radmin với máy KHÁC
   // baseURL: 'http://26.48.225.101:8080/api',
   
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000, // [FIX] Thêm timeout 10s để app không bị treo nếu Radmin lag
+  timeout: 10000, 
 });
 
-// Interceptor: Tự động gắn Token vào header
+// Interceptor: Gắn Token vào header
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token && config.headers) {
-      // [FIX] Dùng ngoặc vuông để an toàn hơn, tránh lỗi gõ sai chính tả
-      config.headers['Authorization'] = `Bearer ${token}`;
+    // Ưu tiên lấy token từ Pinia Store (RAM), dự phòng localStorage
+    try {
+      const authStore = useAuthStore();
+      const token = authStore.token || localStorage.getItem("token");
+
+      if (token && token !== "null" && token !== "undefined") {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.warn("Lỗi truy cập Token:", e);
     }
     return config;
   },
@@ -56,18 +118,15 @@ axiosClient.interceptors.request.use(
   }
 );
 
-// [FIX QUAN TRỌNG] Xử lý lỗi Token hết hạn (401/403)
+// Interceptor: Xử lý lỗi trả về
 axiosClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error("Token hết hạn hoặc không có quyền truy cập.");
-      // Tùy chọn: Xóa token và reload trang để bắt đăng nhập lại
-      // localStorage.removeItem("token");
-      // localStorage.removeItem("user");
-      // window.location.href = "/login";
+      console.error("Token hết hạn hoặc bị từ chối.");
+      // Có thể logout tại đây nếu cần
     }
     return Promise.reject(error);
   }

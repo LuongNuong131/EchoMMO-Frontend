@@ -1,12 +1,18 @@
 <template>
-  <div class="quest-panel">
+  <div class="quest-panel-container">
+    <div class="panel-header">
+      <span class="decor-left">❖</span>
+      <h3>CÁO THỊ</h3>
+      <span class="decor-right">❖</span>
+    </div>
+
     <div v-if="questStore.isLoading" class="state-msg">
-      <i class="fas fa-circle-notch fa-spin"></i> ĐANG CẬP NHẬT CÁO THỊ...
+      <i class="fas fa-circle-notch fa-spin"></i> Đang cập nhật...
     </div>
 
     <div v-else class="quest-list custom-scroll">
       <div v-if="questStore.quests.length === 0" class="state-msg empty">
-        HIỆN TẠI KHÔNG CÓ CÁO THỊ MỚI
+        Chưa có nhiệm vụ mới
       </div>
 
       <div
@@ -18,33 +24,33 @@
           done: q.isClaimed,
         }"
       >
-        <div class="mission-content">
+        <div class="mission-left">
           <div class="m-desc">
-            <span class="bullet">❖</span> {{ q.description }}
+            {{ q.description }}
           </div>
 
           <div class="m-progress-wrap">
-            <div class="progress-bar">
+            <div class="progress-track">
               <div
-                class="fill"
+                class="progress-fill"
                 :class="{ 'fill-ready': q.progress >= q.target }"
-                :style="{
-                  width: Math.min((q.progress / q.target) * 100, 100) + '%',
-                }"
+                :style="{ width: Math.min((q.progress / q.target) * 100, 100) + '%' }"
               ></div>
             </div>
-            <div class="progress-nums">{{ q.progress }} / {{ q.target }}</div>
+            <div class="progress-text">{{ q.progress }} / {{ q.target }}</div>
           </div>
         </div>
 
-        <div class="mission-action">
+        <div class="mission-right">
           <button
             v-if="!q.isClaimed && q.progress >= q.target"
-            class="btn-claim-seal"
+            class="btn-claim"
             @click="questStore.claim(q.id)"
           >
-            <span class="btn-text">LĨNH THƯỞNG</span>
-            <span class="gold-val">{{ q.rewardGold }} Lượng</span>
+            <div class="btn-inner">
+              <span>NHẬN</span>
+              <span class="reward-val">{{ q.rewardGold }} <i class="fas fa-coins"></i></span>
+            </div>
           </button>
 
           <div v-else-if="q.isClaimed" class="stamp-done">ĐÃ NHẬN</div>
@@ -70,201 +76,187 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap");
 
-/* --- CONTAINER --- */
-.quest-panel {
+.quest-panel-container {
   width: 100%;
   height: 100%;
-  font-family: "Playfair Display", serif;
-  color: #3e2723;
-  padding-right: 5px; /* Chừa chỗ cho scrollbar */
+  background: #1e1e1e; /* Dark bg matches log panel */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #ccc;
+  font-family: "Noto Serif TC", serif;
 }
 
-/* --- STATE MESSAGES --- */
+/* HEADER */
+.panel-header {
+  height: 36px;
+  background: #3e2723;
+  border-bottom: 1px solid #5d4037;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbc02d; /* Gold text */
+  font-weight: bold;
+  font-size: 0.9em;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.decor-left, .decor-right {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+/* STATE MESSAGES */
 .state-msg {
   text-align: center;
-  color: #8d6e63;
-  font-size: 0.9em;
-  padding: 20px 0;
-  font-family: "Cinzel", serif;
-  font-weight: bold;
-}
-.state-msg.empty {
-  color: #5d4037;
+  padding: 20px;
+  font-size: 0.85em;
+  color: #757575;
   font-style: italic;
 }
 
-/* --- LIST --- */
+/* LIST */
 .quest-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  height: 100%;
-  overflow-y: auto;
+  gap: 5px;
 }
 
-/* --- CARD NHIỆM VỤ --- */
+/* CARD */
 .mission-card {
-  background: transparent;
-  border-bottom: 1px dashed rgba(62, 39, 35, 0.3); /* Dòng kẻ mờ */
-  padding: 10px 5px;
+  background: #261815;
+  border: 1px solid #3e2723;
+  padding: 8px;
+  border-radius: 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
 .mission-card:hover {
-  background: rgba(62, 39, 35, 0.05); /* Hiệu ứng hover nhẹ */
+  background: #2d1e1b;
+  border-color: #5d4037;
 }
 
-/* Status Styles */
+/* Ready State */
 .mission-card.ready {
-  background: rgba(251, 192, 45, 0.1); /* Vàng nhạt */
-  border-bottom: 1px solid #fbc02d;
-}
-.mission-card.done {
-  opacity: 0.6;
-  filter: grayscale(0.5);
+  border-color: #fbc02d;
+  box-shadow: inset 0 0 5px rgba(251, 192, 45, 0.1);
 }
 
-/* --- LEFT CONTENT --- */
-.mission-content {
+/* Done State */
+.mission-card.done {
+  opacity: 0.5;
+  filter: grayscale(0.8);
+}
+
+/* LEFT CONTENT */
+.mission-left {
   flex: 1;
-  margin-right: 15px;
+  margin-right: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .m-desc {
-  font-size: 0.95em;
-  color: #2c1810; /* Mực đậm */
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.bullet {
-  color: #8d6e63;
-  font-size: 0.8em;
-}
-.ready .bullet {
-  color: #b71c1c; /* Đỏ khi xong */
+  font-size: 0.85em;
+  color: #e0e0e0;
+  line-height: 1.2;
 }
 
-/* Progress Bar */
 .m-progress-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.8em;
-  color: #5d4037;
-  font-family: "Cinzel";
-}
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: #d7ccc8; /* Giấy tối màu */
-  border-radius: 3px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-.fill {
-  height: 100%;
-  background: #5d4037; /* Màu nâu gỗ */
-  transition: width 0.5s ease;
-}
-.fill-ready {
-  background: #b71c1c; /* Đỏ chu sa khi đầy */
+  gap: 8px;
+  font-size: 0.75em;
+  color: #a1887f;
 }
 
-/* --- RIGHT ACTION --- */
-.mission-action {
-  min-width: 90px;
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: #000;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #5d4037;
+  transition: width 0.3s;
+}
+.progress-fill.fill-ready {
+  background: #d32f2f; /* Red when ready */
+  box-shadow: 0 0 5px #d32f2f;
+}
+
+/* RIGHT ACTION */
+.mission-right {
+  min-width: 60px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
-/* 1. NÚT NHẬN (Style thẻ bài/con dấu) */
-.btn-claim-seal {
-  background: #b71c1c; /* Đỏ */
-  border: 2px solid #8a1c1c;
-  color: #fff;
-  padding: 6px 12px;
-  cursor: pointer;
+/* BUTTON CLAIM */
+.btn-claim {
+  background: linear-gradient(to bottom, #d32f2f, #b71c1c);
+  border: 1px solid #fbc02d;
   border-radius: 4px;
-  font-family: "Cinzel", serif;
+  color: #fff;
+  cursor: pointer;
+  padding: 2px;
+  animation: pulse 1.5s infinite;
+}
+.btn-inner {
+  border: 1px dashed rgba(255,255,255,0.3);
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-  animation: pulse 2s infinite;
 }
-.btn-claim-seal:hover {
-  background: #d32f2f;
-  transform: translateY(-2px);
-}
-.btn-text {
-  font-weight: bold;
-  font-size: 0.8em;
-}
-.gold-val {
+.btn-inner span {
   font-size: 0.7em;
-  color: #fbc02d; /* Vàng kim */
+  font-weight: bold;
+}
+.reward-val {
+  color: #ffeb3b;
 }
 
-/* 2. CON DẤU ĐÃ NHẬN */
+/* STAMP DONE */
 .stamp-done {
-  border: 2px solid #8d6e63;
-  color: #8d6e63;
-  font-size: 0.7em;
+  border: 2px solid #5d4037;
+  color: #5d4037;
+  font-size: 0.65em;
   font-weight: bold;
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  transform: rotate(-10deg); /* Nghiêng giống đóng dấu */
-  font-family: "Cinzel";
-  opacity: 0.8;
+  transform: rotate(-10deg);
 }
 
-/* 3. PREVIEW PHẦN THƯỞNG */
+/* PREVIEW */
 .reward-preview {
-  font-size: 0.9em;
-  color: #f57f17; /* Cam đậm */
+  font-size: 0.8em;
+  color: #fbc02d;
   font-weight: bold;
-  font-family: "Cinzel";
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 
 /* ANIMATION */
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.4);
-  }
-  70% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 6px rgba(183, 28, 28, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(183, 28, 28, 0);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* SCROLLBAR */
-.custom-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #8d6e63;
-  border-radius: 3px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-}
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 2px; }
+.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
 </style>
