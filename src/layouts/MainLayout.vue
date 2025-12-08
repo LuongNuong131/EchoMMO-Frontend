@@ -225,7 +225,7 @@ const handleScroll = () => {
 }
 
 .logo-seal {
-  width: 96px;
+  width: 65px;
   height: 96px;
   background: transparent;
   border: none;
