@@ -211,7 +211,11 @@ import CreateCharacter from '../views/CreateCharacter.vue';
 import Village from '../views/Village.vue'; 
 import Notifications from '../views/Notifications.vue'; 
 import Profile from '../views/Profile.vue'; 
-
+import AboutView from '../views/AboutView.vue';
+import RulesView from '../views/RulesView.vue';
+import UpdatesView from '../views/UpdatesView.vue';
+import ReportView from '../views/ReportView.vue';
+import PrivacyView from '../views/PrivacyView.vue';
 
 const routes = [
   // --- PUBLIC ROUTES (Không cần đăng nhập) ---
@@ -236,6 +240,15 @@ const routes = [
   { path: '/village', name: 'Village', component: Village, meta: { requiresAuth: true } },
   { path: '/notifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
+  // Footer Routes - Trò Chơi
+  { path: '/about', name: 'about', component: AboutView },
+  { path: '/rules', name: 'rules', component: RulesView },
+  { path: '/updates', name: 'updates', component: UpdatesView },
+
+  // Footer Routes - Hỗ Trợ
+  // { path: '/help', name: 'help', component: HelpView },
+  { path: '/report', name: 'report', component: ReportView },
+  { path: '/privacy', name: 'privacy', component: PrivacyView },
 
   // --- ADMIN ROUTES ---
   { path: '/admin', name: 'Admin', component: Admin, meta: { requiresAuth: true, role: 'ADMIN' } },

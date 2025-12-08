@@ -13,42 +13,57 @@
           <div class="plaque-ornament right"></div>
         </div>
         <p class="hub-subtitle">
-          <span class="decor-icon">❖</span> Thiên Hạ Thái Bình <span class="decor-icon">❖</span>
+          <span class="decor-icon">❖</span> Thiên Hạ Thái Bình
+          <span class="decor-icon">❖</span>
         </p>
       </div>
 
       <div class="hub-grid">
-        
-        <div class="location-card inn-card" :class="{ 'resting-mode': isResting }">
+        <div
+          class="location-card inn-card"
+          :class="{ 'resting-mode': isResting }"
+        >
           <div class="card-content">
             <template v-if="!isResting">
               <div class="card-top">
                 <div class="icon-circle"><i class="fas fa-bed"></i></div>
                 <h3 class="card-name">KHÁCH ĐIẾM</h3>
               </div>
-              
+
               <div class="card-mid">
                 <p class="desc">Hồi phục tinh lực, dưỡng sức đường xa.</p>
-                
+
                 <div class="stats-container">
                   <div class="stat-row">
                     <span class="stat-label">SINH</span>
                     <div class="progress-track">
-                      <div class="progress-bar hp-bar" :style="{ width: hpPercent + '%' }"></div>
+                      <div
+                        class="progress-bar hp-bar"
+                        :style="{ width: hpPercent + '%' }"
+                      ></div>
                     </div>
                   </div>
                   <div class="stat-row">
                     <span class="stat-label">NỘI</span>
                     <div class="progress-track">
-                      <div class="progress-bar mp-bar" :style="{ width: energyPercent + '%' }"></div>
+                      <div
+                        class="progress-bar mp-bar"
+                        :style="{ width: energyPercent + '%' }"
+                      ></div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div class="card-bot">
-                <button class="btn-action wuxia-btn" @click="restAtInn" :disabled="isResting">
-                  <span class="btn-text">NGHỈ NGƠI (50 <i class="fas fa-coins text-gold"></i>)</span>
+                <button
+                  class="btn-action wuxia-btn"
+                  @click="restAtInn"
+                  :disabled="isResting"
+                >
+                  <span class="btn-text"
+                    >NGHỈ NGƠI (50 <i class="fas fa-coins text-gold"></i>)</span
+                  >
                 </button>
               </div>
             </template>
@@ -87,7 +102,6 @@
             </div>
           </div>
         </router-link>
-
       </div>
 
       <div class="deploy-container">
@@ -104,15 +118,22 @@
     </div>
 
     <transition name="fade-modal">
-      <div v-if="showRestModal" class="modal-overlay" @click.self="closeRestModal">
+      <div
+        v-if="showRestModal"
+        class="modal-overlay"
+        @click.self="closeRestModal"
+      >
         <div class="dark-scroll-modal">
           <div class="modal-border-top"></div>
           <div class="modal-body">
             <div class="modal-stamp"><i class="fas fa-check"></i></div>
             <h3 class="modal-title">HỒI PHỤC HOÀN TẤT</h3>
             <p class="modal-msg">
-              Tiểu nhị: <br/>
-              <span class="quote">"Khách quan thần thái hồng hào, nội công sung mãn. Chúc ngài thượng lộ bình an!"</span>
+              Tiểu nhị: <br />
+              <span class="quote"
+                >"Khách quan thần thái hồng hào, nội công sung mãn. Chúc ngài
+                thượng lộ bình an!"</span
+              >
             </p>
             <div class="modal-stats-tags">
               <span class="tag hp">Đầy Sinh Lực</span>
@@ -128,87 +149,86 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onUnmounted } from "vue"; 
+import { ref, computed, onMounted, watch, onUnmounted } from "vue";
 import { useCharacterStore } from "../stores/characterStore";
-import { useAuthStore } from "../stores/authStore"; 
-import axiosClient from "../api/axiosClient"; 
+import { useAuthStore } from "../stores/authStore";
+import axiosClient from "../api/axiosClient";
 
 const charStore = useCharacterStore();
-const authStore = useAuthStore(); 
+const authStore = useAuthStore();
 const isResting = ref(false);
 const showRestModal = ref(false);
-let restInterval = null; 
+let restInterval = null;
 
 const hpPercent = computed(() => {
-    if (!charStore.character || !charStore.character.maxHp) return 0;
-    return (charStore.character.hp / charStore.character.maxHp) * 100;
+  if (!charStore.character || !charStore.character.maxHp) return 0;
+  return (charStore.character.hp / charStore.character.maxHp) * 100;
 });
 
 const energyPercent = computed(() => {
-    if (!charStore.character || !charStore.character.maxEnergy) return 0;
-    return (charStore.character.energy / charStore.character.maxEnergy) * 100;
+  if (!charStore.character || !charStore.character.maxEnergy) return 0;
+  return (charStore.character.energy / charStore.character.maxEnergy) * 100;
 });
 
 const closeRestModal = () => {
-    showRestModal.value = false;
+  showRestModal.value = false;
 };
 
 // Hàm kiểm tra trạng thái và tự động thức dậy
 const checkStatusAndWakeUp = () => {
-    if (hpPercent.value >= 99 && energyPercent.value >= 99) {
-        if (restInterval) clearInterval(restInterval); 
-        restInterval = null;
-        
-        setTimeout(() => {
-            isResting.value = false; 
-            showRestModal.value = true;
-        }, 500);
-    }
+  if (hpPercent.value >= 99 && energyPercent.value >= 99) {
+    if (restInterval) clearInterval(restInterval);
+    restInterval = null;
+
+    setTimeout(() => {
+      isResting.value = false;
+      showRestModal.value = true;
+    }, 500);
+  }
 };
 
 const restAtInn = async () => {
-    if (isResting.value) return;
+  if (isResting.value) return;
 
-    if ((authStore.wallet?.gold || 0) < 50) {
-        alert("Tiểu nhị: 'Khách quan không đủ ngân lượng (50 Xu)!'");
-        return;
-    }
+  if ((authStore.wallet?.gold || 0) < 50) {
+    alert("Tiểu nhị: 'Khách quan không đủ ngân lượng (50 Xu)!'");
+    return;
+  }
 
-    isResting.value = true;
-    try {
-        await axiosClient.post(`/game/rest?playerId=${authStore.user.userId}`);
-        await authStore.fetchProfile(); 
+  isResting.value = true;
+  try {
+    await axiosClient.post(`/game/rest?playerId=${authStore.user.userId}`);
+    await authStore.fetchProfile();
 
-        if (restInterval) clearInterval(restInterval);
-        
-        restInterval = setInterval(async () => {
-            await charStore.fetchCharacter(); 
-            checkStatusAndWakeUp();
-        }, 1000); 
+    if (restInterval) clearInterval(restInterval);
 
-    } catch (e) {
-        if (restInterval) clearInterval(restInterval);
-        isResting.value = false;
-        alert(e.response?.data?.message || "Có lỗi xảy ra khi nghỉ ngơi.");
-    }
+    restInterval = setInterval(async () => {
+      await charStore.fetchCharacter();
+      checkStatusAndWakeUp();
+    }, 1000);
+  } catch (e) {
+    if (restInterval) clearInterval(restInterval);
+    isResting.value = false;
+    alert(e.response?.data?.message || "Có lỗi xảy ra khi nghỉ ngơi.");
+  }
 };
 
 onMounted(() => {
-    charStore.fetchCharacter();
-    if (authStore.token) authStore.fetchProfile();
+  charStore.fetchCharacter();
+  if (authStore.token) authStore.fetchProfile();
 });
 
 watch([hpPercent, energyPercent], () => {
-    if (isResting.value && hpPercent.value >= 99 && energyPercent.value >= 99) {
-        checkStatusAndWakeUp();
-    }
+  if (isResting.value && hpPercent.value >= 99 && energyPercent.value >= 99) {
+    checkStatusAndWakeUp();
+  }
 });
 
 onUnmounted(() => {
-    if (restInterval) {
-        clearInterval(restInterval);
-        restInterval = null;
-    }
+  if (restInterval) {
+    clearInterval(restInterval);
+    restInterval = null;
+  }
 });
 </script>
 
@@ -282,7 +302,12 @@ onUnmounted(() => {
   padding: 10px 40px;
   border-bottom: 3px double var(--gold);
   position: relative;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.5), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.5),
+    transparent
+  );
 }
 
 .hub-title {
@@ -291,7 +316,9 @@ onUnmounted(() => {
   color: var(--text-light);
   text-transform: uppercase;
   letter-spacing: 6px;
-  text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 236, 179, 0.2);
+  text-shadow:
+    0 0 10px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 236, 179, 0.2);
   font-weight: 900;
 }
 
@@ -305,8 +332,12 @@ onUnmounted(() => {
   top: 50%;
   margin-top: -4px;
 }
-.left { left: 0; }
-.right { right: 0; }
+.left {
+  left: 0;
+}
+.right {
+  right: 0;
+}
 
 .hub-subtitle {
   margin-top: 10px;
@@ -315,7 +346,10 @@ onUnmounted(() => {
   font-style: italic;
   opacity: 0.9;
 }
-.decor-icon { font-size: 0.8em; color: var(--red-seal); }
+.decor-icon {
+  font-size: 0.8em;
+  color: var(--red-seal);
+}
 
 /* --- GRID SYSTEM --- */
 .hub-grid {
@@ -342,7 +376,9 @@ onUnmounted(() => {
 .location-card:hover:not(.resting-mode) {
   transform: translateY(-5px);
   border-color: var(--gold);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 236, 179, 0.1);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(255, 236, 179, 0.1);
 }
 
 .card-content {
@@ -374,7 +410,7 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 1.5rem;
   color: var(--gold);
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .card-name {
@@ -422,7 +458,7 @@ onUnmounted(() => {
 .progress-track {
   flex: 1;
   height: 8px;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--wood-light);
   border-radius: 4px;
   overflow: hidden;
@@ -432,15 +468,19 @@ onUnmounted(() => {
   height: 100%;
   transition: width 0.5s ease;
 }
-.hp-bar { background: linear-gradient(90deg, #b71c1c, #e53935); }
-.mp-bar { background: linear-gradient(90deg, #1565c0, #42a5f5); }
+.hp-bar {
+  background: linear-gradient(90deg, #b71c1c, #e53935);
+}
+.mp-bar {
+  background: linear-gradient(90deg, #1565c0, #42a5f5);
+}
 
 /* --- BUTTONS --- */
 .wuxia-btn {
   width: 100%;
   padding: 12px;
   background: var(--red-seal);
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
   font-family: "Noto Serif TC";
   font-weight: bold;
@@ -471,7 +511,9 @@ onUnmounted(() => {
   color: var(--gold);
 }
 
-.text-gold { color: var(--gold); }
+.text-gold {
+  color: var(--gold);
+}
 
 /* --- RESTING MODE (NIGHT SCENE) --- */
 .resting-mode {
@@ -514,13 +556,31 @@ onUnmounted(() => {
   top: -10px;
   right: -10px;
 }
-.zzz-particles span:nth-child(2) { animation-delay: 0.5s; font-size: 0.7em; right: -20px; top: -20px;}
-.zzz-particles span:nth-child(3) { animation-delay: 1s; font-size: 0.9em; right: -30px; top: -30px;}
+.zzz-particles span:nth-child(2) {
+  animation-delay: 0.5s;
+  font-size: 0.7em;
+  right: -20px;
+  top: -20px;
+}
+.zzz-particles span:nth-child(3) {
+  animation-delay: 1s;
+  font-size: 0.9em;
+  right: -30px;
+  top: -30px;
+}
 
 @keyframes floatZ {
-  0% { transform: translate(0,0); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translate(10px, -20px); opacity: 0; }
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(10px, -20px);
+    opacity: 0;
+  }
 }
 
 .resting-text {
@@ -538,7 +598,16 @@ onUnmounted(() => {
   filter: drop-shadow(0 0 10px #ff5722);
   animation: fire 1.5s infinite alternate;
 }
-@keyframes fire { from { opacity: 0.7; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+@keyframes fire {
+  from {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
 
 /* --- DEPLOY BUTTON (XUẤT THÀNH) --- */
 .deploy-container {
@@ -555,12 +624,14 @@ onUnmounted(() => {
   padding: 15px;
   cursor: pointer;
   transition: transform 0.2s;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
 .imperial-seal-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(183, 28, 28, 0.5);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.6),
+    0 0 15px rgba(183, 28, 28, 0.5);
 }
 
 .seal-content {
@@ -573,7 +644,7 @@ onUnmounted(() => {
 .seal-icon {
   font-size: 2.5rem;
   color: var(--gold);
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .seal-text-group {
@@ -601,7 +672,7 @@ onUnmounted(() => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -616,19 +687,23 @@ onUnmounted(() => {
   border-left: 12px solid #2d1e1b;
   border-right: 12px solid #2d1e1b;
   position: relative;
-  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
 }
 
-.modal-border-top, .modal-border-bot {
+.modal-border-top,
+.modal-border-bot {
   height: 20px;
   background: #2d1e1b;
   position: relative;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
-.modal-border-top::after, .modal-border-bot::after {
-  content: '';
+.modal-border-top::after,
+.modal-border-bot::after {
+  content: "";
   position: absolute;
-  top: 50%; left: 10%; right: 10%;
+  top: 50%;
+  left: 10%;
+  right: 10%;
   height: 2px;
   background: #5d4037;
 }
@@ -637,7 +712,7 @@ onUnmounted(() => {
   padding: 30px 20px;
   text-align: center;
   color: var(--text-light);
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .modal-stamp {
@@ -689,11 +764,17 @@ onUnmounted(() => {
   font-size: 0.8rem;
   padding: 5px 10px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.tag.hp { color: #ef5350; border-color: #ef5350; }
-.tag.mp { color: #42a5f5; border-color: #42a5f5; }
+.tag.hp {
+  color: #ef5350;
+  border-color: #ef5350;
+}
+.tag.mp {
+  color: #42a5f5;
+  border-color: #42a5f5;
+}
 
 .btn-confirm {
   background: var(--wood-light);

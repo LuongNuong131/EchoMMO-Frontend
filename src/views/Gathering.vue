@@ -12,7 +12,6 @@
     </div>
 
     <div class="gathering-panel" v-if="currentEvent">
-      
       <div class="event-header">
         <div class="node-frame">
           <div class="node-circle" :class="{ 'shake-anim': isGathering }">
@@ -22,14 +21,16 @@
             {{ currentEvent.rarityText }}
           </div>
         </div>
-        
+
         <h2 class="node-name" :class="'text-' + currentEvent.rarityClass">
           {{ currentEvent.name }}
         </h2>
-        
+
         <div class="req-box">
-          <i class="fas fa-exclamation-triangle"></i> 
-          Yêu cầu: <span class="highlight">{{ currentEvent.reqTool }}</span> (Cấp {{ currentEvent.reqLevel }})
+          <i class="fas fa-exclamation-triangle"></i>
+          Yêu cầu:
+          <span class="highlight">{{ currentEvent.reqTool }}</span> (Cấp
+          {{ currentEvent.reqLevel }})
         </div>
       </div>
 
@@ -38,7 +39,10 @@
           <div class="icon-wrap"><i class="fas fa-graduation-cap"></i></div>
           <div class="stat-detail">
             <span class="label">Kỹ năng</span>
-            <span class="val" :class="{ 'text-red': playerLevel < currentEvent.reqLevel }">
+            <span
+              class="val"
+              :class="{ 'text-red': playerLevel < currentEvent.reqLevel }"
+            >
               Cấp {{ playerLevel }} / {{ currentEvent.reqLevel }}
             </span>
           </div>
@@ -49,7 +53,7 @@
           <div class="stat-detail">
             <span class="label">Công cụ</span>
             <span class="val" :class="{ 'text-red': !hasTool }">
-              {{ hasTool ? currentEvent.reqTool : 'Chưa có' }}
+              {{ hasTool ? currentEvent.reqTool : "Chưa có" }}
             </span>
           </div>
         </div>
@@ -58,7 +62,9 @@
           <div class="icon-wrap"><i class="fas fa-cubes"></i></div>
           <div class="stat-detail">
             <span class="label">Trữ lượng</span>
-            <span class="val gold-text">{{ remainingNode }} / {{ maxNode }}</span>
+            <span class="val gold-text"
+              >{{ remainingNode }} / {{ maxNode }}</span
+            >
           </div>
         </div>
       </div>
@@ -69,32 +75,41 @@
           <span>{{ Math.round((1 - remainingNode / maxNode) * 100) }}%</span>
         </div>
         <div class="progress-track">
-          <div 
-            class="progress-fill" 
-            :style="{ width: ((1 - remainingNode / maxNode) * 100) + '%' }"
+          <div
+            class="progress-fill"
+            :style="{ width: (1 - remainingNode / maxNode) * 100 + '%' }"
           ></div>
         </div>
       </div>
 
       <div class="action-zone">
         <div class="energy-tag">
-          <i class="fas fa-bolt"></i> Nội Năng: {{ charStore.character?.energy || 0 }}
+          <i class="fas fa-bolt"></i> Nội Năng:
+          {{ charStore.character?.energy || 0 }}
         </div>
 
         <div class="btn-grid">
-          <button 
-            class="btn-wood action-btn" 
+          <button
+            class="btn-wood action-btn"
             @click="handleGather(1)"
-            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1"
+            :disabled="
+              isGathering ||
+              remainingNode <= 0 ||
+              (charStore.character?.energy || 0) < 1
+            "
           >
             <span class="btn-main">KHAI THÁC</span>
             <span class="btn-sub">Tốn 1 <i class="fas fa-bolt"></i></span>
           </button>
 
-          <button 
-            class="btn-seal action-btn" 
+          <button
+            class="btn-seal action-btn"
             @click="handleGatherAll"
-            :disabled="isGathering || remainingNode <= 0 || (charStore.character?.energy || 0) < 1"
+            :disabled="
+              isGathering ||
+              remainingNode <= 0 ||
+              (charStore.character?.energy || 0) < 1
+            "
           >
             <span class="btn-main">TỰ ĐỘNG</span>
             <span class="btn-sub">Gom nhanh (Max 10)</span>
@@ -114,21 +129,20 @@
         </div>
       </transition-group>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useCharacterStore } from '@/stores/characterStore';
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from "vue";
+import { useCharacterStore } from "@/stores/characterStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
 // Import ảnh (giữ nguyên logic của bạn)
-import copperNodeImg from '@/assets/resources/r_copper_node.png';
-import woodNodeImg from '@/assets/resources/r_go.png';
-import stoneNodeImg from '@/assets/resources/stone_1.png';
-import mysteryNodeImg from '@/assets/resources/r_gohoathach.png';
+import copperNodeImg from "@/assets/resources/r_copper_node.png";
+import woodNodeImg from "@/assets/resources/r_go.png";
+import stoneNodeImg from "@/assets/resources/stone_1.png";
+import mysteryNodeImg from "@/assets/resources/r_gohoathach.png";
 
 const charStore = useCharacterStore();
 const authStore = useAuthStore();
@@ -146,29 +160,53 @@ const hasTool = ref(true); // Logic check tool giả định
 
 const EVENT_TYPES = [
   {
-    id: 'mining', name: 'Mỏ Đồng Lộ Thiên', image: copperNodeImg,
-    rarityClass: 'common', rarityText: 'Phổ Thông',
-    reqLevel: 1, reqTool: 'Cuốc Chim',
-    minYield: 10, maxYield: 20, lootName: 'Quặng Đồng'
+    id: "mining",
+    name: "Mỏ Đồng Lộ Thiên",
+    image: copperNodeImg,
+    rarityClass: "common",
+    rarityText: "Phổ Thông",
+    reqLevel: 1,
+    reqTool: "Cuốc Chim",
+    minYield: 10,
+    maxYield: 20,
+    lootName: "Quặng Đồng",
   },
   {
-    id: 'wood', name: 'Cây Sồi Cổ Thụ', image: woodNodeImg,
-    rarityClass: 'common', rarityText: 'Phổ Thông',
-    reqLevel: 1, reqTool: 'Rìu Sắt',
-    minYield: 15, maxYield: 25, lootName: 'Gỗ Sồi'
+    id: "wood",
+    name: "Cây Sồi Cổ Thụ",
+    image: woodNodeImg,
+    rarityClass: "common",
+    rarityText: "Phổ Thông",
+    reqLevel: 1,
+    reqTool: "Rìu Sắt",
+    minYield: 15,
+    maxYield: 25,
+    lootName: "Gỗ Sồi",
   },
   {
-    id: 'stone', name: 'Tảng Đá Khổng Lồ', image: stoneNodeImg,
-    rarityClass: 'common', rarityText: 'Phổ Thông',
-    reqLevel: 1, reqTool: 'Búa Tạ',
-    minYield: 10, maxYield: 20, lootName: 'Đá Tảng'
+    id: "stone",
+    name: "Tảng Đá Khổng Lồ",
+    image: stoneNodeImg,
+    rarityClass: "common",
+    rarityText: "Phổ Thông",
+    reqLevel: 1,
+    reqTool: "Búa Tạ",
+    minYield: 10,
+    maxYield: 20,
+    lootName: "Đá Tảng",
   },
   {
-    id: 'special', name: 'Gỗ Hóa Thạch', image: mysteryNodeImg,
-    rarityClass: 'epic', rarityText: 'Cực Phẩm',
-    reqLevel: 5, reqTool: 'Găng Tay',
-    minYield: 3, maxYield: 8, lootName: 'Mảnh Hóa Thạch'
-  }
+    id: "special",
+    name: "Gỗ Hóa Thạch",
+    image: mysteryNodeImg,
+    rarityClass: "epic",
+    rarityText: "Cực Phẩm",
+    reqLevel: 5,
+    reqTool: "Găng Tay",
+    minYield: 3,
+    maxYield: 8,
+    lootName: "Mảnh Hóa Thạch",
+  },
 ];
 
 const initEvent = () => {
@@ -176,7 +214,9 @@ const initEvent = () => {
   const evt = EVENT_TYPES[rnd];
   currentEvent.value = evt;
 
-  const amount = Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) + evt.minYield;
+  const amount =
+    Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) +
+    evt.minYield;
   maxNode.value = amount;
   remainingNode.value = amount;
   feedbackMsg.value = "Phát hiện tài nguyên!";
@@ -192,7 +232,8 @@ const handleGather = async (times) => {
   }
 
   isGathering.value = true;
-  feedbackMsg.value = times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
+  feedbackMsg.value =
+    times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
 
   const delay = times > 1 ? 800 : 500;
 
@@ -210,7 +251,7 @@ const handleGather = async (times) => {
     if (remainingNode.value <= 0) {
       feedbackMsg.value = "Tài nguyên đã cạn kiệt!";
       setTimeout(() => {
-        router.push('/explore');
+        router.push("/explore");
       }, 1500);
     }
 
@@ -231,9 +272,13 @@ const handleGatherAll = () => {
 
 const showFloatingText = (text) => {
   const id = Date.now();
-  floatingLoots.value.push({ id, amount: text.split(' ')[0], name: text.substring(text.indexOf(' ')) });
+  floatingLoots.value.push({
+    id,
+    amount: text.split(" ")[0],
+    name: text.substring(text.indexOf(" ")),
+  });
   setTimeout(() => {
-    floatingLoots.value = floatingLoots.value.filter(i => i.id !== id);
+    floatingLoots.value = floatingLoots.value.filter((i) => i.id !== id);
   }, 1500);
 };
 
@@ -274,15 +319,24 @@ onMounted(() => {
 }
 
 /* Background Layers */
-.ink-bg-layer { position: absolute; inset: 0; z-index: 0; background-color: #3e2723; }
+.ink-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #3e2723;
+}
 .mountain-bg {
-    position: absolute; inset: 0;
-    background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
-    background-size: cover; filter: sepia(40%) brightness(0.5) contrast(1.2); opacity: 0.6;
+  position: absolute;
+  inset: 0;
+  background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
+  background-size: cover;
+  filter: sepia(40%) brightness(0.5) contrast(1.2);
+  opacity: 0.6;
 }
 .fog-anim {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, #261815 10%, transparent 90%);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #261815 10%, transparent 90%);
 }
 
 /* NAVIGATION */
@@ -295,13 +349,16 @@ onMounted(() => {
 }
 
 .btn-wood-back {
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid var(--wood-light);
   color: var(--text-dim);
   padding: 8px 15px;
   cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  font-family: inherit; font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: bold;
   transition: 0.3s;
 }
 .btn-wood-back:hover {
@@ -318,88 +375,167 @@ onMounted(() => {
   max-width: 450px;
   background: rgba(30, 20, 15, 0.95);
   border: 4px double var(--wood-light);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
   padding: 25px;
-  display: flex; flex-direction: column; gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* EVENT HEADER */
-.event-header { text-align: center; position: relative; }
+.event-header {
+  text-align: center;
+  position: relative;
+}
 
 .node-frame {
   position: relative;
-  width: 120px; height: 120px; margin: 0 auto 15px;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 15px;
 }
 
 .node-circle {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 80%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 0.5) 80%
+  );
   border: 3px solid var(--gold);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 0 20px rgba(255, 236, 179, 0.2);
 }
-.node-img { width: 70%; height: 70%; object-fit: contain; }
+.node-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
 
 .rarity-seal {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  padding: 2px 10px; font-size: 0.75rem; font-weight: bold;
-  border-radius: 10px; border: 1px solid #fff;
-  white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 10px;
+  border: 1px solid #fff;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   text-transform: uppercase;
 }
-.bg-common { background: #757575; color: #fff; }
-.bg-rare { background: #1976d2; color: #fff; }
-.bg-epic { background: #7b1fa2; color: #fff; border-color: var(--gold); }
+.bg-common {
+  background: #757575;
+  color: #fff;
+}
+.bg-rare {
+  background: #1976d2;
+  color: #fff;
+}
+.bg-epic {
+  background: #7b1fa2;
+  color: #fff;
+  border-color: var(--gold);
+}
 
 .node-name {
-  font-size: 1.6rem; font-weight: 900; margin: 0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-  text-transform: uppercase; letter-spacing: 1px;
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.text-common { color: var(--text-dim); }
-.text-rare { color: #42a5f5; }
-.text-epic { color: #ab47bc; text-shadow: 0 0 10px rgba(171, 71, 188, 0.6); }
+.text-common {
+  color: var(--text-dim);
+}
+.text-rare {
+  color: #42a5f5;
+}
+.text-epic {
+  color: #ab47bc;
+  text-shadow: 0 0 10px rgba(171, 71, 188, 0.6);
+}
 
 .req-box {
-  margin-top: 5px; font-size: 0.9rem; color: #aaa; font-style: italic;
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-style: italic;
 }
-.highlight { color: var(--gold); font-weight: bold; }
+.highlight {
+  color: var(--gold);
+  font-weight: bold;
+}
 
 /* STATUS AREA */
 .info-scroll-area {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--wood-light);
   padding: 10px;
   border-radius: 4px;
 }
 
 .status-row {
-  display: flex; align-items: center; gap: 15px;
-  padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
 }
-.status-row:last-child { border-bottom: none; }
+.status-row:last-child {
+  border-bottom: none;
+}
 
 .icon-wrap {
-  width: 30px; text-align: center; color: var(--gold); font-size: 1.1rem;
+  width: 30px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 1.1rem;
 }
 .stat-detail {
-  flex: 1; display: flex; justify-content: space-between; font-size: 0.95rem;
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
 }
-.label { color: #aaa; }
-.val { font-weight: bold; color: var(--text-light); }
-.text-red { color: #ef5350; }
-.gold-text { color: var(--gold); }
+.label {
+  color: #aaa;
+}
+.val {
+  font-weight: bold;
+  color: var(--text-light);
+}
+.text-red {
+  color: #ef5350;
+}
+.gold-text {
+  color: var(--gold);
+}
 
 /* PROGRESS */
-.progress-container { margin-top: 5px; }
+.progress-container {
+  margin-top: 5px;
+}
 .progress-label {
-  display: flex; justify-content: space-between;
-  font-size: 0.85rem; color: #ccc; margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 5px;
 }
 .progress-track {
-  height: 12px; background: #1a1a1a;
-  border: 1px solid var(--wood-light); border-radius: 6px; overflow: hidden;
+  height: 12px;
+  background: #1a1a1a;
+  border: 1px solid var(--wood-light);
+  border-radius: 6px;
+  overflow: hidden;
 }
 .progress-fill {
   height: 100%;
@@ -409,83 +545,167 @@ onMounted(() => {
 }
 
 /* ACTIONS */
-.action-zone { text-align: center; margin-top: 10px; }
+.action-zone {
+  text-align: center;
+  margin-top: 10px;
+}
 .energy-tag {
   display: inline-block;
   background: rgba(255, 255, 255, 0.05);
-  padding: 4px 12px; border-radius: 15px;
-  color: #4fc3f7; font-weight: bold; font-size: 0.9rem;
-  margin-bottom: 15px; border: 1px solid rgba(79, 195, 247, 0.3);
+  padding: 4px 12px;
+  border-radius: 15px;
+  color: #4fc3f7;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  border: 1px solid rgba(79, 195, 247, 0.3);
 }
 
 .btn-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
 .action-btn {
-  padding: 12px; border: none; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center;
-  border-radius: 4px; transition: 0.2s; position: relative;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+  transition: 0.2s;
+  position: relative;
 }
-.action-btn:active:not(:disabled) { transform: translateY(2px); }
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+.action-btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
 
-.btn-main { font-weight: 900; font-size: 1rem; margin-bottom: 2px; }
-.btn-sub { font-size: 0.75rem; opacity: 0.8; }
+.btn-main {
+  font-weight: 900;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+.btn-sub {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
 
 .btn-wood {
-  background: var(--wood-light); color: var(--gold);
+  background: var(--wood-light);
+  color: var(--gold);
   border: 1px solid var(--gold);
   box-shadow: 0 4px 0 #3e2723;
 }
-.btn-wood:hover:not(:disabled) { background: var(--wood-dark); }
+.btn-wood:hover:not(:disabled) {
+  background: var(--wood-dark);
+}
 
 .btn-seal {
-  background: var(--red-seal); color: #fff;
+  background: var(--red-seal);
+  color: #fff;
   border: 1px solid #d32f2f;
   box-shadow: 0 4px 0 #8b0000;
 }
-.btn-seal:hover:not(:disabled) { background: #d32f2f; }
+.btn-seal:hover:not(:disabled) {
+  background: #d32f2f;
+}
 
 .feedback-text {
-  margin-top: 15px; height: 20px; font-size: 0.9rem;
-  color: var(--jade); font-weight: bold; font-style: italic;
+  margin-top: 15px;
+  height: 20px;
+  font-size: 0.9rem;
+  color: var(--jade);
+  font-weight: bold;
+  font-style: italic;
   animation: fadeIn 0.3s;
 }
 
 /* FLOATING LOOT */
 .floating-layer {
-  position: absolute; top: 35%; left: 50%; transform: translateX(-50%);
-  pointer-events: none; width: 100%; text-align: center; z-index: 100;
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
 }
 .float-item {
-  font-size: 1.8rem; font-weight: 900; color: var(--gold);
-  text-shadow: 0 2px 5px rgba(0,0,0,0.9); margin-bottom: 5px;
-  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
+  margin-bottom: 5px;
+  font-family: "Cinzel", serif;
 }
-.plus { color: #fff; }
+.plus {
+  color: #fff;
+}
 
 /* ANIMATIONS */
-.shake-anim { animation: shake 0.5s infinite; }
+.shake-anim {
+  animation: shake 0.5s infinite;
+}
 @keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  75% { transform: rotate(5deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.float-up-enter-active { animation: floatUp 1s ease-out forwards; }
+.float-up-enter-active {
+  animation: floatUp 1s ease-out forwards;
+}
 @keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.2);
+  }
 }
 
 /* RESPONSIVE */
 @media (max-width: 480px) {
-  .gathering-panel { padding: 15px; }
-  .btn-grid { grid-template-columns: 1fr; }
-  .action-btn { flex-direction: row; justify-content: space-between; padding: 15px; }
+  .gathering-panel {
+    padding: 15px;
+  }
+  .btn-grid {
+    grid-template-columns: 1fr;
+  }
+  .action-btn {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 15px;
+  }
 }
 </style>

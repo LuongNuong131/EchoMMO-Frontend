@@ -143,7 +143,7 @@ export const useBattleStore = defineStore("battle", {
         const res = await axiosClient.post("/battle/attack", {
           enemyId: this.enemy.enemyId,
           enemyHp: this.enemyHp,
-          isBuffed: isBuffed // Gửi trạng thái cường hóa lên server
+          isBuffed: isBuffed, // Gửi trạng thái cường hóa lên server
         });
         this.handleResult(res.data);
         return res.data; // Trả về data để view xử lý animation

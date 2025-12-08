@@ -148,7 +148,8 @@ defineExpose({ open });
 .scan-grid {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+  background-image:
+    linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 30px 30px;
   pointer-events: none;

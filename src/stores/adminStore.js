@@ -68,7 +68,7 @@ export const useAdminStore = defineStore("admin", {
       await axiosClient.delete(`/admin/listing/${id}`);
       this.fetchListings();
     },
-    
+
     // [MỚI] Logic Ban Thưởng Vàng
     async grantGold(payload) {
       try {

@@ -11,10 +11,11 @@ export const useAuthStore = defineStore("auth", {
     isLoading: false,
     error: null,
   }),
-  
+
   getters: {
     // Chỉ coi là đã đăng nhập nếu có token hợp lệ
-    isAuthenticated: (state) => !!state.token && state.token !== "null" && state.token !== "undefined",
+    isAuthenticated: (state) =>
+      !!state.token && state.token !== "null" && state.token !== "undefined",
   },
 
   actions: {
@@ -27,7 +28,8 @@ export const useAuthStore = defineStore("auth", {
         if (token && token !== "null" && token !== "undefined") {
           this.token = token;
           // Set header mặc định cho mọi request sau này
-          axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          axiosClient.defaults.headers.common["Authorization"] =
+            `Bearer ${token}`;
         } else {
           this.token = null;
         }
@@ -54,9 +56,10 @@ export const useAuthStore = defineStore("auth", {
         // Lưu vào localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(this.user));
-        
+
         // Cập nhật header axios ngay lập tức
-        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        axiosClient.defaults.headers.common["Authorization"] =
+          `Bearer ${token}`;
 
         await this.fetchProfile();
         router.push("/");
@@ -104,7 +107,7 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       // Xóa header
-      delete axiosClient.defaults.headers.common['Authorization'];
+      delete axiosClient.defaults.headers.common["Authorization"];
       router.push("/login");
     },
   },

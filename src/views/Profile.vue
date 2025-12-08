@@ -11,12 +11,11 @@
       </div>
 
       <div class="char-select-container">
-
         <div class="skin-list custom-scroll">
-          <div 
-            v-for="skin in skins" 
-            :key="skin.id" 
-            class="skin-card" 
+          <div
+            v-for="skin in skins"
+            :key="skin.id"
+            class="skin-card"
             :class="{ active: selectedSkinId === skin.id }"
             @click="selectSkin(skin.id)"
           >
@@ -36,28 +35,36 @@
         <div class="preview-stage">
           <div class="stage-bg">
             <div class="preview-actor">
-              <img :src="previewImage" class="actor-img" :class="previewState" />
+              <img
+                :src="previewImage"
+                class="actor-img"
+                :class="previewState"
+              />
             </div>
-            </div>
+          </div>
 
           <div class="control-bar">
             <div class="main-action">
-              <button v-if="currentSkinId !== selectedSkinId" class="btn-equip" @click="saveSkin">
+              <button
+                v-if="currentSkinId !== selectedSkinId"
+                class="btn-equip"
+                @click="saveSkin"
+              >
                 CHỌN NHÂN VẬT NÀY
               </button>
-              <button v-else class="btn-equipped" disabled>
-                ĐANG SỬ DỤNG
-              </button>
+              <button v-else class="btn-equipped" disabled>ĐANG SỬ DỤNG</button>
             </div>
           </div>
 
           <div class="char-stats-box">
             <h3>THÔNG TIN</h3>
             <div class="stat-row">
-              <span>Hiệu Danh:</span> <span class="hl">{{ authStore.user?.username }}</span>
+              <span>Hiệu Danh:</span>
+              <span class="hl">{{ authStore.user?.username }}</span>
             </div>
             <div class="stat-row">
-              <span>Cấp Độ:</span> <span class="hl">{{ charStore.character?.lv || 1 }}</span>
+              <span>Cấp Độ:</span>
+              <span class="hl">{{ charStore.character?.lv || 1 }}</span>
             </div>
             <div class="rename-box">
               <input v-model="newName" placeholder="Đổi tên mới..." />
@@ -81,27 +88,27 @@ const authStore = useAuthStore();
 const charStore = useCharacterStore();
 
 const skins = Object.values(CHARACTER_SKINS);
-const currentSkinId = computed(() => authStore.user?.avatarUrl || 'skin_yasou');
-const selectedSkinId = ref('skin_yasou');
+const currentSkinId = computed(() => authStore.user?.avatarUrl || "skin_yasou");
+const selectedSkinId = ref("skin_yasou");
 
-const previewState = ref('idle');
+const previewState = ref("idle");
 const newName = ref("");
 let animInterval = null;
 
 // [AUTO ANIMATION] Chu trình: Đứng -> Chạy -> Đánh
-const animCycle = ['idle', 'run', 'attack'];
+const animCycle = ["idle", "run", "attack"];
 let animIndex = 0;
 
 const previewImage = computed(() => {
   const skin = CHARACTER_SKINS[selectedSkinId.value];
-  return skin ? skin.sprites[previewState.value] : '';
+  return skin ? skin.sprites[previewState.value] : "";
 });
 
 const selectSkin = (id) => {
   selectedSkinId.value = id;
   // Reset về idle khi chọn con mới
   animIndex = 0;
-  previewState.value = 'idle';
+  previewState.value = "idle";
 };
 
 const saveSkin = async () => {
@@ -123,7 +130,7 @@ const renameChar = async () => {
   } catch (e) {
     alert(e.response?.data || "Lỗi đổi tên");
   }
-}
+};
 
 onMounted(() => {
   charStore.fetchCharacter();
@@ -182,7 +189,7 @@ onUnmounted(() => {
   color: #fbc02d;
   font-weight: 900;
   margin: 0;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .wood-btn {
@@ -300,7 +307,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 5;
   /* Đẩy nhân vật xuống một chút cho cân đối vì đã bỏ đế */
-  margin-top: 20px; 
+  margin-top: 20px;
 }
 
 .actor-img {
@@ -310,7 +317,9 @@ onUnmounted(() => {
   transform: scale(2);
   image-rendering: pixelated;
   transition: 0.3s ease;
-  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.8)); /* Thêm bóng đổ tự nhiên */
+  filter: drop-shadow(
+    0 10px 10px rgba(0, 0, 0, 0.8)
+  ); /* Thêm bóng đổ tự nhiên */
 }
 
 /* Control & Info */
@@ -415,7 +424,14 @@ onUnmounted(() => {
 }
 
 /* Scrollbar */
-.custom-scroll::-webkit-scrollbar { width: 6px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 3px; }
-.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #5d4037;
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
 </style>

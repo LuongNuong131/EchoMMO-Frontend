@@ -116,7 +116,7 @@ export const useCharacterStore = defineStore("character", {
     // State di chuyển cho trang Explore (GameFi)
     explorationState: {
       playerPos: 10,
-      moveDir: 1
+      moveDir: 1,
     },
   }),
 
@@ -133,8 +133,11 @@ export const useCharacterStore = defineStore("character", {
     },
     energyPercent: (state) => {
       if (!state.character || state.character.maxEnergy === 0) return 0;
-      return Math.min((state.character.energy / state.character.maxEnergy) * 100, 100);
-    }
+      return Math.min(
+        (state.character.energy / state.character.maxEnergy) * 100,
+        100,
+      );
+    },
   },
 
   actions: {
@@ -170,6 +173,6 @@ export const useCharacterStore = defineStore("character", {
         // Ném lỗi ra để View xử lý (VD: hiện Captcha)
         throw e.response?.data || e;
       }
-    }
-  }
+    },
+  },
 });

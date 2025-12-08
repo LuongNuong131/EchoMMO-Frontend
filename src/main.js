@@ -16,7 +16,7 @@ app.use(i18n);
 console.log(
   "%c SYSTEM ONLINE %c ECHO-MMO PROTOCOL V1.0 ACTIVATED ",
   "background: #00f3ff; color: #000; font-weight: bold; padding: 4px; border-radius: 3px 0 0 3px;",
-  "background: #020617; color: #00f3ff; border: 1px solid #00f3ff; padding: 3px; border-radius: 0 3px 3px 0;"
+  "background: #020617; color: #00f3ff; border: 1px solid #00f3ff; padding: 3px; border-radius: 0 3px 3px 0;",
 );
 
 app.mount("#app");

@@ -139,7 +139,7 @@ const sendOtp = async () => {
     }, 1000);
   } catch (e) {
     alert(
-      e.response?.data || "Gửi thất bại: Không tìm thấy địa chỉ thư tín này."
+      e.response?.data || "Gửi thất bại: Không tìm thấy địa chỉ thư tín này.",
     );
     isLoading.value = false;
   }

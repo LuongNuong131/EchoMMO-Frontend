@@ -6,15 +6,15 @@ const savedLocale = localStorage.getItem("user_lang") || "vi";
 const messages = {
   vi: {
     menu: {
-      home: "Phủ Đệ",         // Sảnh Chính -> Phủ Đệ (Nhà riêng)
-      game: "Giang Hồ",       // Thế Giới
-      inventory: "Hành Trang",// Kho đồ
-      market: "Thương Hội",   // Chợ
-      friends: "Bằng Hữu",    // Bạn bè
-      rank: "Bảng Vàng",      // Xếp hạng
-      admin: "Quan Phủ",      // Admin
-      logout: "Quy Ẩn",       // Đăng xuất
-      profile: "Tại Hạ",      // Profile -> Tại Hạ (Cách xưng hô khiêm tốn)
+      home: "Phủ Đệ", // Sảnh Chính -> Phủ Đệ (Nhà riêng)
+      game: "Giang Hồ", // Thế Giới
+      inventory: "Hành Trang", // Kho đồ
+      market: "Thương Hội", // Chợ
+      friends: "Bằng Hữu", // Bạn bè
+      rank: "Bảng Vàng", // Xếp hạng
+      admin: "Quan Phủ", // Admin
+      logout: "Quy Ẩn", // Đăng xuất
+      profile: "Tại Hạ", // Profile -> Tại Hạ (Cách xưng hô khiêm tốn)
     },
     stats: {
       atk: "Công Lực",
@@ -22,11 +22,11 @@ const messages = {
       hp: "Sinh Lực",
       spd: "Thân Pháp",
       crit: "Bạo Kích",
-      energy: "Nội Lực",       // Thể lực -> Nội Lực
-      level: "Cảnh Giới",      // Level -> Cảnh Giới
+      energy: "Nội Lực", // Thể lực -> Nội Lực
+      level: "Cảnh Giới", // Level -> Cảnh Giới
     },
     actions: {
-      explore: "Hành Tẩu",     // Du ngoạn -> Hành tẩu
+      explore: "Hành Tẩu", // Du ngoạn -> Hành tẩu
       attack: "Xuất Chiêu",
       buy: "Thu Mua",
       sell: "Bán Ra",
@@ -38,7 +38,7 @@ const messages = {
     },
     market: {
       tab_sys: "Tạp Hóa Điếm", // Cửa hàng hệ thống
-      tab_p2p: "Chợ Đen",      // Chợ người chơi
+      tab_p2p: "Chợ Đen", // Chợ người chơi
       tab_sell: "Bày Bán",
       stock: "Tồn kho",
       price: "Ngân lượng",
@@ -53,27 +53,27 @@ const messages = {
     // --- PHẦN PROFILE (VĂN PHONG KIẾM HIỆP) ---
     profile_page: {
       title: "HỒ SƠ HIỆP KHÁCH", // Agent Dossier -> Hồ Sơ Hiệp Khách
-      identity: "LAI LỊCH",       // Identity Record -> Lai Lịch
+      identity: "LAI LỊCH", // Identity Record -> Lai Lịch
       modify_avatar: "DỊ DUNG THUẬT", // Modify Avatar -> Dị Dung Thuật (Thuật đổi mặt)
-      codename: "DANH HIỆU",      // Display Name -> Danh Hiệu
-      reg_date: "XUẤT ĐẠO",       // Reg Date -> Xuất Đạo (Ngày ra giang hồ)
+      codename: "DANH HIỆU", // Display Name -> Danh Hiệu
+      reg_date: "XUẤT ĐẠO", // Reg Date -> Xuất Đạo (Ngày ra giang hồ)
       status: "TÌNH TRẠNG",
       operational: "ĐANG HÀNH TẨU", // Operational -> Đang Hành Tẩu
       rename_title: "CẢI DANH ĐỔI TÍNH", // Rename -> Cải Danh Đổi Tính
       display_name: "TÊN HIỆU MỚI",
       placeholder_name: "Nhập danh hiệu muốn đổi...",
-      execute: "THI TRIỂN",       // Execute -> Thi Triển
+      execute: "THI TRIỂN", // Execute -> Thi Triển
       warning_unique: "Danh hiệu là độc nhất vô nhị trên giang hồ.",
       security_title: "TÂM PHÁP BẢO MẬT", // Security -> Tâm Pháp Bảo Mật
-      current_pass: "KHẨU QUYẾT CŨ",      // Password -> Khẩu Quyết
+      current_pass: "KHẨU QUYẾT CŨ", // Password -> Khẩu Quyết
       new_pass: "KHẨU QUYẾT MỚI",
       confirm_pass: "NHẮC LẠI KHẨU QUYẾT",
       update_cred: "TU LUYỆN KHẨU QUYẾT", // Change Pass -> Tu Luyện
-      updating: "ĐANG VẬN KHÍ...",        // Loading -> Đang Vận Khí
+      updating: "ĐANG VẬN KHÍ...", // Loading -> Đang Vận Khí
       msg_rename_success: "Đã thay tên đổi họ thành công.",
       msg_pass_success: "Khẩu quyết tâm pháp đã được ghi nhớ.",
       msg_pass_mismatch: "Tâm ma quấy nhiễu, khẩu quyết không trùng khớp.",
-    }
+    },
   },
   en: {
     menu: {
@@ -93,11 +93,11 @@ const messages = {
       hp: "Health",
       spd: "Agility",
       crit: "Crit",
-      energy: "Qi",           // Energy -> Qi (Khí)
-      level: "Realm",         // Level -> Realm (Cảnh giới)
+      energy: "Qi", // Energy -> Qi (Khí)
+      level: "Realm", // Level -> Realm (Cảnh giới)
     },
     actions: {
-      explore: "Wander",      // Hành tẩu
+      explore: "Wander", // Hành tẩu
       attack: "Strike",
       buy: "Acquire",
       sell: "Trade",
@@ -112,7 +112,7 @@ const messages = {
       tab_p2p: "Black Market",
       tab_sell: "Peddle",
       stock: "Stock",
-      price: "Tael",          // Lượng bạc
+      price: "Tael", // Lượng bạc
       seller: "Merchant",
     },
     common: {
@@ -144,7 +144,7 @@ const messages = {
       msg_rename_success: "Alias changed successfully.",
       msg_pass_success: "Secret mantra updated.",
       msg_pass_mismatch: "Mantras do not match.",
-    }
+    },
   },
 };
 

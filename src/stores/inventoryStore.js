@@ -47,7 +47,10 @@ export const useInventoryStore = defineStore("inventory", {
       } catch (error) {
         console.error("Lỗi lấy Inventory:", error);
         // Nếu lỗi 403/401, có thể token hết hạn
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 403)
+        ) {
           alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
           // window.location.href = '/login'; // Tùy chọn redirect
         }
@@ -61,10 +64,7 @@ export const useInventoryStore = defineStore("inventory", {
       try {
         await axiosClient.post(`/inventory/equip/${id}`);
         // Refresh lại cả inventory và chỉ số nhân vật
-        await Promise.all([
-          this.fetchInventory(),
-          charStore.fetchCharacter()
-        ]);
+        await Promise.all([this.fetchInventory(), charStore.fetchCharacter()]);
       } catch (e) {
         console.error(e);
         alert(e.response?.data || "Lỗi trang bị vật phẩm");
@@ -75,10 +75,7 @@ export const useInventoryStore = defineStore("inventory", {
       const charStore = useCharacterStore();
       try {
         await axiosClient.post(`/inventory/unequip/${id}`);
-        await Promise.all([
-          this.fetchInventory(),
-          charStore.fetchCharacter()
-        ]);
+        await Promise.all([this.fetchInventory(), charStore.fetchCharacter()]);
       } catch (e) {
         console.error(e);
         alert(e.response?.data || "Lỗi tháo trang bị");
@@ -90,10 +87,7 @@ export const useInventoryStore = defineStore("inventory", {
       try {
         const res = await axiosClient.post(`/inventory/use/${id}`);
         alert(res.data || "Sử dụng thành công");
-        await Promise.all([
-          this.fetchInventory(),
-          charStore.fetchCharacter()
-        ]);
+        await Promise.all([this.fetchInventory(), charStore.fetchCharacter()]);
       } catch (e) {
         console.error(e);
         alert(e.response?.data || "Lỗi sử dụng vật phẩm");

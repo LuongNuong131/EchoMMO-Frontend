@@ -145,12 +145,14 @@ button {
   font-weight: 700;
   letter-spacing: 1px;
   border: 1px solid var(--primary);
-  clip-path: polygon(10px 0,
-      100% 0,
-      100% calc(100% - 10px),
-      calc(100% - 10px) 100%,
-      0 100%,
-      0 10px);
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -198,7 +200,9 @@ button {
 /* Page Slide Up Transition */
 .page-fade-enter-active,
 .page-fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
 .page-fade-enter-from {
@@ -260,7 +264,6 @@ button {
 
 /* Floating Object */
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
@@ -301,7 +304,6 @@ button {
 
 /* Blink (Cursor/Status) */
 @keyframes blink {
-
   0%,
   100% {
     opacity: 1;
@@ -336,19 +338,25 @@ button {
 /* --- CẤP C (COMMON) --- */
 .rarity-C {
   border: 1px solid var(--neon-c) !important;
-  box-shadow: 0 0 5px rgba(0, 255, 157, 0.3), inset 0 0 10px rgba(0, 255, 157, 0.1);
+  box-shadow:
+    0 0 5px rgba(0, 255, 157, 0.3),
+    inset 0 0 10px rgba(0, 255, 157, 0.1);
 }
 
 /* --- CẤP B (RARE) --- */
 .rarity-B {
   border: 1px solid var(--neon-b) !important;
-  box-shadow: 0 0 8px rgba(0, 153, 255, 0.5), inset 0 0 15px rgba(0, 153, 255, 0.15);
+  box-shadow:
+    0 0 8px rgba(0, 153, 255, 0.5),
+    inset 0 0 15px rgba(0, 153, 255, 0.15);
 }
 
 /* --- CẤP A (EPIC) --- */
 .rarity-A {
   border: 1px solid var(--neon-a) !important;
-  box-shadow: 0 0 10px var(--neon-a), inset 0 0 20px rgba(183, 0, 255, 0.2);
+  box-shadow:
+    0 0 10px var(--neon-a),
+    inset 0 0 20px rgba(183, 0, 255, 0.2);
   /* Xóa animation nếu muốn nó tĩnh luôn giống Legendary */
   /* animation: neon-pulse-purple 3s infinite alternate; */
 }

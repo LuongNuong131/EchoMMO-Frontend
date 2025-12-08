@@ -90,24 +90,24 @@ html {
 }
 </style> -->
 <!-- 5:28 -->
- <template>
+<template>
   <component :is="layout">
     <router-view />
   </component>
-  
-  <CaptchaModal 
-    v-if="showCaptcha" 
-    :is-visible="showCaptcha" 
+
+  <CaptchaModal
+    v-if="showCaptcha"
+    :is-visible="showCaptcha"
     @success="onCaptchaSuccess"
     @close="showCaptcha = false"
   />
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { useAuthStore } from './stores/authStore';
-import MainLayout from './layouts/MainLayout.vue';
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { useAuthStore } from "./stores/authStore";
+import MainLayout from "./layouts/MainLayout.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -115,7 +115,7 @@ const showCaptcha = ref(false);
 
 // Layout: Nếu route có meta.guest (Login/Register) thì dùng div thường, ngược lại dùng MainLayout
 const layout = computed(() => {
-  return route.meta.guest ? 'div' : MainLayout;
+  return route.meta.guest ? "div" : MainLayout;
 });
 
 // [FIX] Khi App vừa load (F5), kiểm tra auth và fetch dữ liệu mới nhất

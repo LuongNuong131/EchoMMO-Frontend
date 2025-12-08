@@ -5,7 +5,10 @@
     <div class="footer-container">
       <div class="footer-brand">
         <div class="brand-logo">
-          <img src="https://via.placeholder.com/64/3e2723/fbc02d?text=RPG" alt="Logo" />
+          <img
+            src="https://via.placeholder.com/64/3e2723/fbc02d?text=RPG"
+            alt="Logo"
+          />
         </div>
         <div class="brand-info">
           <h2 class="team-name">Aurix Team</h2>
@@ -26,9 +29,21 @@
         <div class="nav-col">
           <h3 class="col-title">Cộng Đồng</h3>
           <ul>
-            <li><a href="https://discord.gg/mdbgEPxg" target="_blank"><i class="fab fa-discord"></i> Discord</a></li>
-            <li><a href="#" target="_blank"><i class="fab fa-facebook"></i> Fanpage</a></li>
-            <li><a href="#" target="_blank"><i class="fas fa-users"></i> Group Thảo Luận</a></li>
+            <li>
+              <a href="https://discord.gg/mdbgEPxg" target="_blank"
+                ><i class="fab fa-discord"></i> Discord</a
+              >
+            </li>
+            <li>
+              <a href="#" target="_blank"
+                ><i class="fab fa-facebook"></i> Fanpage</a
+              >
+            </li>
+            <li>
+              <a href="#" target="_blank"
+                ><i class="fas fa-users"></i> Group Thảo Luận</a
+              >
+            </li>
           </ul>
         </div>
 
@@ -44,7 +59,9 @@
     </div>
 
     <div class="copyright-row">
-      <p>&copy; {{ new Date().getFullYear() }} AURIX Team. All rights reserved.</p>
+      <p>
+        &copy; {{ new Date().getFullYear() }} AURIX Team. All rights reserved.
+      </p>
     </div>
   </footer>
 </template>
@@ -109,7 +126,7 @@
   height: 64px;
   border-radius: 8px;
   border: 1px solid #5d4037;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .brand-info {
@@ -122,7 +139,7 @@
   font-size: 1.5em;
   color: #fbc02d;
   margin: 0;
-  text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.8);
 }
 
 .slogan {
@@ -227,7 +244,7 @@
     align-items: center;
     text-align: center;
   }
-  
+
   .nav-col {
     width: 100%;
     align-items: center;

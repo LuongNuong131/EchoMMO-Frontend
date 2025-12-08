@@ -64,8 +64,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
+  background: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
   opacity: 0.07;
   mix-blend-mode: overlay;
 }
@@ -75,7 +74,11 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(circle at top, rgba(16,185,129,0.12), transparent 70%);
+  background: radial-gradient(
+    circle at top,
+    rgba(16, 185, 129, 0.12),
+    transparent 70%
+  );
   filter: blur(18px);
   opacity: 0.45;
 }
@@ -84,10 +87,10 @@
 .ornamental-frame {
   position: absolute;
   inset: 18px;
-  border: 1px solid rgba(16,185,129,0.25);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   box-shadow:
     0 0 35px rgba(16, 185, 129, 0.12),
-    inset 0 0 45px rgba(0,0,0,0.45);
+    inset 0 0 45px rgba(0, 0, 0, 0.45);
   z-index: 50;
 }
 
@@ -121,15 +124,22 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
 }
 
 .seal-inner {
   background: linear-gradient(135deg, #34d399, #047857);
   border: 2px solid #cdfae5;
   border-radius: 14px;
-  box-shadow: 0 5px 20px rgba(4, 120, 87, 0.45), inset 0 0 14px rgba(255,255,255,0.08);
+  box-shadow:
+    0 5px 20px rgba(4, 120, 87, 0.45),
+    inset 0 0 14px rgba(255, 255, 255, 0.08);
   width: 100%;
   height: 100%;
   display: flex;
@@ -151,8 +161,14 @@
 }
 
 @keyframes jadePulse {
-  0% { opacity: 0.35; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.35); }
+  0% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
 }
 
 .scroll-top-seal:hover .seal-glow {
@@ -161,7 +177,11 @@
 
 /* mobile */
 @media (max-width: 768px) {
-  .ornamental-frame { inset: 6px; }
-  .page-content:not(.no-padding-scroll) { padding: 14px; }
+  .ornamental-frame {
+    inset: 6px;
+  }
+  .page-content:not(.no-padding-scroll) {
+    padding: 14px;
+  }
 }
 </style>

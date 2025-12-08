@@ -348,38 +348,59 @@ onMounted(() => {
       <div class="resource-bank">
         <div class="res-module gold" title="Ngân Lượng">
           <div class="res-icon"><i class="fas fa-coins"></i></div>
-          <div class="res-val">{{ formatNumber(authStore.wallet?.gold || 0) }}</div>
+          <div class="res-val">
+            {{ formatNumber(authStore.wallet?.gold || 0) }}
+          </div>
         </div>
 
         <div class="res-module jade mobile-hide" title="Linh Thạch">
           <div class="res-icon"><i class="fas fa-gem"></i></div>
-          <div class="res-val">{{ formatNumber(authStore.wallet?.diamonds || 0) }}</div>
+          <div class="res-val">
+            {{ formatNumber(authStore.wallet?.diamonds || 0) }}
+          </div>
         </div>
 
         <div class="res-module energy" title="Chân Khí">
           <div class="res-icon"><i class="fas fa-bolt"></i></div>
           <div class="energy-track">
-            <div class="energy-bar" :style="{ width: energyPercent + '%' }"></div>
+            <div
+              class="energy-bar"
+              :style="{ width: energyPercent + '%' }"
+            ></div>
           </div>
-          <div class="res-val small">{{ formatNumber(charStore.character?.energy || 0) }}</div>
+          <div class="res-val small">
+            {{ formatNumber(charStore.character?.energy || 0) }}
+          </div>
         </div>
       </div>
 
-      <router-link to="/friends" class="hud-icon-node friend-node" :class="{ 'has-signal': friendRequestCount > 0 }">
+      <router-link
+        to="/friends"
+        class="hud-icon-node friend-node"
+        :class="{ 'has-signal': friendRequestCount > 0 }"
+      >
         <div class="node-icon"><i class="fas fa-user-friends"></i></div>
         <div class="node-badge" v-if="friendRequestCount > 0">
-          {{ friendRequestCount > 9 ? '9+' : friendRequestCount }}
+          {{ friendRequestCount > 9 ? "9+" : friendRequestCount }}
         </div>
       </router-link>
 
-      <router-link to="/notifications" class="hud-icon-node noti-node" :class="{ 'has-signal': notiStore.unreadCount > 0 }">
+      <router-link
+        to="/notifications"
+        class="hud-icon-node noti-node"
+        :class="{ 'has-signal': notiStore.unreadCount > 0 }"
+      >
         <div class="node-icon"><i class="fas fa-bell"></i></div>
         <div class="node-badge" v-if="notiStore.unreadCount > 0">
-          {{ notiStore.unreadCount > 99 ? '99+' : notiStore.unreadCount }}
+          {{ notiStore.unreadCount > 99 ? "99+" : notiStore.unreadCount }}
         </div>
       </router-link>
 
-      <router-link to="/profile" class="profile-link" v-if="charStore.character">
+      <router-link
+        to="/profile"
+        class="profile-link"
+        v-if="charStore.character"
+      >
         <div class="profile-info mobile-hide">
           <div class="char-name">{{ charStore.character.name }}</div>
           <div class="xp-track">
@@ -406,25 +427,31 @@ const authStore = useAuthStore();
 const charStore = useCharacterStore();
 const notiStore = useNotificationStore();
 
-const friendRequestCount = ref(0); 
+const friendRequestCount = ref(0);
 
-const userSkinAvatar = computed(() => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle);
+const userSkinAvatar = computed(
+  () => getCurrentSkin(authStore.user?.avatarUrl).sprites.idle,
+);
 
 const xpPercent = computed(() => {
   if (!charStore.character) return 0;
-  const needed = 100 * Math.pow(charStore.character.lv, 2); 
+  const needed = 100 * Math.pow(charStore.character.lv, 2);
   return Math.min((charStore.character.exp / needed) * 100, 100);
 });
 
 const energyPercent = computed(() => {
   if (!charStore.character || charStore.character.maxEnergy === 0) return 0;
-  return Math.min((charStore.character.energy / charStore.character.maxEnergy) * 100, 100);
+  return Math.min(
+    (charStore.character.energy / charStore.character.maxEnergy) * 100,
+    100,
+  );
 });
 
 const formatNumber = (num) => {
-  if (!num) return '0';
-  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  if (!num) return "0";
+  if (num >= 1000000)
+    return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
   return num.toString();
 };
 
@@ -468,7 +495,12 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold-accent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold-accent),
+    transparent
+  );
 }
 
 .spacer {
@@ -492,41 +524,52 @@ onMounted(() => {
   border: 1px solid #5d4037;
 }
 
-.res-module { 
-  display: flex; 
-  align-items: center; 
-  gap: 6px; 
+.res-module {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.res-icon { 
-  font-size: 1em; 
+.res-icon {
+  font-size: 1em;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)); /* Bóng đổ icon đậm hơn */
 }
 
-.res-val { 
-  font-weight: bold; 
-  font-size: 0.95em; 
+.res-val {
+  font-weight: bold;
+  font-size: 0.95em;
 }
 
-.res-val.small { 
-  font-size: 0.85em; 
-  min-width: 30px; 
-  text-align: right; 
+.res-val.small {
+  font-size: 0.85em;
+  min-width: 30px;
+  text-align: right;
   color: #e0e0e0;
 }
 
 /* --- MÀU SẮC TÀI NGUYÊN (FIXED) --- */
 
 /* 1. NGÂN LƯỢNG (GOLD) - Màu Vàng Rực */
-.resource-bank .gold .res-icon { color: #ffeb3b; }
-.resource-bank .gold .res-val { color: #ffd700; text-shadow: 0 0 2px #b71c1c; }
+.resource-bank .gold .res-icon {
+  color: #ffeb3b;
+}
+.resource-bank .gold .res-val {
+  color: #ffd700;
+  text-shadow: 0 0 2px #b71c1c;
+}
 
 /* 2. LINH THẠCH (JADE) - Màu Xanh Ngọc */
-.resource-bank .jade .res-icon { color: #00e676; }
-.resource-bank .jade .res-val { color: #69f0ae; }
+.resource-bank .jade .res-icon {
+  color: #00e676;
+}
+.resource-bank .jade .res-val {
+  color: #69f0ae;
+}
 
 /* 3. CHÂN KHÍ (ENERGY) - Màu Xanh Dương */
-.resource-bank .energy .res-icon { color: #2979ff; } /* Icon xanh dương sáng */
+.resource-bank .energy .res-icon {
+  color: #2979ff;
+} /* Icon xanh dương sáng */
 
 .energy-track {
   width: 60px;
@@ -540,7 +583,11 @@ onMounted(() => {
 
 .energy-bar {
   height: 100%;
-  background: linear-gradient(90deg, #1565c0, #42a5f5); /* Gradient xanh dương */
+  background: linear-gradient(
+    90deg,
+    #1565c0,
+    #42a5f5
+  ); /* Gradient xanh dương */
   transition: width 0.3s ease;
   box-shadow: 0 0 5px #2979ff; /* Phát sáng nhẹ */
 }
@@ -557,7 +604,7 @@ onMounted(() => {
   transition: 0.3s;
   cursor: pointer;
   border-radius: 50%;
-  text-decoration: none; 
+  text-decoration: none;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid transparent;
 }
@@ -574,9 +621,16 @@ onMounted(() => {
 }
 
 @keyframes shake {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-15deg); }
-  75% { transform: rotate(15deg); }
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
 }
 
 .node-badge {
@@ -592,7 +646,7 @@ onMounted(() => {
   border: 1px solid #fff;
   min-width: 18px;
   text-align: center;
-  box-shadow: 0 2px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* --- PROFILE --- */

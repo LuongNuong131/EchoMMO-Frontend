@@ -34,7 +34,9 @@
               <div
                 class="progress-fill"
                 :class="{ 'fill-ready': q.progress >= q.target }"
-                :style="{ width: Math.min((q.progress / q.target) * 100, 100) + '%' }"
+                :style="{
+                  width: Math.min((q.progress / q.target) * 100, 100) + '%',
+                }"
               ></div>
             </div>
             <div class="progress-text">{{ q.progress }} / {{ q.target }}</div>
@@ -49,7 +51,9 @@
           >
             <div class="btn-inner">
               <span>NHẬN</span>
-              <span class="reward-val">{{ q.rewardGold }} <i class="fas fa-coins"></i></span>
+              <span class="reward-val"
+                >{{ q.rewardGold }} <i class="fas fa-coins"></i
+              ></span>
             </div>
           </button>
 
@@ -103,7 +107,8 @@ onMounted(() => {
   gap: 8px;
   flex-shrink: 0;
 }
-.decor-left, .decor-right {
+.decor-left,
+.decor-right {
   font-size: 0.8em;
   opacity: 0.7;
 }
@@ -216,7 +221,7 @@ onMounted(() => {
   animation: pulse 1.5s infinite;
 }
 .btn-inner {
-  border: 1px dashed rgba(255,255,255,0.3);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
   padding: 4px 8px;
   display: flex;
   flex-direction: column;
@@ -250,13 +255,26 @@ onMounted(() => {
 
 /* ANIMATION */
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* SCROLLBAR */
-.custom-scroll::-webkit-scrollbar { width: 4px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 2px; }
-.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #5d4037;
+  border-radius: 2px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
 </style>

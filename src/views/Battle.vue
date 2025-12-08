@@ -3,7 +3,6 @@
     <div class="battle-bg-layer"></div>
 
     <div class="battle-layout">
-
       <aside class="side-panel left-panel">
         <div class="panel-header">
           <i class="fas fa-trophy text-gold"></i> BẢNG XẾP HẠNG
@@ -12,7 +11,9 @@
           <div class="rank-item" v-for="i in 5" :key="i">
             <div class="rank-num" :class="'top-' + i">{{ i }}</div>
             <div class="rank-avatar">
-              <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" />
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              />
             </div>
             <div class="rank-info">
               <div class="rank-name">Người Chơi {{ i }}</div>
@@ -23,7 +24,6 @@
       </aside>
 
       <main class="center-panel">
-
         <div class="combat-arena" v-if="battleStore.enemy">
           <div class="vs-badge">VS</div>
 
@@ -35,50 +35,90 @@
               <div class="damage-text" v-if="isEnemyHit">-{{ lastDamage }}</div>
             </div>
             <div class="fighter-stats">
-              <div class="name-tag red-tag">{{ battleStore.enemy.name }} (Lv.{{ battleStore.enemy.level }})</div>
+              <div class="name-tag red-tag">
+                {{ battleStore.enemy.name }} (Lv.{{ battleStore.enemy.level }})
+              </div>
               <div class="stat-bar-box">
-                <div class="bar-fill hp-fill" :style="{ width: enemyHpPercent + '%' }"></div>
-                <span class="bar-text">{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</span>
+                <div
+                  class="bar-fill hp-fill"
+                  :style="{ width: enemyHpPercent + '%' }"
+                ></div>
+                <span class="bar-text"
+                  >{{ battleStore.enemyHp }} /
+                  {{ battleStore.enemyMaxHp }}</span
+                >
               </div>
             </div>
           </div>
 
-          <div class="fighter-card player" :class="{ 'hit-anim': isPlayerHit, 'attacking': isPlayerAttacking }">
+          <div
+            class="fighter-card player"
+            :class="{ 'hit-anim': isPlayerHit, attacking: isPlayerAttacking }"
+          >
             <div class="fighter-visual">
               <div class="fighter-circle green-ring">
                 <img :src="playerImage" class="fighter-img" />
               </div>
-              <div class="damage-text player-dmg" v-if="isPlayerHit">-{{ lastDamageTaken }}</div>
+              <div class="damage-text player-dmg" v-if="isPlayerHit">
+                -{{ lastDamageTaken }}
+              </div>
             </div>
             <div class="fighter-stats">
-              <div class="name-tag blue-tag">{{ authStore.user?.username }}</div>
+              <div class="name-tag blue-tag">
+                {{ authStore.user?.username }}
+              </div>
               <div class="stat-bar-box">
-                <div class="bar-fill hp-fill" :style="{ width: playerHpPercent + '%' }"></div>
-                <span class="bar-text">{{ battleStore.playerHp }} / {{ battleStore.playerMaxHp }}</span>
+                <div
+                  class="bar-fill hp-fill"
+                  :style="{ width: playerHpPercent + '%' }"
+                ></div>
+                <span class="bar-text"
+                  >{{ battleStore.playerHp }} /
+                  {{ battleStore.playerMaxHp }}</span
+                >
               </div>
               <div class="stat-bar-box energy-box">
-                <div class="bar-fill energy-fill" :style="{ width: (charStore.character?.energy || 0) + '%' }"></div>
-                <span class="bar-text"><i class="fas fa-bolt"></i> {{ charStore.character?.energy }}</span>
+                <div
+                  class="bar-fill energy-fill"
+                  :style="{ width: (charStore.character?.energy || 0) + '%' }"
+                ></div>
+                <span class="bar-text"
+                  ><i class="fas fa-bolt"></i>
+                  {{ charStore.character?.energy }}</span
+                >
               </div>
             </div>
           </div>
 
           <div class="combat-controls">
-            <div v-if="battleStore.status === 'ONGOING'" class="ongoing-actions">
+            <div
+              v-if="battleStore.status === 'ONGOING'"
+              class="ongoing-actions"
+            >
               <div class="auto-fight-btn">
-                <div class="spinner"></div> AUTO FIGHT
+                <div class="spinner"></div>
+                AUTO FIGHT
               </div>
-              <button class="btn-skill" @click="activateBuff"
-                :disabled="nextAttackBuffed || charStore.character?.energy < 5">
+              <button
+                class="btn-skill"
+                @click="activateBuff"
+                :disabled="nextAttackBuffed || charStore.character?.energy < 5"
+              >
                 <span v-if="!nextAttackBuffed">🔥 TỤ LỰC (5⚡)</span>
                 <span v-else>SẴN SÀNG!</span>
               </button>
             </div>
             <div v-else class="result-actions">
-              <div class="result-text" :class="battleStore.status">{{ battleResultText }}</div>
+              <div class="result-text" :class="battleStore.status">
+                {{ battleResultText }}
+              </div>
               <div class="btn-group">
-                <button class="btn-nav" @click="$router.push('/explore')">🌲 Rừng</button>
-                <button class="btn-nav" @click="$router.push('/village')">🏘️ Làng</button>
+                <button class="btn-nav" @click="$router.push('/explore')">
+                  🌲 Rừng
+                </button>
+                <button class="btn-nav" @click="$router.push('/village')">
+                  🏘️ Làng
+                </button>
               </div>
             </div>
           </div>
@@ -124,31 +164,37 @@
           </div>
           <div class="detail-row">
             <span><i class="fas fa-bolt"></i> Chí Mạng</span>
-            <span class="val">{{ charStore.character?.baseCritRate || 0 }}%</span>
+            <span class="val"
+              >{{ charStore.character?.baseCritRate || 0 }}%</span
+            >
           </div>
         </div>
 
         <div class="combat-log-panel">
           <div class="panel-header">NHẬT KÝ TRẬN ĐẤU</div>
           <div class="logs-container custom-scroll" ref="logContainer">
-            <div v-for="(log, idx) in battleStore.combatLogs" :key="idx" class="log-entry" :class="getLogClass(log)">
+            <div
+              v-for="(log, idx) in battleStore.combatLogs"
+              :key="idx"
+              class="log-entry"
+              :class="getLogClass(log)"
+            >
               {{ formatLog(log) }}
             </div>
           </div>
         </div>
       </aside>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { useBattleStore } from '@/stores/battleStore';
-import { useCharacterStore } from '@/stores/characterStore';
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
-import { getEnemyImage, getCurrentSkin } from '@/utils/assetHelper';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useBattleStore } from "@/stores/battleStore";
+import { useCharacterStore } from "@/stores/characterStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
+import { getEnemyImage, getCurrentSkin } from "@/utils/assetHelper";
 
 const battleStore = useBattleStore();
 const charStore = useCharacterStore();
@@ -188,21 +234,21 @@ const playerImage = computed(() => {
 });
 
 const battleResultText = computed(() => {
-  if (battleStore.status === 'VICTORY') return "CHIẾN THẮNG!";
-  if (battleStore.status === 'DEFEAT') return "THẤT BẠI...";
+  if (battleStore.status === "VICTORY") return "CHIẾN THẮNG!";
+  if (battleStore.status === "DEFEAT") return "THẤT BẠI...";
   return "";
 });
 
 // --- HELPER FUNCTIONS ---
 const getLogClass = (log) => {
-  if (log.includes("Bạn gây") || log.includes("BẠO KÍCH")) return 'log-player';
-  if (log.includes("bị đánh") || log.includes("mất")) return 'log-enemy';
-  if (log.includes("Thắng") || log.includes("EXP")) return 'log-win';
-  return 'log-normal';
+  if (log.includes("Bạn gây") || log.includes("BẠO KÍCH")) return "log-player";
+  if (log.includes("bị đánh") || log.includes("mất")) return "log-enemy";
+  if (log.includes("Thắng") || log.includes("EXP")) return "log-win";
+  return "log-normal";
 };
 
 const formatLog = (log) => {
-  return log.replace(/<[^>]*>/g, '');
+  return log.replace(/<[^>]*>/g, "");
 };
 
 const activateBuff = () => {
@@ -214,7 +260,7 @@ const activateBuff = () => {
 
 // --- AUTO BATTLE LOGIC [CẬP NHẬT] ---
 const runAutoBattle = async () => {
-  if (battleStore.status !== 'ONGOING') {
+  if (battleStore.status !== "ONGOING") {
     clearInterval(autoInterval);
     return;
   }
@@ -242,7 +288,7 @@ const runAutoBattle = async () => {
       setTimeout(() => {
         lastDamage.value = dmgDealt;
         isEnemyHit.value = true;
-        setTimeout(() => isEnemyHit.value = false, 300);
+        setTimeout(() => (isEnemyHit.value = false), 300);
       }, 300);
     }
 
@@ -251,25 +297,28 @@ const runAutoBattle = async () => {
       setTimeout(() => {
         lastDamageTaken.value = dmgTaken;
         isPlayerHit.value = true;
-        setTimeout(() => isPlayerHit.value = false, 300);
+        setTimeout(() => (isPlayerHit.value = false), 300);
       }, 600); // Enemy đánh trễ hơn xíu
     }
   }
 };
 
 // Auto scroll logs
-watch(() => battleStore.combatLogs.length, () => {
-  nextTick(() => {
-    if (logContainer.value) {
-      logContainer.value.scrollTop = logContainer.value.scrollHeight;
-    }
-  });
-});
+watch(
+  () => battleStore.combatLogs.length,
+  () => {
+    nextTick(() => {
+      if (logContainer.value) {
+        logContainer.value.scrollTop = logContainer.value.scrollHeight;
+      }
+    });
+  },
+);
 
 onMounted(async () => {
   await charStore.fetchCharacter();
   if (!battleStore.enemy) await battleStore.startBattle();
-  if (battleStore.status === 'ONGOING') {
+  if (battleStore.status === "ONGOING") {
     autoInterval = setInterval(runAutoBattle, 1500);
   }
 });
@@ -297,7 +346,7 @@ onUnmounted(() => clearInterval(autoInterval));
   background-color: var(--bg-dark);
   min-height: calc(100vh - 60px);
   color: var(--text-main);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   overflow: hidden;
   padding: 10px;
 }
@@ -439,7 +488,7 @@ onUnmounted(() => clearInterval(autoInterval));
   top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 3em;
   font-weight: 900;
   color: #3e2723;
