@@ -5,6 +5,7 @@ import { useCharacterStore } from "./characterStore";
 export const useBattleStore = defineStore("battle", {
   state: () => ({
     enemy: null,
+    enemyVisual: null, // [THÊM MỚI] Để lưu hình ảnh/tên quái từ màn hình Encounter
     enemyHp: 0,
     enemyMaxHp: 100,
     playerHp: 0,
@@ -18,6 +19,11 @@ export const useBattleStore = defineStore("battle", {
   }),
 
   actions: {
+    // [THÊM MỚI] Hàm này để Component gọi khi gặp quái
+    setEncounter(visualData) {
+      this.enemyVisual = visualData;
+    },
+
     async startBattle() {
       this.status = "LOADING";
       this.isReady = false;
@@ -48,7 +54,6 @@ export const useBattleStore = defineStore("battle", {
       } catch (e) {
         console.error("Lỗi turn:", e);
         
-        // [FIX] Nếu lỗi 403 (Cấm) hoặc 401 (Hết phiên) -> Dừng ngay lập tức
         if (e.response && (e.response.status === 403 || e.response.status === 401)) {
             this.status = "ERROR";
             this.combatLogs.push("Phiên đăng nhập hết hạn hoặc lỗi quyền truy cập.");
@@ -114,95 +119,10 @@ export const useBattleStore = defineStore("battle", {
     resetBattle() {
       this.status = "IDLE";
       this.enemy = null;
+      this.enemyVisual = null; // [SỬA] Reset cả cái này
       this.combatLogs = [];
       this.isReady = false;
       this.droppedItem = null;
     },
   },
 });
-
-// =========================================================
-
-//code test
-// import { defineStore } from "pinia";
-// import axiosClient from "../api/axiosClient";
-// import { useCharacterStore } from "./characterStore";
-
-// export const useBattleStore = defineStore("battle", {
-//   state: () => ({
-//     enemy: null,
-//     enemyVisual: null, // [MỚI] Lưu tên/ảnh quái từ lúc gặp để thống nhất
-//     enemyHp: 0,
-//     enemyMaxHp: 0,
-//     playerHp: 0,
-//     playerMaxHp: 0,
-//     combatLogs: [],
-//     status: "IDLE",
-//     goldEarned: 0,
-//     expEarned: 0,
-//   }),
-
-//   actions: {
-//     // Set thông tin hình ảnh quái trước khi vào trận
-//     setEncounter(visualData) {
-//       this.enemyVisual = visualData;
-//     },
-
-//     async startBattle() {
-//       this.status = "ONGOING";
-//       this.combatLogs = [];
-//       try {
-//         const res = await axiosClient.post("/battle/start");
-//         this.handleResult(res.data);
-//       } catch (e) {
-//         this.combatLogs.push("Lỗi: " + (e.response?.data || e.message));
-//       }
-//     },
-
-//     // isBuffed: true nếu người chơi ấn nút Tụ Lực
-//     async autoTurn(isBuffed) {
-//       try {
-//         const res = await axiosClient.post("/battle/attack", {
-//           enemyId: this.enemy.enemyId,
-//           enemyHp: this.enemyHp,
-//           isBuffed: isBuffed, // Gửi trạng thái cường hóa lên server
-//         });
-//         this.handleResult(res.data);
-//         return res.data; // Trả về data để view xử lý animation
-//       } catch (e) {
-//         console.error(e);
-//       }
-//     },
-
-//     handleResult(data) {
-//       this.enemy = data.enemy;
-//       this.enemyHp = data.enemyHp;
-//       this.enemyMaxHp = data.enemyMaxHp;
-//       this.playerHp = data.playerHp;
-//       this.playerMaxHp = data.playerMaxHp;
-//       this.status = data.status;
-
-//       if (data.combatLog) {
-//         // Chỉ lấy log mới nhất để hiển thị cho gọn
-//         this.combatLogs = data.combatLog;
-//       }
-
-//       if (data.status === "VICTORY") {
-//         this.goldEarned = data.goldEarned;
-//         this.expEarned = data.expEarned;
-//       }
-
-//       const charStore = useCharacterStore();
-//       if (charStore.character) {
-//         charStore.character.hp = data.playerHp;
-//       }
-//     },
-
-//     resetBattle() {
-//       this.status = "IDLE";
-//       this.enemy = null;
-//       this.enemyVisual = null;
-//       this.combatLogs = [];
-//     },
-//   },
-// });

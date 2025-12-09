@@ -90,7 +90,15 @@
               <div v-if="battleStore.droppedItem" class="loot-display">
                 🎁 Nhặt được: {{ battleStore.droppedItem.name }}
               </div>
-              <button class="btn-nav" @click="$router.push('/village')">Về Làng</button>
+              
+              <div class="btn-group">
+                <button class="btn-nav forest-btn" @click="$router.push('/explore')">
+                  🌲 Về Rừng
+                </button>
+                <button class="btn-nav" @click="$router.push('/village')">
+                  🏠 Về Làng
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -99,7 +107,15 @@
           <div v-if="battleStore.status === 'ERROR'" class="error-box">
             <h2 class="text-red">⚠️ LỖI GAME</h2>
             <p v-for="(err, idx) in battleStore.combatLogs" :key="idx">{{ err }}</p>
-            <button @click="$router.push('/village')" class="btn-nav">Về Làng</button>
+            
+            <div class="btn-group">
+                <button class="btn-nav forest-btn" @click="$router.push('/explore')">
+                  🌲 Thử Lại
+                </button>
+                <button @click="$router.push('/village')" class="btn-nav">
+                  🏠 Về Làng
+                </button>
+            </div>
           </div>
           <div v-else>
             <i class="fas fa-circle-notch fa-spin"></i>
@@ -151,7 +167,6 @@ import { useBattleStore } from '@/stores/battleStore';
 import { useCharacterStore } from '@/stores/characterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
-// [QUAN TRỌNG] Asset Helper để load ảnh động
 import { getEnemyImage, getCurrentSkin } from "@/utils/assetHelper";
 
 const battleStore = useBattleStore();
@@ -172,20 +187,13 @@ const qteTimer = ref(0);
 let qteInterval = null;
 let autoInterval = null;
 
-// --- 1. HELPERS CHO TEMPLATE ---
+// --- HELPERS ---
 const percent = (cur, max) => (max > 0 ? (cur / max) * 100 : 0);
-
-// Lấy ảnh quái (có hỗ trợ animation nếu muốn sau này)
-const getEnemyAsset = (name) => {
-  return getEnemyImage(name, 'idle');
-};
-
-// Lấy ảnh nhân vật
+const getEnemyAsset = (name) => getEnemyImage(name, 'idle');
 const getPlayerAsset = () => {
   const skin = getCurrentSkin(authStore.user?.avatarUrl);
   return isPlayerAttacking.value ? skin.sprites.attack : skin.sprites.idle;
 };
-
 const getLogClass = (log) => {
   if (!log) return "log-normal";
   if (log.includes("Bạn gây") || log.includes("BẠO KÍCH")) return "log-player";
@@ -193,10 +201,9 @@ const getLogClass = (log) => {
   if (log.includes("Thắng") || log.includes("EXP")) return "log-win";
   return "log-normal";
 };
-
 const formatLog = (log) => log ? log.replace(/<[^>]*>/g, "") : "";
 
-// --- 2. GAME LOGIC ---
+// --- LOGIC ---
 const startBattle = async () => {
   await battleStore.startBattle();
   if (battleStore.isReady) startAutoLoop();
@@ -215,25 +222,21 @@ const activateBuff = () => {
 };
 
 const runAutoTurn = async () => {
-  // Check an toàn
   if (!battleStore.isReady || battleStore.status !== 'ONGOING' || showQTE.value) return;
 
-  // Animation đánh
   isPlayerAttacking.value = true;
   setTimeout(() => isPlayerAttacking.value = false, 500);
 
   const prevEnemyHp = battleStore.enemyHp;
   const prevPlayerHp = battleStore.playerHp;
 
-  // Gọi API (có catch lỗi trong store, trả null nếu lỗi)
   const res = await battleStore.autoTurn(nextAttackBuffed.value);
 
   if (!res) {
-    clearInterval(autoInterval); // Dừng nếu lỗi mạng
+    clearInterval(autoInterval);
     return;
   }
 
-  // Check QTE
   if (res.status === 'QTE_ACTION' || res.qteTriggered) {
     triggerQTE();
     return;
@@ -241,7 +244,6 @@ const runAutoTurn = async () => {
 
   if (nextAttackBuffed.value) nextAttackBuffed.value = false;
 
-  // Animation số nhảy
   const dmgDealt = prevEnemyHp - res.enemyHp;
   if (dmgDealt > 0) {
     lastDamage.value = dmgDealt; isEnemyHit.value = true;
@@ -257,7 +259,6 @@ const runAutoTurn = async () => {
   }
 };
 
-// --- 3. QTE SYSTEM ---
 const triggerQTE = () => {
   clearInterval(autoInterval);
   showQTE.value = true;
@@ -281,7 +282,6 @@ const failQTE = async () => {
   startAutoLoop();
 };
 
-// --- WATCHERS ---
 watch(() => battleStore.combatLogs, () => {
   nextTick(() => { if (logContainer.value) logContainer.value.scrollTop = logContainer.value.scrollHeight; });
 }, { deep: true });
@@ -307,7 +307,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* --- CSS GỐC CỦA BẠN (Đã dán lại 100%) --- */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cinzel:wght@700&display=swap");
 
 :root {
@@ -707,19 +706,39 @@ onUnmounted(() => {
   color: #f44336;
 }
 
+/* --- UPDATED CSS FOR BUTTONS --- */
 .btn-group {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   justify-content: center;
+  margin-top: 10px;
 }
 
 .btn-nav {
   background: #3e2723;
   color: #fff;
   border: 1px solid #5d4037;
-  padding: 8px 15px;
+  padding: 10px 20px;
   cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: transform 0.1s;
 }
+
+.btn-nav:active {
+  transform: scale(0.95);
+}
+
+.forest-btn {
+  background: #2e7d32;
+  border-color: #1b5e20;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.forest-btn:hover {
+  background: #388e3c;
+}
+/* ------------------------------- */
 
 .chat-section {
   flex: 1;
