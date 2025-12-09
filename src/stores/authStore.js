@@ -4,7 +4,7 @@ import router from "../router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    // Cố gắng lấy từ localStorage ngay khi khởi tạo
+    // Lấy user từ localStorage nếu có
     user: JSON.parse(localStorage.getItem("user")) || null,
     token: localStorage.getItem("token") || null,
     wallet: null,
@@ -13,13 +13,16 @@ export const useAuthStore = defineStore("auth", {
   }),
 
   getters: {
-    // Chỉ coi là đã đăng nhập nếu có token hợp lệ
     isAuthenticated: (state) =>
       !!state.token && state.token !== "null" && state.token !== "undefined",
+
+    // [FIX] Getter quan trọng để lấy User ID an toàn
+    userId: (state) =>
+      state.user?.id || state.user?.userId || state.user?.user_id,
   },
 
   actions: {
-    // [FIX] Hàm này giúp đồng bộ lại State khi reload trang
+    // Khôi phục session khi F5
     initialize() {
       try {
         const token = localStorage.getItem("token");
@@ -27,11 +30,11 @@ export const useAuthStore = defineStore("auth", {
 
         if (token && token !== "null" && token !== "undefined") {
           this.token = token;
-          // Set header mặc định cho mọi request sau này
           axiosClient.defaults.headers.common["Authorization"] =
             `Bearer ${token}`;
         } else {
           this.token = null;
+          delete axiosClient.defaults.headers.common["Authorization"];
         }
 
         if (user && user !== "null" && user !== "undefined") {
@@ -48,20 +51,32 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
       try {
         const response = await axiosClient.post("/auth/login", credentials);
-        const { token, username, role } = response.data;
 
+        // [FIX] Lấy đầy đủ thông tin từ Backend trả về (bao gồm ID)
+        const { token, id, userId, username, role, roles } = response.data;
+
+        // 1. Lưu Token
         this.token = token;
-        this.user = { username, role };
-
-        // Lưu vào localStorage
         localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(this.user));
-
-        // Cập nhật header axios ngay lập tức
         axiosClient.defaults.headers.common["Authorization"] =
           `Bearer ${token}`;
 
+        // 2. Lưu User Info (Quan trọng: Phải có ID)
+        const realId = id || userId;
+        const realRole = role || (roles && roles[0]) || "USER";
+
+        this.user = {
+          id: realId,
+          userId: realId,
+          username,
+          role: realRole,
+        };
+
+        localStorage.setItem("user", JSON.stringify(this.user));
+
+        // 3. Tải thêm thông tin ví/chỉ số
         await this.fetchProfile();
+
         router.push("/");
       } catch (err) {
         console.error(err);
@@ -75,11 +90,20 @@ export const useAuthStore = defineStore("auth", {
       if (!this.token) return;
       try {
         const res = await axiosClient.get("/user/me");
+
+        // Merge thông tin cũ và mới để không mất ID
         this.user = { ...this.user, ...res.data };
+
+        // Đảm bảo ID luôn tồn tại
+        if (!this.user.userId && this.user.id) this.user.userId = this.user.id;
+        if (!this.user.id && this.user.userId) this.user.id = this.user.userId;
+
         this.wallet = res.data.wallet;
+
+        // Cập nhật lại localStorage
+        localStorage.setItem("user", JSON.stringify(this.user));
       } catch (error) {
         console.error("Lỗi tải profile:", error);
-        // Chỉ logout nếu lỗi 401 (Unauthorized)
         if (error.response && error.response.status === 401) {
           this.logout();
         }
@@ -106,7 +130,6 @@ export const useAuthStore = defineStore("auth", {
       this.wallet = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      // Xóa header
       delete axiosClient.defaults.headers.common["Authorization"];
       router.push("/login");
     },

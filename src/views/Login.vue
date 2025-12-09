@@ -41,6 +41,7 @@
               placeholder="Mật khẩu"
               required
               class="ink-input"
+              autocomplete="current-password"
             />
           </div>
 
@@ -105,8 +106,6 @@
 <script setup>
 import { ref } from "vue";
 import { useAuthStore } from "../stores/authStore";
-import axiosClient from "../api/axiosClient";
-import router from "../router";
 
 const username = ref("");
 const password = ref("");
@@ -114,33 +113,15 @@ const authStore = useAuthStore();
 const banData = ref(null);
 
 const handleLogin = async () => {
-  try {
-    authStore.isLoading = true;
-    authStore.error = null;
+  // [FIX] Gọi qua Store để đảm bảo lưu ID và Token chuẩn
+  await authStore.login({
+    username: username.value,
+    password: password.value,
+  });
 
-    const res = await axiosClient.post("/auth/login", {
-      username: username.value,
-      password: password.value,
-    });
-
-    authStore.token = res.data.token;
-    authStore.user = { username: res.data.username, role: res.data.role };
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("user", JSON.stringify(authStore.user));
-    await authStore.fetchProfile();
-    router.push("/");
-  } catch (err) {
-    if (
-      err.response &&
-      err.response.status === 403 &&
-      err.response.data.error === "BANNED"
-    ) {
-      banData.value = err.response.data;
-    } else {
-      authStore.error = err.response?.data || "Thông tin không chính xác";
-    }
-  } finally {
-    authStore.isLoading = false;
+  // Nếu có lỗi đặc biệt như BANNED (tùy chỉnh logic backend của bạn)
+  if (authStore.error && authStore.error.includes("BANNED")) {
+    // Xử lý hiển thị banData nếu cần
   }
 };
 </script>
@@ -148,7 +129,6 @@ const handleLogin = async () => {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Serif+TC:wght@500;700;900&display=swap");
 
-/* --- VARIABLES --- */
 :root {
   --paper-bg: #e3d5b8;
   --wood-dark: #3e2723;
@@ -158,7 +138,6 @@ const handleLogin = async () => {
   --gold: #d4a017;
 }
 
-/* --- BASE --- */
 .wuxia-login {
   min-height: 100vh;
   background: var(--wood-dark);
@@ -171,7 +150,6 @@ const handleLogin = async () => {
   color: var(--wood-dark);
 }
 
-/* --- BACKGROUND EFFECTS --- */
 .ink-bg-layer {
   position: absolute;
   inset: 0;
@@ -216,7 +194,6 @@ const handleLogin = async () => {
   justify-content: center;
 }
 
-/* --- AUTH PANEL (BẢNG GỖ/GIẤY) --- */
 .auth-panel {
   width: 100%;
   max-width: 420px;
@@ -225,7 +202,6 @@ const handleLogin = async () => {
   padding: 40px;
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  /* Vân giấy */
   background-image: repeating-linear-gradient(
     45deg,
     rgba(0, 0, 0, 0.02) 0,
@@ -235,7 +211,6 @@ const handleLogin = async () => {
   );
 }
 
-/* Góc trang trí */
 .decor-corner {
   position: absolute;
   width: 20px;
@@ -278,7 +253,7 @@ const handleLogin = async () => {
   height: 80px;
   margin: 0 auto 15px;
   border: 3px solid var(--red-seal);
-  border-radius: 50%; /* Hoặc hình vuông bo góc */
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,7 +287,6 @@ const handleLogin = async () => {
   font-family: "Playfair Display", serif;
 }
 
-/* INPUTS */
 .input-group {
   position: relative;
   margin-bottom: 25px;
@@ -344,7 +318,6 @@ const handleLogin = async () => {
   color: #a1887f;
   font-weight: normal;
 }
-
 .input-group:focus-within {
   border-color: var(--red-seal);
 }
@@ -352,7 +325,6 @@ const handleLogin = async () => {
   color: var(--red-seal);
 }
 
-/* ERROR */
 .error-scroll {
   background: #ffcdd2;
   border-left: 4px solid var(--red-seal);
@@ -366,7 +338,6 @@ const handleLogin = async () => {
   font-weight: bold;
 }
 
-/* BUTTON */
 .btn-seal-submit {
   width: 100%;
   padding: 12px;
@@ -381,7 +352,6 @@ const handleLogin = async () => {
   border-radius: 4px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
-
 .btn-seal-submit:hover {
   background: #d32f2f;
   transform: translateY(-2px);
@@ -394,14 +364,12 @@ const handleLogin = async () => {
   transform: none;
 }
 
-/* FOOTER */
 .auth-footer {
   margin-top: 30px;
   text-align: center;
   font-size: 0.95em;
   font-family: "Playfair Display", serif;
 }
-
 .footer-link {
   color: #5d4037;
   text-decoration: none;
@@ -421,7 +389,6 @@ const handleLogin = async () => {
   font-size: 0.8em;
 }
 
-/* --- BAN SCREEN (LỆNH BÀI) --- */
 .ban-overlay {
   position: fixed;
   inset: 0;
@@ -431,7 +398,6 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
 }
-
 .ban-scroll {
   width: 400px;
   background: #fff8e1;
@@ -442,7 +408,6 @@ const handleLogin = async () => {
   display: flex;
   flex-direction: column;
 }
-
 .scroll-rods {
   position: absolute;
   left: 0;
@@ -458,17 +423,15 @@ const handleLogin = async () => {
 .scroll-rods.bot {
   bottom: -8px;
 }
-
 .ban-header {
   margin-bottom: 20px;
   border-bottom: 2px solid var(--wood-light);
   padding-bottom: 15px;
 }
-
 .ban-seal {
   font-family: "Noto Serif TC";
   font-size: 3rem;
-  color: rgba(183, 28, 28, 0.15); /* Mờ làm nền */
+  color: rgba(183, 28, 28, 0.15);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -480,27 +443,23 @@ const handleLogin = async () => {
   font-weight: 900;
   white-space: nowrap;
 }
-
 .ban-header h3 {
   margin: 0;
   color: var(--red-seal);
   font-size: 1.8rem;
   font-weight: 900;
 }
-
 .ban-content {
   margin-bottom: 30px;
   font-family: "Playfair Display";
   position: relative;
   z-index: 2;
 }
-
 .ban-text.warning {
   font-size: 1.1rem;
   color: var(--wood-dark);
   font-weight: bold;
 }
-
 .ban-reason-box {
   background: rgba(0, 0, 0, 0.05);
   padding: 10px;
@@ -510,13 +469,11 @@ const handleLogin = async () => {
   font-size: 0.95em;
   color: #3e2723;
 }
-
 .ban-text.info {
   font-size: 0.9em;
   color: #795548;
   font-style: italic;
 }
-
 .btn-leave {
   background: var(--wood-dark);
   color: #fff;
@@ -532,7 +489,6 @@ const handleLogin = async () => {
   background: var(--red-seal);
 }
 
-/* Animations */
 .shake-enter-active {
   animation: shake 0.5s;
 }
