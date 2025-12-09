@@ -78,33 +78,36 @@
 
 // 5:14
 import axios from "axios";
-// Import store để xử lý logout
 import { useAuthStore } from "../stores/authStore";
 
-const axiosClient = axios.create({
-  // [CẤU HÌNH] Đổi thành IP Radmin nếu test LAN, hoặc localhost nếu chạy cùng máy
-  baseURL: "http://localhost:8080/api",
-  // baseURL: 'http://26.48.225.101:8080/api',
+// --- CẤU HÌNH BASE URL ---
+// 1. Dùng Localhost (Mặc định khi code trên 1 máy)
+const BASE_URL = "http://localhost:8080/api";
 
+// 2. Dùng Radmin VPN (Bỏ comment dòng dưới nếu test qua mạng LAN ảo)
+// const BASE_URL = 'http://26.48.225.101:8080/api';
+
+const axiosClient = axios.create({
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 10000,
 });
 
-// --- REQUEST INTERCEPTOR: Gắn Token vào mọi request ---
+// --- REQUEST INTERCEPTOR ---
 axiosClient.interceptors.request.use(
   (config) => {
-    // Lấy token từ Pinia (RAM) hoặc localStorage
     try {
       const authStore = useAuthStore();
+      // Ưu tiên lấy từ Store (RAM), nếu không có mới lấy LocalStorage
       const token = authStore.token || localStorage.getItem("token");
 
       if (token && token !== "null" && token !== "undefined") {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
     } catch (e) {
-      // Bỏ qua lỗi nếu chưa khởi tạo store
+      console.warn("Chưa khởi tạo được AuthStore:", e);
     }
     return config;
   },
@@ -113,28 +116,25 @@ axiosClient.interceptors.request.use(
   }
 );
 
-// --- RESPONSE INTERCEPTOR: Xử lý lỗi trả về (FIX 403) ---
+// --- RESPONSE INTERCEPTOR ---
 axiosClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    const originalRequest = error.config;
-
-    // Nếu lỗi là 401 (Unauthorized) hoặc 403 (Forbidden)
-    if (
-      error.response &&
-      (error.response.status === 401 || error.response.status === 403)
-    ) {
-      console.error("[AXIOS] Token hết hạn hoặc không hợp lệ. Đang đăng xuất...");
-
-      // [FIX QUAN TRỌNG] Gọi hàm logout từ store để xóa token và chuyển hướng
-      const authStore = useAuthStore();
-      if (authStore) {
-        authStore.logout(); // Hàm này sẽ xóa localStorage và đẩy về /login
+    if (error.response) {
+      const status = error.response.status;
+      
+      // Xử lý lỗi Token hết hạn hoặc không có quyền (401/403)
+      if (status === 401 || status === 403) {
+        console.error("[AXIOS] Lỗi xác thực. Đang đăng xuất...");
+        
+        const authStore = useAuthStore();
+        if (authStore) {
+          authStore.logout(); // Hàm này cần có trong store để clear token và chuyển trang login
+        }
       }
     }
-    
     return Promise.reject(error);
   }
 );
