@@ -7,6 +7,10 @@ export const useCharacterStore = defineStore("character", {
     character: null,
     isLoading: false,
     logs: [],
+    explorationState: {
+      playerPos: 10,
+      moveDir: 1,
+    },
   }),
 
   getters: {

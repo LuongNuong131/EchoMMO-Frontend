@@ -450,7 +450,7 @@ onUnmounted(() => clearInterval(moveInterval));
 .stage-background {
   width: 100%;
   height: 100%;
-  background-image: url("@/assets/img/forest.png");
+  background-image: url("@/assets/Background/b_doanhtrai.png");
   background-size: cover;
   background-position: center bottom;
   position: relative;
