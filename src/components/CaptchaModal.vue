@@ -372,7 +372,7 @@ defineExpose({ open });
   0% {
     opacity: 1;
   }
-  100% {
+  50% {
     opacity: 0.4;
   }
 }

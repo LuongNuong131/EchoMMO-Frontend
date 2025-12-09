@@ -34,14 +34,35 @@ axiosClient.interceptors.response.use(
         authStore.logout();
         window.location.href = "/login";
       }
-      // [FIX] 403 (Forbidden) thì chỉ log ra, không logout
+//       // [FIX] 403 (Forbidden) thì chỉ log ra, không logout
+//       else if (error.response.status === 403) {
+//         console.error(
+//           "[AXIOS] Truy cập bị từ chối (403). Bạn không có quyền thực hiện hành động này.",
+//         );
+//       }
+//     }
+
+//     return Promise.reject(error);
+//   },
+// );
+
+// export default axiosClient;
+// [FIX] 403 (Forbidden) thì chỉ log ra, không logout
       else if (error.response.status === 403) {
-        console.error(
-          "[AXIOS] Truy cập bị từ chối (403). Bạn không có quyền thực hiện hành động này.",
-        );
+        console.error("--- LỖI QUYỀN HẠN (403) ---");
+        
+        // 1. In ra URL bị lỗi để chắc chắn mình gọi đúng API
+        console.error("API gọi đến:", error.config.url);
+        
+        // 2. In ra tin nhắn từ Server (Quan trọng nhất)
+        // Server thường trả về lý do: "User ID 10 cannot access Player ID 5"
+        console.error("Lý do từ Server:", error.response.data); 
+        
+        // 3. Kiểm tra xem lúc đó đang dùng Token nào (để debug)
+        const authStore = useAuthStore();
+        console.log("Token hiện tại:", authStore.token);
       }
     }
-
     return Promise.reject(error);
   },
 );

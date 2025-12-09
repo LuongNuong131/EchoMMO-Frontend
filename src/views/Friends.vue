@@ -743,6 +743,7 @@ const scrollToBottom = () => {
   color: #fff;
   padding: 5px 10px;
   font-family: inherit;
+  font-size: 1rem;
 }
 .dark-chat-input:focus {
   border-color: var(--gold);

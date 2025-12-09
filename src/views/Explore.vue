@@ -626,6 +626,14 @@ onUnmounted(() => clearInterval(moveInterval));
 .log-line {
   margin-bottom: 5px;
 }
+.log-time {
+  font-style: italic;
+  color: #888;
+  margin-right: 5px;
+}
+.log-msg {
+  color: #d7ccc8;
+}
 .quest-panel-wrapper {
   flex: 1; /* Chiếm hết phần còn lại */
   min-height: 150px;
