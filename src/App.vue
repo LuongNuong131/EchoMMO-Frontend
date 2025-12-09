@@ -17,9 +17,12 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthStore } from "./stores/authStore";
 import MainLayout from "./layouts/MainLayout.vue";
+// [THÊM DÒNG NÀY] Import CaptchaModal
+import CaptchaModal from "./components/CaptchaModal.vue";
 
 const route = useRoute();
 
@@ -108,6 +111,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
 import MainLayout from "./layouts/MainLayout.vue";
+import CaptchaModal from "./components/CaptchaModal.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();

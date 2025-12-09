@@ -172,13 +172,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useCharacterStore } from "@/stores/characterStore";
+import { useCharacterStore } from "@/stores/characterStore"; // Đảm bảo đường dẫn đúng
 import { useAuthStore } from "@/stores/authStore";
 import { useBattleStore } from "@/stores/battleStore";
 import { useRouter } from "vue-router";
 import CaptchaModal from "@/components/CaptchaModal.vue";
 import ChatPanel from "@/components/ChatPanel.vue";
-import QuestPanel from "@/components/QuestPanel.vue"; // Import Quest Panel
+import QuestPanel from "@/components/QuestPanel.vue";
 import {
   getRandomEnemyData,
   getItemImage,
@@ -243,7 +243,7 @@ const startExploration = () => {
   }, 1000);
 };
 
-// [LOGIC MỚI] Xử lý kết quả khám phá
+// Xử lý kết quả khám phá
 const handleResult = async () => {
   clearInterval(moveInterval);
   isMoving.value = false;
@@ -260,7 +260,7 @@ const handleResult = async () => {
     return;
   }
 
-  // 2. Tỉ lệ 80% còn lại: Gọi API Explore (Gặp Quái/Vàng)
+  // 2. Tỉ lệ 80% còn lại: Gọi API Explore
   try {
     const res = await charStore.explore();
 
@@ -304,8 +304,6 @@ onUnmounted(() => clearInterval(moveInterval));
 </script>
 
 <style scoped>
-/* GIỮ NGUYÊN CSS CŨ - CHỈ CẬP NHẬT PHẦN LAYOUT ĐỂ CHỨA QUEST PANEL */
-
 .explore-page {
   padding: 10px;
   height: 100vh;
@@ -590,11 +588,11 @@ onUnmounted(() => clearInterval(moveInterval));
   flex-direction: column;
   overflow: hidden;
   height: 100%;
-  gap: 15px; /* Khoảng cách giữa Log và Quest */
+  gap: 15px;
 }
 
 .log-panel {
-  flex: 0 0 40%; /* Chiếm 40% chiều cao */
+  flex: 0 0 40%;
   min-height: 150px;
   background: #1e1e1e;
   border: 2px solid #5d4037;
@@ -627,16 +625,7 @@ onUnmounted(() => clearInterval(moveInterval));
 }
 .log-line {
   margin-bottom: 5px;
-  padding-bottom: 3px;
-  border-bottom: 1px dashed #333;
 }
-.log-time {
-  color: #757575;
-  font-size: 0.85em;
-  margin-right: 4px;
-}
-
-/* QUEST PANEL WRAPPER */
 .quest-panel-wrapper {
   flex: 1; /* Chiếm hết phần còn lại */
   min-height: 150px;
