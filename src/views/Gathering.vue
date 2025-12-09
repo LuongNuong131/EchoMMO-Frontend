@@ -157,7 +157,9 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Cuốc Chim",
-    minYield: 10, maxYield: 20, lootName: "Đá/Khoáng",
+    minYield: 10,
+    maxYield: 20,
+    lootName: "Đá/Khoáng",
   },
   {
     id: "wood",
@@ -167,7 +169,9 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Rìu Sắt",
-    minYield: 15, maxYield: 25, lootName: "Gỗ",
+    minYield: 15,
+    maxYield: 25,
+    lootName: "Gỗ",
   },
   {
     id: "stone",
@@ -177,7 +181,9 @@ const EVENT_TYPES = [
     rarityText: "Phổ Thông",
     reqLevel: 1,
     reqTool: "Búa Tạ",
-    minYield: 10, maxYield: 20, lootName: "Đá",
+    minYield: 10,
+    maxYield: 20,
+    lootName: "Đá",
   },
   {
     id: "special",
@@ -187,7 +193,9 @@ const EVENT_TYPES = [
     rarityText: "Cực Phẩm",
     reqLevel: 5,
     reqTool: "Găng Tay",
-    minYield: 3, maxYield: 8, lootName: "Gỗ Quý",
+    minYield: 3,
+    maxYield: 8,
+    lootName: "Gỗ Quý",
   },
 ];
 
@@ -196,7 +204,9 @@ const initEvent = () => {
   const evt = EVENT_TYPES[rnd];
   currentEvent.value = evt;
 
-  const amount = Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) + evt.minYield;
+  const amount =
+    Math.floor(Math.random() * (evt.maxYield - evt.minYield + 1)) +
+    evt.minYield;
   maxNode.value = amount;
   remainingNode.value = amount;
   feedbackMsg.value = "Phát hiện tài nguyên!";
@@ -212,21 +222,22 @@ const handleGather = async (times) => {
   }
 
   isGathering.value = true;
-  feedbackMsg.value = times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
+  feedbackMsg.value =
+    times > 1 ? "Đang vận công khai thác..." : "Đang khai thác...";
 
   // Tính số lượng thực tế có thể đào (không vượt quá trữ lượng còn lại)
   const actualGathered = Math.min(times, remainingNode.value);
 
   try {
     // [GỌI API] Gửi yêu cầu xuống Backend
-    const res = await axiosClient.post('/exploration/gather', {
+    const res = await axiosClient.post("/exploration/gather", {
       type: currentEvent.value.id, // wood, stone, mining...
-      amount: actualGathered
+      amount: actualGathered,
     });
 
     // Cập nhật UI sau khi Backend xác nhận
     remainingNode.value -= actualGathered;
-    
+
     // Cập nhật Store (Năng lượng & Ví)
     if (charStore.character) {
       charStore.character.energy = res.data.currentEnergy;
@@ -244,9 +255,10 @@ const handleGather = async (times) => {
 
     if (remainingNode.value <= 0) {
       feedbackMsg.value = "Tài nguyên đã cạn kiệt!";
-      setTimeout(() => { router.push("/explore"); }, 1500);
+      setTimeout(() => {
+        router.push("/explore");
+      }, 1500);
     }
-
   } catch (error) {
     console.error(error);
     feedbackMsg.value = error.response?.data || "Lỗi khai thác!";

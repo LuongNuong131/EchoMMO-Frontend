@@ -1,101 +1,10 @@
-<!-- <template>
-  <div id="app" class="cyber-root">
-    <div class="static-noise"></div>
-
-    <transition name="system-boot" mode="out-in">
-      <div v-if="isAuthPage" class="auth-layout-wrapper">
-        <router-view v-slot="{ Component }">
-          <transition name="page-fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-      </div>
-
-      <MainLayout v-else />
-    </transition>
-  </div>
-</template>
-
-<script setup>
-import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import { useAuthStore } from "./stores/authStore";
-import MainLayout from "./layouts/MainLayout.vue";
-// [THÊM DÒNG NÀY] Import CaptchaModal
-import CaptchaModal from "./components/CaptchaModal.vue";
-
-const route = useRoute();
-
-// Kiểm tra trang Auth để ẩn MainLayout
-const isAuthPage = computed(() => {
-  return ["Login", "Register", "ForgotPassword", "VerifyOtp"].includes(
-    route.name
-  );
-});
-
-// --- Đã xóa toàn bộ logic Javascript xử lý chuột (mousemove, click...) ---
-</script>
-
-<style>
-/* --- GLOBAL RESET & ROOT --- */
-body,
-html {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #020617;
-  /* cursor: none;  <-- ĐÃ XÓA DÒNG NÀY ĐỂ HIỆN LẠI CHUỘT */
-  overflow: hidden; 
-}
-
-#app {
-  width: 100%;
-  height: 100%;
-  font-family: "Rajdhani", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  position: relative;
-}
-
-/* --- Đã xóa CSS của .custom-cursor --- */
-
-/* --- GLOBAL NOISE --- */
-.static-noise {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9000;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-
-/* --- TRANSITIONS --- */
-.system-boot-enter-active,
-.system-boot-leave-active {
-  transition: opacity 0.5s ease, filter 0.5s ease;
-}
-.system-boot-enter-from {
-  opacity: 0;
-  filter: blur(10px);
-}
-.system-boot-leave-to {
-  opacity: 0;
-  filter: blur(5px);
-}
-
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.page-fade-enter-from,
-.page-fade-leave-to {
-  opacity: 0;
-}
-</style> -->
-<!-- 5:28 -->
 <template>
   <component :is="layout">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <transition name="page-fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </component>
 
   <CaptchaModal
@@ -104,30 +13,62 @@ html {
     @success="onCaptchaSuccess"
     @close="showCaptcha = false"
   />
+
+  <transition name="toast-slide">
+    <div
+      v-if="notificationStore.toast.visible"
+      class="global-toast"
+      :class="notificationStore.toast.type"
+    >
+      <div class="toast-icon">
+        <i
+          v-if="notificationStore.toast.type === 'success'"
+          class="fas fa-check-circle"
+        ></i>
+        <i
+          v-else-if="notificationStore.toast.type === 'error'"
+          class="fas fa-times-circle"
+        ></i>
+        <i v-else class="fas fa-info-circle"></i>
+      </div>
+      <div class="toast-content">
+        <div class="toast-title">
+          {{
+            notificationStore.toast.type === "success"
+              ? "THÀNH CÔNG"
+              : notificationStore.toast.type === "error"
+                ? "THẤT BẠI"
+                : "THÔNG BÁO"
+          }}
+        </div>
+        <div class="toast-msg">{{ notificationStore.toast.message }}</div>
+      </div>
+      <button class="toast-close" @click="notificationStore.clearToast">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </transition>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
+import { useNotificationStore } from "./stores/notificationStore"; // Nhớ import Notification Store
 import MainLayout from "./layouts/MainLayout.vue";
 import CaptchaModal from "./components/CaptchaModal.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const showCaptcha = ref(false);
 
-// Layout: Nếu route có meta.guest (Login/Register) thì dùng div thường, ngược lại dùng MainLayout
 const layout = computed(() => {
   return route.meta.guest ? "div" : MainLayout;
 });
 
-// [FIX] Khi App vừa load (F5), kiểm tra auth và fetch dữ liệu mới nhất
 onMounted(async () => {
-  // 1. Khôi phục state từ localStorage
   authStore.initialize();
-
-  // 2. Nếu đã đăng nhập, gọi API để lấy thông tin mới nhất (Gold, Level, Stats...)
   if (authStore.isAuthenticated) {
     await authStore.fetchProfile();
   }
@@ -135,16 +76,120 @@ onMounted(async () => {
 
 const onCaptchaSuccess = () => {
   showCaptcha.value = false;
-  // Logic xử lý sau khi giải captcha xong (nếu có)
 };
 </script>
 
 <style>
-/* CSS toàn cục nếu cần */
+/* ... CSS cũ ... */
 body {
   margin: 0;
   padding: 0;
   background-color: #1a1a1a;
   color: #e0e0e0;
+}
+
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Copy lại CSS Global Toast từ câu trả lời trước vào đây */
+.global-toast {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 320px;
+  max-width: 90vw;
+  padding: 15px 20px;
+  border-radius: 4px;
+  background: rgba(30, 20, 15, 0.98);
+  border: 1px solid #5d4037;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  color: #f3f4f6;
+  font-family: "Noto Serif TC", serif;
+}
+.global-toast.success {
+  border-left: 5px solid #2e7d32;
+}
+.global-toast.success .toast-icon {
+  color: #4caf50;
+}
+.global-toast.success .toast-title {
+  color: #4caf50;
+}
+
+.global-toast.error {
+  border-left: 5px solid #b71c1c;
+}
+.global-toast.error .toast-icon {
+  color: #ef5350;
+}
+.global-toast.error .toast-title {
+  color: #ef5350;
+}
+
+.global-toast.info {
+  border-left: 5px solid #0277bd;
+}
+.global-toast.info .toast-icon {
+  color: #29b6f6;
+}
+.global-toast.info .toast-title {
+  color: #29b6f6;
+}
+
+.toast-icon {
+  font-size: 1.8rem;
+}
+.toast-content {
+  flex: 1;
+}
+.toast-title {
+  font-weight: 900;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.toast-msg {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #757575;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.toast-close:hover {
+  color: #fff;
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
 }
 </style>

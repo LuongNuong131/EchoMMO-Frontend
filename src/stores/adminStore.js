@@ -42,8 +42,9 @@ export const useAdminStore = defineStore("admin", {
       }
     },
 
-    // [MỚI] Logic Ban/Unban chuẩn
+    // --- Logic Xử Lý User ---
     async banUser(id, reason) {
+      // Để component xử lý try-catch và popup
       await axiosClient.post(`/admin/user/ban/${id}`, { reason });
       await this.fetchUsers();
     },
@@ -51,50 +52,34 @@ export const useAdminStore = defineStore("admin", {
       await axiosClient.post(`/admin/user/unban/${id}`);
       await this.fetchUsers();
     },
-
     async deleteUser(id) {
-      if (confirm("Xóa vĩnh viễn user này?")) {
-        await axiosClient.delete(`/admin/user/${id}`);
-        this.fetchUsers();
-      }
+      // Bỏ confirm ở đây, Component đã lo vụ hỏi xác nhận rồi
+      await axiosClient.delete(`/admin/user/${id}`);
+      await this.fetchUsers();
     },
+
+    // --- Logic Xử Lý Item/Listing ---
     async deleteItem(id) {
-      if (confirm("Xóa item này?")) {
-        await axiosClient.delete(`/admin/item/${id}`);
-        this.fetchItems();
-      }
+      await axiosClient.delete(`/admin/item/${id}`);
+      await this.fetchItems();
     },
     async deleteListing(id) {
       await axiosClient.delete(`/admin/listing/${id}`);
-      this.fetchListings();
+      await this.fetchListings();
     },
 
-    // [MỚI] Logic Ban Thưởng Vàng
+    // --- Logic Ban Thưởng & Thông Báo ---
+    // Bỏ try-catch và alert, để lỗi bắn ra cho Admin.vue bắt lấy
     async grantGold(payload) {
-      try {
-        await axiosClient.post("/admin/grant-gold", payload);
-        alert("Ban thưởng Vàng thành công!");
-      } catch (e) {
-        alert(e.response?.data || "Lỗi ban thưởng Vàng");
-      }
+      await axiosClient.post("/admin/grant-gold", payload);
     },
 
     async grantItem(payload) {
-      try {
-        await axiosClient.post("/admin/grant-item", payload);
-        alert("Gửi vật phẩm thành công!");
-      } catch (e) {
-        alert(e.response?.data || "Lỗi gửi vật phẩm");
-      }
+      await axiosClient.post("/admin/grant-item", payload);
     },
 
     async sendNotification(payload) {
-      try {
-        await axiosClient.post("/admin/notification/create", payload);
-        alert("📢 Đã phát loa thông báo thành công!");
-      } catch (e) {
-        alert(e.response?.data || "Lỗi gửi thông báo");
-      }
+      await axiosClient.post("/admin/notification/create", payload);
     },
   },
 });

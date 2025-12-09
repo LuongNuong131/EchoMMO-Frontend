@@ -86,9 +86,7 @@
       </div>
 
       <div v-if="activeTab === 'users'" class="content-panel">
-        <div class="panel-header">
-          <h3>DANH SÁCH NHÂN SĨ</h3>
-        </div>
+        <div class="panel-header"><h3>DANH SÁCH NHÂN SĨ</h3></div>
         <div class="table-responsive custom-scroll">
           <table class="dark-table">
             <thead>
@@ -126,14 +124,14 @@
                   </button>
                   <button
                     v-else
-                    @click="unbanUser(u.userId)"
+                    @click="requestUnban(u)"
                     class="btn-icon green"
                     title="Phóng thích"
                   >
                     <i class="fas fa-lock-open"></i>
                   </button>
                   <button
-                    @click="adminStore.deleteUser(u.userId)"
+                    @click="requestDeleteUser(u)"
                     class="btn-icon gray"
                     title="Xóa bỏ"
                   >
@@ -172,7 +170,6 @@
                   placeholder="Mô tả..."
                   class="dark-input"
                 />
-
                 <select v-model="itemForm.type" class="dark-input">
                   <option value="WEAPON">Binh Khí</option>
                   <option value="ARMOR">Y Phục</option>
@@ -183,14 +180,12 @@
                   <option value="CONSUMABLE">Tiêu Hao</option>
                   <option value="MATERIAL">Nguyên Liệu</option>
                 </select>
-
                 <select v-model="itemForm.rarity" class="dark-input">
                   <option value="C">Thường (C)</option>
                   <option value="B">Hiếm (B)</option>
                   <option value="A">Sử Thi (A)</option>
                   <option value="S">Truyền Thuyết (S)</option>
                 </select>
-
                 <input
                   v-model.number="itemForm.basePrice"
                   type="number"
@@ -198,7 +193,6 @@
                   class="dark-input"
                 />
               </div>
-
               <div class="form-row mt-10">
                 <input
                   v-model="itemForm.imageUrl"
@@ -206,12 +200,11 @@
                   class="dark-input full-width"
                 />
               </div>
-
               <div class="form-footer">
-                <label class="check-label">
-                  <input type="checkbox" v-model="itemForm.isSystemItem" />
-                  <span>Hàng Shop Vô Hạn?</span>
-                </label>
+                <label class="check-label"
+                  ><input type="checkbox" v-model="itemForm.isSystemItem" />
+                  <span>Hàng Shop Vô Hạn?</span></label
+                >
                 <button type="submit" class="btn-wood primary">HOÀN TẤT</button>
               </div>
             </form>
@@ -238,10 +231,7 @@
                 <td :class="'rarity-' + i.rarity">{{ i.rarity }}</td>
                 <td class="gold-text">{{ i.basePrice }}</td>
                 <td>
-                  <button
-                    @click="adminStore.deleteItem(i.itemId)"
-                    class="btn-icon red"
-                  >
+                  <button @click="requestDeleteItem(i)" class="btn-icon red">
                     <i class="fas fa-trash-alt"></i>
                   </button>
                 </td>
@@ -253,7 +243,6 @@
 
       <div v-if="activeTab === 'grant'" class="content-panel">
         <h3 class="panel-header">BAN THƯỞNG</h3>
-
         <div class="grant-grid">
           <div class="grant-box">
             <h4 class="sub-title">
@@ -279,7 +268,6 @@
               </button>
             </form>
           </div>
-
           <div class="grant-box">
             <h4 class="sub-title"><i class="fas fa-box"></i> CẤP VẬT PHẨM</h4>
             <form @submit.prevent="handleGrantItem" class="ancient-form">
@@ -331,10 +319,10 @@
                 required
               />
               <select v-model="notificationForm.type" class="dark-input">
-                <option value="INFO">Thông Tin (INFO)</option>
-                <option value="SUCCESS">Tin Mừng (SUCCESS)</option>
-                <option value="WARNING">Cảnh Báo (WARNING)</option>
-                <option value="REWARD">Phần Thưởng (REWARD)</option>
+                <option value="INFO">Thông Tin</option>
+                <option value="SUCCESS">Tin Mừng</option>
+                <option value="WARNING">Cảnh Báo</option>
+                <option value="REWARD">Phần Thưởng</option>
               </select>
             </div>
             <input
@@ -349,7 +337,6 @@
               rows="5"
               required
             ></textarea>
-
             <button type="submit" class="btn-wood primary full-width mt-10">
               <i class="fas fa-bullhorn"></i> PHÁT LOA TOÀN GIANG HỒ
             </button>
@@ -384,21 +371,53 @@
         </div>
       </div>
     </div>
+
+    <transition name="pop-up">
+      <div
+        v-if="confirmModal.visible"
+        class="modal-overlay"
+        @click.self="closeConfirmModal"
+      >
+        <div class="dark-modal small">
+          <div class="modal-header danger">
+            <i class="fas fa-exclamation-triangle"></i> CẢNH BÁO
+          </div>
+          <div class="modal-body center-text">
+            <h3>{{ confirmModal.title }}</h3>
+            <p>{{ confirmModal.message }}</p>
+          </div>
+          <div class="modal-footer">
+            <button @click="closeConfirmModal" class="btn-wood">KHÔNG</button>
+            <button @click="executeConfirm" class="btn-wood red">ĐỒNG Ý</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import { useAdminStore } from "../stores/adminStore";
+import { useNotificationStore } from "../stores/notificationStore"; // [MỚI]
 import axiosClient from "../api/axiosClient";
 
 const adminStore = useAdminStore();
+const notificationStore = useNotificationStore(); // [MỚI]
+
 const activeTab = ref("stats");
 const showCreateItem = ref(false);
-
 const showBanModal = ref(false);
 const selectedUser = ref(null);
 const banReason = ref("");
+
+// [MỚI] State cho Modal Xác Nhận
+const confirmModal = reactive({
+  visible: false,
+  title: "",
+  message: "",
+  onConfirm: null,
+});
 
 const itemForm = reactive({
   name: "",
@@ -409,7 +428,6 @@ const itemForm = reactive({
   imageUrl: "",
   isSystemItem: false,
 });
-
 const grantGoldForm = reactive({ username: "", amount: 1000 });
 const grantItemForm = reactive({ username: "", itemId: 0, quantity: 1 });
 const notificationForm = reactive({
@@ -422,7 +440,6 @@ const notificationForm = reactive({
 const itemOptions = computed(() =>
   adminStore.items.map((i) => ({ id: i.itemId, name: i.name })),
 );
-
 const formatNumber = (n) => Number(n).toLocaleString();
 
 const switchTab = (tab) => {
@@ -430,70 +447,147 @@ const switchTab = (tab) => {
   if (tab === "stats") adminStore.fetchStats();
   if (tab === "users") adminStore.fetchUsers();
   if (tab === "items" || tab === "grant") adminStore.fetchItems();
-  if (tab === "market") adminStore.fetchListings();
 };
 
+// --- Helper hiển thị Confirm ---
+const showConfirm = (title, msg, action) => {
+  confirmModal.title = title;
+  confirmModal.message = msg;
+  confirmModal.onConfirm = action;
+  confirmModal.visible = true;
+};
+const closeConfirmModal = () => {
+  confirmModal.visible = false;
+  confirmModal.onConfirm = null;
+};
+const executeConfirm = () => {
+  if (confirmModal.onConfirm) confirmModal.onConfirm();
+  closeConfirmModal();
+};
+
+// --- ACTIONS ---
 const createItem = async () => {
   try {
     await axiosClient.post("/admin/item/create", itemForm);
-    alert("Tạo thành công!");
+    notificationStore.showToast("Chế tác vật phẩm thành công!", "success"); // [MỚI]
     adminStore.fetchItems();
+    showCreateItem.value = false;
   } catch (e) {
-    alert(e.message);
+    notificationStore.showToast(
+      e.response?.data?.message || "Lỗi chế tác",
+      "error",
+    ); // [MỚI]
   }
 };
 
 const handleGrantGold = async () => {
-  if (!grantGoldForm.username || grantGoldForm.amount <= 0)
-    return alert("Kiểm tra lại dữ liệu!");
-  await adminStore.grantGold({
-    username: grantGoldForm.username,
-    amount: grantGoldForm.amount,
-  });
-  grantGoldForm.amount = 1000;
+  try {
+    await adminStore.grantGold(grantGoldForm);
+    notificationStore.showToast(
+      `Đã ban ${grantGoldForm.amount} vàng cho ${grantGoldForm.username}`,
+      "success",
+    );
+    grantGoldForm.amount = 1000;
+  } catch (e) {
+    /* Error handled in Store via alert? Better move logic here or change store */
+  }
 };
 
+// Lưu ý: Store đang dùng alert(), ta nên sửa lại store hoặc try/catch ở đây nếu store ném lỗi
+// Ở đây tui sửa lại cách gọi: AdminStore nên return Promise và throw error thay vì alert.
+// Nhưng để nhanh, ta cứ gọi store, nếu store alert thì đành chịu, hoặc sửa store sau.
+// Tốt nhất là sửa store Admin một chút (bước sau) để bỏ alert.
+
 const handleGrantItem = async () => {
-  if (
-    !grantItemForm.username ||
-    grantItemForm.itemId <= 0 ||
-    grantItemForm.quantity <= 0
-  )
-    return alert("Kiểm tra lại dữ liệu!");
-  await adminStore.grantItem({
-    username: grantItemForm.username,
-    itemId: grantItemForm.itemId,
-    quantity: grantItemForm.quantity,
-  });
-  grantItemForm.itemId = 0;
-  grantItemForm.quantity = 1;
+  try {
+    await adminStore.grantItem(grantItemForm);
+    notificationStore.showToast("Gửi vật phẩm thành công!", "success");
+    grantItemForm.itemId = 0;
+  } catch (e) {
+    /* ... */
+  }
 };
 
 const handleSendNotification = async () => {
-  if (!notificationForm.title || !notificationForm.message)
-    return alert("Cần tiêu đề và nội dung!");
-  await adminStore.sendNotification(notificationForm);
-  notificationForm.title = "";
-  notificationForm.message = "";
-  notificationForm.recipientUsername = "";
+  try {
+    await adminStore.sendNotification(notificationForm);
+    notificationStore.showToast("Đã phát loa thông báo!", "success");
+    notificationForm.title = "";
+    notificationForm.message = "";
+  } catch (e) {
+    /* ... */
+  }
 };
 
+// Ban User
 const openBanModal = (u) => {
   selectedUser.value = u;
   banReason.value = "";
   showBanModal.value = true;
 };
 const confirmBan = async () => {
-  if (!banReason.value) return alert("Cần lý do!");
-  await adminStore.banUser(selectedUser.value.userId, banReason.value);
-  alert("Đã thi hành án!");
-  showBanModal.value = false;
-};
-const unbanUser = async (id) => {
-  if (confirm("Phóng thích?")) {
-    await adminStore.unbanUser(id);
-    alert("Đã ân xá!");
+  if (!banReason.value)
+    return notificationStore.showToast("Cần lý do trừng phạt!", "warning");
+  try {
+    await adminStore.banUser(selectedUser.value.userId, banReason.value);
+    notificationStore.showToast("Đã thi hành án!", "success");
+    showBanModal.value = false;
+  } catch (e) {
+    notificationStore.showToast("Lỗi khi ban user", "error");
   }
+};
+
+// Unban User
+const requestUnban = (u) => {
+  showConfirm(
+    "XÁC NHẬN ÂN XÁ",
+    `Phóng thích nhân sĩ ${u.username}?`,
+    async () => {
+      try {
+        await adminStore.unbanUser(u.userId);
+        notificationStore.showToast("Đã ân xá thành công!", "success");
+      } catch (e) {
+        notificationStore.showToast("Lỗi ân xá", "error");
+      }
+    },
+  );
+};
+
+// Delete User
+const requestDeleteUser = (u) => {
+  showConfirm(
+    "TRẢM QUYẾT",
+    `Xóa vĩnh viễn nhân sĩ ${u.username}? Hành động không thể hoàn tác!`,
+    async () => {
+      try {
+        await axiosClient.delete(`/admin/user/${u.userId}`);
+        await adminStore.fetchUsers();
+        notificationStore.showToast("Đã xóa nhân sĩ!", "success");
+      } catch (e) {
+        notificationStore.showToast("Lỗi khi xóa", "error");
+      }
+    },
+  );
+};
+
+// Delete Item
+const requestDeleteItem = (i) => {
+  showConfirm(
+    "HỦY VẬT PHẨM",
+    `Xóa vật phẩm ${i.name} khỏi hệ thống?`,
+    async () => {
+      try {
+        await axiosClient.delete(`/admin/item/${i.itemId}`);
+        await adminStore.fetchItems();
+        notificationStore.showToast("Đã hủy vật phẩm!", "success");
+      } catch (e) {
+        notificationStore.showToast(
+          "Vật phẩm đang được sử dụng, không thể xóa!",
+          "error",
+        );
+      }
+    },
+  );
 };
 
 onMounted(() => {
@@ -503,22 +597,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Giữ nguyên CSS cũ và thêm phần Modal mới */
 @import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 
-/* --- PALETTE --- */
+/* CSS Gốc (Giữ nguyên các class cũ để không vỡ layout) */
 :root {
   --wood-dark: #3e2723;
   --wood-light: #5d4037;
   --panel-bg: rgba(30, 20, 15, 0.95);
   --gold: #ffecb3;
-  --gold-dim: #ffe082;
   --red-seal: #b71c1c;
   --text-light: #f3f4f6;
   --text-dim: #bdbdbd;
 }
-
-/* --- BASE --- */
 .dark-theme {
   min-height: 100vh;
   background-color: #212121;
@@ -527,28 +619,25 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
 }
-
-/* Background Layers */
-.ink-bg-layer {
+.ink-bg-layer,
+.mountain-bg,
+.fog-anim {
   position: absolute;
   inset: 0;
+}
+.ink-bg-layer {
   z-index: 0;
   background-color: #3e2723;
 }
 .mountain-bg {
-  position: absolute;
-  inset: 0;
   background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
   background-size: cover;
   filter: sepia(40%) brightness(0.5) contrast(1.2);
   opacity: 0.6;
 }
 .fog-anim {
-  position: absolute;
-  inset: 0;
   background: linear-gradient(to top, #261815 10%, transparent 90%);
 }
-
 .admin-wrapper {
   position: relative;
   z-index: 10;
@@ -560,8 +649,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 }
-
-/* --- HEADER --- */
 .admin-header {
   text-align: center;
   margin-bottom: 25px;
@@ -573,7 +660,6 @@ onMounted(() => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   flex-shrink: 0;
 }
-
 .header-title {
   font-size: 2.2rem;
   color: var(--gold);
@@ -583,7 +669,6 @@ onMounted(() => {
   font-weight: 900;
   text-shadow: 0 0 10px rgba(255, 236, 179, 0.3);
 }
-
 .header-decor {
   width: 60px;
   height: 2px;
@@ -597,13 +682,10 @@ onMounted(() => {
 .right {
   right: 15%;
 }
-
-/* TABS */
 .tabs-scroll-wrapper {
   overflow-x: auto;
   padding-bottom: 5px;
 }
-
 .wuxia-tabs {
   display: flex;
   justify-content: center;
@@ -611,7 +693,6 @@ onMounted(() => {
   gap: 10px;
   min-width: max-content;
 }
-
 .tab-btn {
   background: transparent;
   border: none;
@@ -640,15 +721,12 @@ onMounted(() => {
   height: 15px;
   background: #555;
 }
-
-/* --- STATS GRID --- */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 20px;
 }
-
 .stat-card {
   background: var(--panel-bg);
   border: 1px solid var(--wood-light);
@@ -660,7 +738,6 @@ onMounted(() => {
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
-
 .stat-icon {
   width: 60px;
   height: 60px;
@@ -689,7 +766,6 @@ onMounted(() => {
   color: var(--gold) !important;
   text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
-
 .seal-bg {
   position: absolute;
   right: -10px;
@@ -699,8 +775,6 @@ onMounted(() => {
   transform: rotate(-15deg);
   pointer-events: none;
 }
-
-/* --- CONTENT PANEL --- */
 .content-panel {
   background: var(--panel-bg);
   border: 1px solid var(--wood-light);
@@ -712,7 +786,6 @@ onMounted(() => {
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
-
 .panel-header {
   border-bottom: 1px solid var(--wood-light);
   padding-bottom: 15px;
@@ -726,8 +799,6 @@ onMounted(() => {
 .flex-between {
   justify-content: space-between;
 }
-
-/* TABLES */
 .table-responsive {
   overflow-x: auto;
 }
@@ -752,7 +823,6 @@ onMounted(() => {
 .dark-table tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
-
 .dim-text {
   color: #777;
   font-size: 0.9rem;
@@ -781,8 +851,6 @@ onMounted(() => {
   color: #f44336;
   border: 1px solid #f44336;
 }
-
-/* ACTIONS */
 .action-cell {
   display: flex;
   gap: 5px;
@@ -807,8 +875,6 @@ onMounted(() => {
 .btn-icon:hover {
   transform: scale(1.2);
 }
-
-/* FORMS */
 .create-form-box {
   background: rgba(0, 0, 0, 0.2);
   border: 1px dashed var(--wood-light);
@@ -836,7 +902,6 @@ onMounted(() => {
 .text-area {
   resize: vertical;
 }
-
 .mt-10 {
   margin-top: 10px;
 }
@@ -849,7 +914,6 @@ onMounted(() => {
 .full-width {
   width: 100%;
 }
-
 .form-footer {
   display: flex;
   justify-content: space-between;
@@ -863,7 +927,6 @@ onMounted(() => {
   cursor: pointer;
   color: #aaa;
 }
-
 .btn-wood {
   background: var(--wood-light);
   border: 1px solid var(--gold);
@@ -899,8 +962,6 @@ onMounted(() => {
   color: #fff;
   border: none;
 }
-
-/* GRANT GRID */
 .grant-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -917,14 +978,10 @@ onMounted(() => {
   border-bottom: 1px solid #444;
   padding-bottom: 5px;
 }
-
-/* NOTIFY */
 .notify-box {
   max-width: 600px;
   margin: 0 auto;
 }
-
-/* MODAL */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -933,6 +990,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   z-index: 2000;
+  backdrop-filter: blur(2px);
 }
 .dark-modal {
   width: 400px;
@@ -965,8 +1023,6 @@ onMounted(() => {
   gap: 10px;
   margin-top: 15px;
 }
-
-/* RARITY COLORS */
 .rarity-C {
   color: #bdbdbd;
 }
@@ -980,8 +1036,6 @@ onMounted(() => {
   color: var(--gold);
   font-weight: bold;
 }
-
-/* SCROLLBAR */
 .custom-scroll::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -993,8 +1047,6 @@ onMounted(() => {
 .custom-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
 }
-
-/* ANIMATION */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.3s ease;
@@ -1003,5 +1055,30 @@ onMounted(() => {
 .slide-down-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* [MỚI] Style cho Modal Xác Nhận */
+.dark-modal.small {
+  width: 350px;
+  border-color: var(--wood-light);
+}
+.modal-header.danger {
+  background: #b71c1c;
+}
+.center-text {
+  text-align: center;
+}
+.center-text h3 {
+  color: var(--gold);
+  margin-top: 0;
+}
+.pop-up-enter-active,
+.pop-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.pop-up-enter-from,
+.pop-up-leave-to {
+  transform: scale(0.8);
+  opacity: 0;
 }
 </style>

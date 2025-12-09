@@ -605,7 +605,6 @@ onUnmounted(() => {
 }
 </style> -->
 
-
 <template>
   <div class="combat-container page-container">
     <div class="battle-arena">
@@ -614,13 +613,27 @@ onUnmounted(() => {
           <div class="enemy-info">
             <h3>{{ battleStore.enemy.name }}</h3>
             <div class="health-bar-container">
-              <div class="health-bar enemy-hp"
-                :style="{ width: calculatePercent(battleStore.enemyHp, battleStore.enemyMaxHp) + '%' }"></div>
-              <span class="hp-text">{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</span>
+              <div
+                class="health-bar enemy-hp"
+                :style="{
+                  width:
+                    calculatePercent(
+                      battleStore.enemyHp,
+                      battleStore.enemyMaxHp,
+                    ) + '%',
+                }"
+              ></div>
+              <span class="hp-text"
+                >{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</span
+              >
             </div>
           </div>
           <div class="enemy-sprite" :class="{ 'shake-anim': isTakingDamage }">
-            <img :src="getEnemyAsset(battleStore.enemy.name)" alt="Enemy" class="pixel-art" />
+            <img
+              :src="getEnemyAsset(battleStore.enemy.name)"
+              alt="Enemy"
+              class="pixel-art"
+            />
           </div>
         </div>
 
@@ -633,10 +646,16 @@ onUnmounted(() => {
 
           <div v-if="battleStore.status === 'VICTORY'" class="victory-modal">
             <h2>🏆 CHIẾN THẮNG!</h2>
-            <p>Nhận: {{ battleStore.expEarned }} EXP | {{ battleStore.goldEarned }} Vàng</p>
+            <p>
+              Nhận: {{ battleStore.expEarned }} EXP |
+              {{ battleStore.goldEarned }} Vàng
+            </p>
 
             <div v-if="battleStore.droppedItem" class="loot-box">
-              <div class="item-card" :class="'rarity-' + battleStore.droppedItem.rarity">
+              <div
+                class="item-card"
+                :class="'rarity-' + battleStore.droppedItem.rarity"
+              >
                 <span>🎁 {{ battleStore.droppedItem.name }}</span>
               </div>
             </div>
@@ -645,7 +664,9 @@ onUnmounted(() => {
 
           <div v-if="battleStore.status === 'DEFEAT'" class="defeat-modal">
             <h2>💀 THẤT BẠI...</h2>
-            <button @click="goHome" class="pixel-btn secondary">Về dưỡng thương</button>
+            <button @click="goHome" class="pixel-btn secondary">
+              Về dưỡng thương
+            </button>
           </div>
         </div>
 
@@ -656,30 +677,49 @@ onUnmounted(() => {
           <div class="player-info">
             <h3>Đại Hiệp</h3>
             <div class="health-bar-container">
-              <div class="health-bar player-hp"
-                :style="{ width: calculatePercent(battleStore.playerHp, battleStore.playerMaxHp) + '%' }"></div>
-              <span class="hp-text">{{ battleStore.playerHp }} / {{ battleStore.playerMaxHp }}</span>
+              <div
+                class="health-bar player-hp"
+                :style="{
+                  width:
+                    calculatePercent(
+                      battleStore.playerHp,
+                      battleStore.playerMaxHp,
+                    ) + '%',
+                }"
+              ></div>
+              <span class="hp-text"
+                >{{ battleStore.playerHp }} /
+                {{ battleStore.playerMaxHp }}</span
+              >
             </div>
           </div>
         </div>
       </template>
 
       <div v-else class="loading-screen">
-        <h2 v-if="battleStore.status === 'ERROR'" class="text-red">Lỗi kết nối máy chủ!</h2>
+        <h2 v-if="battleStore.status === 'ERROR'" class="text-red">
+          Lỗi kết nối máy chủ!
+        </h2>
         <h2 v-else>⚔️ Đang tìm đối thủ...</h2>
       </div>
     </div>
 
     <div class="combat-log" ref="logContainer">
-      <p v-for="(log, index) in battleStore.combatLogs" :key="index" class="log-entry">{{ log }}</p>
+      <p
+        v-for="(log, index) in battleStore.combatLogs"
+        :key="index"
+        class="log-entry"
+      >
+        {{ log }}
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { useBattleStore } from '@/stores/battleStore';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { useBattleStore } from "@/stores/battleStore";
+import { useRouter } from "vue-router";
 
 const battleStore = useBattleStore();
 const router = useRouter();
@@ -693,15 +733,18 @@ let autoInterval = null;
 
 // --- ASSET HELPER ---
 const getEnemyAsset = (name) => {
-  if (!name) return new URL('@/assets/enemy/idle_goblin.png', import.meta.url).href;
+  if (!name)
+    return new URL("@/assets/enemy/idle_goblin.png", import.meta.url).href;
   const n = name.toLowerCase();
-  if (n.includes('nấm')) return new URL('@/assets/enemy/idle_mushroom.png', import.meta.url).href;
-  if (n.includes('xương')) return new URL('@/assets/enemy/idle_skeleton.png', import.meta.url).href;
-  return new URL('@/assets/enemy/idle_goblin.png', import.meta.url).href;
+  if (n.includes("nấm"))
+    return new URL("@/assets/enemy/idle_mushroom.png", import.meta.url).href;
+  if (n.includes("xương"))
+    return new URL("@/assets/enemy/idle_skeleton.png", import.meta.url).href;
+  return new URL("@/assets/enemy/idle_goblin.png", import.meta.url).href;
 };
 
 const calculatePercent = (cur, max) => (max > 0 ? (cur / max) * 100 : 0);
-const goHome = () => router.push('/village');
+const goHome = () => router.push("/village");
 
 // --- GAME LOGIC ---
 const startBattle = async () => {
@@ -715,11 +758,11 @@ const startAutoLoop = () => {
   if (autoInterval) clearInterval(autoInterval);
   autoInterval = setInterval(async () => {
     // Chỉ đánh khi đang ONGOING và không có QTE
-    if (battleStore.status === 'ONGOING' && !showQTE.value) {
+    if (battleStore.status === "ONGOING" && !showQTE.value) {
       const res = await battleStore.autoTurn(false);
 
       // Nếu server báo có QTE -> Dừng đánh, hiện nút
-      if (res && (res.status === 'QTE_ACTION' || res.qteTriggered)) {
+      if (res && (res.status === "QTE_ACTION" || res.qteTriggered)) {
         triggerQTE();
       }
     }
@@ -742,7 +785,7 @@ const triggerQTE = () => {
 const handleBlock = async () => {
   clearInterval(qteInterval);
   showQTE.value = false;
-  await battleStore.sendAction('BLOCK');
+  await battleStore.sendAction("BLOCK");
   startAutoLoop(); // Tiếp tục đánh
 };
 
@@ -750,26 +793,34 @@ const failQTE = async () => {
   clearInterval(qteInterval);
   showQTE.value = false;
   isTakingDamage.value = true; // Rung màn hình
-  setTimeout(() => isTakingDamage.value = false, 500);
+  setTimeout(() => (isTakingDamage.value = false), 500);
 
-  await battleStore.sendAction('IGNORE_QTE');
+  await battleStore.sendAction("IGNORE_QTE");
   startAutoLoop();
 };
 
 // --- WATCHERS ---
-watch(() => battleStore.combatLogs, () => {
-  nextTick(() => {
-    if (logContainer.value) logContainer.value.scrollTop = logContainer.value.scrollHeight;
-  });
-}, { deep: true });
+watch(
+  () => battleStore.combatLogs,
+  () => {
+    nextTick(() => {
+      if (logContainer.value)
+        logContainer.value.scrollTop = logContainer.value.scrollHeight;
+    });
+  },
+  { deep: true },
+);
 
 // Check kết thúc trận để dừng Auto
-watch(() => battleStore.status, (newStatus) => {
-  if (newStatus === 'VICTORY' || newStatus === 'DEFEAT') {
-    clearInterval(autoInterval);
-    if (qteInterval) clearInterval(qteInterval);
-  }
-});
+watch(
+  () => battleStore.status,
+  (newStatus) => {
+    if (newStatus === "VICTORY" || newStatus === "DEFEAT") {
+      clearInterval(autoInterval);
+      if (qteInterval) clearInterval(qteInterval);
+    }
+  },
+);
 
 onMounted(() => {
   startBattle();
@@ -803,7 +854,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 90vh;
-  background-image: url('@/assets/Background/b_doanhtrai.png');
+  background-image: url("@/assets/Background/b_doanhtrai.png");
   background-size: cover;
   color: white;
   padding: 10px;
@@ -923,7 +974,6 @@ onUnmounted(() => {
 }
 
 @keyframes shake {
-
   0%,
   100% {
     transform: translateX(0);

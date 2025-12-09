@@ -11,10 +11,31 @@
         <h2 class="market-title">THƯƠNG HỘI</h2>
         <div class="header-decor right"></div>
 
+        <div class="filter-bar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Tìm kiếm bảo vật..."
+            />
+          </div>
+          <div class="filter-box">
+            <i class="fas fa-filter"></i>
+            <select v-model="filterRarity">
+              <option value="ALL">Tất cả phẩm chất</option>
+              <option value="C">Phẩm chất C (Thường)</option>
+              <option value="B">Phẩm chất B (Hiếm)</option>
+              <option value="A">Phẩm chất A (Sử thi)</option>
+              <option value="S">Phẩm chất S (Truyền thuyết)</option>
+            </select>
+          </div>
+        </div>
+
         <div class="market-tabs">
           <button
             :class="{ active: activeTab === 'buy' }"
-            @click="activeTab = 'buy'"
+            @click="switchTab('buy')"
             class="tab-btn"
           >
             <i class="fas fa-store"></i> TIỆM TẠP HÓA
@@ -22,7 +43,7 @@
           <div class="tab-divider"></div>
           <button
             :class="{ active: activeTab === 'p2p' }"
-            @click="activeTab = 'p2p'"
+            @click="switchTab('p2p')"
             class="tab-btn"
           >
             <i class="fas fa-handshake"></i> CHỢ TRỜI
@@ -38,7 +59,7 @@
           <div class="tab-divider"></div>
           <button
             :class="{ active: activeTab === 'sell_sys' }"
-            @click="activeTab = 'sell_sys'"
+            @click="switchTab('sell_sys')"
             class="tab-btn"
           >
             <i class="fas fa-coins"></i> BÁN ĐỒ
@@ -49,14 +70,26 @@
       <div class="market-content custom-scroll">
         <transition name="fade-slide" mode="out-in">
           <div v-if="activeTab === 'buy'" class="grid-layout" key="buy">
+            <div v-if="filteredShopItems.length === 0" class="empty-state">
+              <i class="fas fa-search-minus"></i>
+              <p>Không tìm thấy vật phẩm nào.</p>
+              <small
+                v-if="marketStore.shopItems.length === 0"
+                style="color: #ef5350"
+                >(Kho hàng hệ thống đang trống hoặc lỗi kết nối)</small
+              >
+            </div>
             <div
-              v-for="item in marketStore.shopItems"
+              v-for="item in filteredShopItems"
               :key="item.itemId"
               class="item-card system-card"
             >
               <div class="card-top">
                 <div class="img-frame" :class="'border-' + item.rarity">
-                  <img :src="resolveItemImage(item.imageUrl)" />
+                  <img
+                    :src="resolveItemImage(item.imageUrl)"
+                    @error="handleImgError"
+                  />
                   <span class="rarity-tag" :class="'bg-' + item.rarity">{{
                     item.rarity
                   }}</span>
@@ -92,25 +125,25 @@
           </div>
 
           <div v-else-if="activeTab === 'p2p'" class="grid-layout" key="p2p">
-            <div
-              v-if="marketStore.playerListings.length === 0"
-              class="empty-state"
-            >
+            <div v-if="filteredPlayerListings.length === 0" class="empty-state">
               <i class="fas fa-wind"></i>
-              <p>Chợ hôm nay vắng lặng...</p>
+              <p>Chợ vắng hoặc không có món này...</p>
             </div>
             <div
-              v-for="listing in marketStore.playerListings"
+              v-for="listing in filteredPlayerListings"
               :key="listing.listingId"
               class="item-card p2p-card"
             >
               <div class="seller-badge">
-                <i class="fas fa-user-tag"></i> {{ listing.seller.username }}
+                <i class="fas fa-user-tag"></i>
+                {{ listing.seller?.username || "Ẩn danh" }}
               </div>
-
               <div class="card-top p2p-img-top">
                 <div class="img-frame" :class="'border-' + listing.item.rarity">
-                  <img :src="resolveItemImage(listing.item.imageUrl)" />
+                  <img
+                    :src="resolveItemImage(listing.item.imageUrl)"
+                    @error="handleImgError"
+                  />
                   <span
                     class="rarity-tag"
                     :class="'bg-' + listing.item.rarity"
@@ -118,7 +151,6 @@
                   >
                 </div>
               </div>
-
               <div class="card-body p2p-body">
                 <div class="item-name gold-glow">
                   {{ listing.item.name }}
@@ -171,7 +203,10 @@
             >
               <div class="card-top">
                 <div class="img-frame" :class="'border-' + listing.item.rarity">
-                  <img :src="resolveItemImage(listing.item.imageUrl)" />
+                  <img
+                    :src="resolveItemImage(listing.item.imageUrl)"
+                    @error="handleImgError"
+                  />
                   <span class="qty-badge-corner">x{{ listing.quantity }}</span>
                 </div>
               </div>
@@ -191,7 +226,7 @@
               </div>
               <div class="card-footer full-width">
                 <button
-                  @click="marketStore.cancelListing(listing.listingId)"
+                  @click="handleCancelListing(listing.listingId)"
                   class="btn-action btn-cancel"
                 >
                   THU HỒI
@@ -205,18 +240,21 @@
             class="grid-layout"
             key="sell_sys"
           >
-            <div v-if="inventoryStore.items.length === 0" class="empty-state">
+            <div v-if="filteredInventory.length === 0" class="empty-state">
               <i class="fas fa-box-open"></i>
-              <p>Hành trang trống rỗng.</p>
+              <p>Hành trang trống hoặc không tìm thấy.</p>
             </div>
             <div
-              v-for="uItem in inventoryStore.items"
+              v-for="uItem in filteredInventory"
               :key="uItem.userItemId"
               class="item-card sell-card"
             >
               <div class="card-top small-top">
                 <div class="img-frame small">
-                  <img :src="resolveItemImage(uItem.item.imageUrl)" />
+                  <img
+                    :src="resolveItemImage(uItem.item.imageUrl)"
+                    @error="handleImgError"
+                  />
                   <span class="qty-badge">x{{ uItem.quantity }}</span>
                 </div>
               </div>
@@ -241,7 +279,7 @@
                 />
                 <button
                   v-if="!uItem.isEquipped"
-                  @click="sellSystem(uItem)"
+                  @click="askSellSystem(uItem)"
                   class="btn-action btn-sell"
                 >
                   BÁN
@@ -263,21 +301,26 @@
         <div class="bill-modal">
           <div class="bill-header">
             <div class="bill-seal">KHẾ ƯỚC</div>
-            <h3>XÁC NHẬN GIAO DỊCH</h3>
+            <h3>
+              {{
+                confirmModal.type === "SELL"
+                  ? "XÁC NHẬN BÁN"
+                  : "XÁC NHẬN GIAO DỊCH"
+              }}
+            </h3>
           </div>
           <div class="bill-body">
             <div class="item-preview-row">
               <div class="preview-img">
-                <img :src="resolveItemImage(confirmModal.data.imgCode)" />
+                <img
+                  :src="resolveItemImage(confirmModal.data.imgCode)"
+                  @error="handleImgError"
+                />
               </div>
               <div class="preview-info">
                 <div class="p-name">{{ confirmModal.data.name }}</div>
                 <div class="p-type">
-                  {{
-                    confirmModal.type === "P2P"
-                      ? "Mua từ Chợ Trời"
-                      : "Mua từ Cửa Tiệm"
-                  }}
+                  {{ getTransactionLabel(confirmModal.type) }}
                 </div>
               </div>
             </div>
@@ -291,8 +334,10 @@
               </div>
               <div class="divider-dashed"></div>
               <div class="calc-row total">
-                <span>TỔNG CỘNG:</span
-                ><span class="total-gold"
+                <span>{{
+                  confirmModal.type === "SELL" ? "THỰC LĨNH:" : "THANH TOÁN:"
+                }}</span>
+                <span class="total-gold"
                   >{{ formatNumber(confirmModal.data.total) }}
                   <i class="fas fa-coins"></i
                 ></span>
@@ -314,18 +359,57 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useMarketStore } from "../stores/marketStore";
 import { useInventoryStore } from "../stores/inventoryStore";
-import { resolveItemImage } from "../utils/assetHelper"; // [QUAN TRỌNG] Import hàm helper
+import { useNotificationStore } from "../stores/notificationStore";
+import { resolveItemImage } from "../utils/assetHelper";
 
 const marketStore = useMarketStore();
 const inventoryStore = useInventoryStore();
+const notificationStore = useNotificationStore();
 
 const activeTab = ref("buy");
 const sellQty = reactive({});
 const buyQty = reactive({});
 const p2pQty = reactive({});
+
+const searchQuery = ref("");
+const filterRarity = ref("ALL");
+
+// [FIX QUAN TRỌNG] Hàm lọc an toàn hơn. Nếu item lỗi dữ liệu, nó sẽ không làm sập trang web.
+const filterItems = (list, isInventory = false) => {
+  if (!list || !Array.isArray(list)) return [];
+
+  return list.filter((entry) => {
+    // Lấy object item thật sự
+    const itemData = isInventory ? entry.item : entry.item || entry;
+
+    // Nếu itemData null (lỗi dữ liệu), bỏ qua dòng này để tránh crash
+    if (!itemData) return false;
+
+    // 1. Lọc tên (An toàn: check tồn tại name trước khi toLowerCase)
+    const itemName = itemData.name || "";
+    const nameMatch = itemName
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+
+    // 2. Lọc Rarity
+    const itemRarity = itemData.rarity || "C"; // Mặc định là C nếu thiếu
+    const rarityMatch =
+      filterRarity.value === "ALL" || itemRarity === filterRarity.value;
+
+    return nameMatch && rarityMatch;
+  });
+};
+
+const filteredShopItems = computed(() => filterItems(marketStore.shopItems));
+const filteredPlayerListings = computed(() =>
+  filterItems(marketStore.playerListings),
+);
+const filteredInventory = computed(() =>
+  filterItems(inventoryStore.items, true),
+);
 
 const confirmModal = reactive({
   visible: false,
@@ -335,7 +419,22 @@ const confirmModal = reactive({
 
 const formatNumber = (n) => Number(n).toLocaleString("en-US");
 
-// Update hàm mở modal để truyền imgCode thay vì url đã resolve (để modal tự resolve lại nếu cần)
+const handleImgError = (e) => {
+  e.target.src = "https://via.placeholder.com/64?text=IMG"; // Fallback nếu ảnh lỗi
+};
+
+const switchTab = (tab) => {
+  activeTab.value = tab;
+  searchQuery.value = "";
+  filterRarity.value = "ALL";
+};
+
+const getTransactionLabel = (type) => {
+  if (type === "P2P") return "Mua từ Chợ Trời";
+  if (type === "SELL") return "Bán cho Tiệm";
+  return "Mua từ Cửa Tiệm";
+};
+
 const askBuySystem = (item) => {
   const qty = buyQty[item.itemId] || 1;
   openConfirm("SYS", {
@@ -343,7 +442,7 @@ const askBuySystem = (item) => {
     name: item.name,
     imgCode: item.imageUrl,
     price: item.basePrice,
-    qty: qty,
+    qty,
     total: item.basePrice * qty,
   });
 };
@@ -355,8 +454,21 @@ const askBuyP2P = (listing) => {
     name: listing.item.name,
     imgCode: listing.item.imageUrl,
     price: listing.price,
-    qty: qty,
+    qty,
     total: listing.price * qty,
+  });
+};
+
+const askSellSystem = (uItem) => {
+  const qty = sellQty[uItem.userItemId] || uItem.quantity;
+  const sellPrice = uItem.item.basePrice * 0.8;
+  openConfirm("SELL", {
+    id: uItem.userItemId,
+    name: uItem.item.name,
+    imgCode: uItem.item.imageUrl,
+    price: sellPrice,
+    qty,
+    total: sellPrice * qty,
   });
 };
 
@@ -371,52 +483,68 @@ const closeConfirm = () => {
 
 const confirmTransaction = async () => {
   const { type, data } = confirmModal;
+  closeConfirm();
+
   try {
     if (type === "SYS") {
       await marketStore.buyItem(data.id, data.qty);
       buyQty[data.id] = 1;
+      notificationStore.showToast(
+        `Đã mua ${data.qty} ${data.name}!`,
+        "success",
+      );
     } else if (type === "P2P") {
       await marketStore.buyPlayerListing(data.id, data.qty);
       p2pQty[data.id] = 1;
+      notificationStore.showToast(`Giao dịch thành công!`, "success");
+    } else if (type === "SELL") {
+      await marketStore.sellItem(data.id, data.qty);
+      notificationStore.showToast(
+        `Đã bán ${data.qty} ${data.name}, nhận ${formatNumber(data.total)} xu!`,
+        "success",
+      );
     }
-    closeConfirm();
   } catch (e) {
-    closeConfirm();
-    if (type === "P2P") {
-      await marketStore.fetchPlayerListings();
-      alert("Đại hiệp chậm tay mất òi!");
-    } else {
-      alert(e.response?.data?.message || "Giao dịch thất bại.");
-    }
+    if (type === "P2P") await marketStore.fetchPlayerListings();
+    const errorMsg =
+      e.response?.data?.message || e.response?.data || "Giao dịch thất bại.";
+    notificationStore.showToast(errorMsg, "error");
+  }
+};
+
+const handleCancelListing = async (listingId) => {
+  try {
+    await marketStore.cancelListing(listingId);
+    notificationStore.showToast("Đã thu hồi vật phẩm về kho.", "success");
+  } catch (e) {
+    notificationStore.showToast("Lỗi khi hủy bán.", "error");
   }
 };
 
 const loadMyListings = async () => {
-  activeTab.value = "my_listings";
+  switchTab("my_listings");
   await marketStore.fetchMyListings();
 };
 
-const sellSystem = async (uItem) => {
-  const qty = sellQty[uItem.userItemId] || uItem.quantity;
-  if (
-    confirm(
-      `Bán ${qty} ${uItem.item.name} với giá ${formatNumber(uItem.item.basePrice * 0.8 * qty)} xu?`,
-    )
-  ) {
-    await marketStore.sellItem(uItem.userItemId, qty);
-    inventoryStore.fetchInventory();
+onMounted(async () => {
+  try {
+    await Promise.all([
+      marketStore.fetchShopItems(),
+      marketStore.fetchPlayerListings(),
+      inventoryStore.fetchInventory(),
+    ]);
+  } catch (e) {
+    console.error("Lỗi tải dữ liệu chợ:", e);
+    // Có thể do lỗi auth (401) hoặc server chết
+    notificationStore.showToast(
+      "Không thể kết nối đến Thương Hội. Hãy thử đăng nhập lại!",
+      "error",
+    );
   }
-};
-
-onMounted(() => {
-  marketStore.fetchShopItems();
-  marketStore.fetchPlayerListings();
-  inventoryStore.fetchInventory();
 });
 </script>
 
 <style scoped>
-/* (Giữ nguyên CSS từ phiên bản trước, không cần thay đổi) */
 @import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 
@@ -428,7 +556,6 @@ onMounted(() => {
   --text-dim: #bdbdbd;
   --red-seal: #b71c1c;
   --jade-green: #2e7d32;
-  --jade-light: #4caf50;
   --card-bg: #261815;
   --panel-bg: rgba(30, 20, 15, 0.95);
 }
@@ -440,25 +567,26 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
 }
-.ink-bg-layer {
+.ink-bg-layer,
+.mountain-bg,
+.fog-anim {
   position: absolute;
   inset: 0;
+}
+.ink-bg-layer {
   z-index: 0;
   background-color: #3e2723;
 }
 .mountain-bg {
-  position: absolute;
-  inset: 0;
   background-image: url("https://images.unsplash.com/photo-1518182170546-0766ce6fec56?q=80&w=2000&auto=format&fit=crop");
   background-size: cover;
   filter: sepia(40%) brightness(0.5) contrast(1.2);
   opacity: 0.6;
 }
 .fog-anim {
-  position: absolute;
-  inset: 0;
   background: linear-gradient(to top, #261815 10%, transparent 90%);
 }
+
 .market-overlay {
   position: relative;
   z-index: 10;
@@ -469,9 +597,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 }
+
+/* Header */
 .market-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   background: var(--panel-bg);
   border-top: 4px solid var(--wood-light);
   border-bottom: 4px solid var(--wood-light);
@@ -482,11 +612,11 @@ onMounted(() => {
 .market-title {
   font-size: 2.5rem;
   color: var(--gold);
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
   text-transform: uppercase;
   letter-spacing: 5px;
-  text-shadow: 0 0 10px rgba(255, 236, 179, 0.3);
   font-weight: 900;
+  text-shadow: 0 0 10px rgba(255, 236, 179, 0.3);
 }
 .header-decor {
   width: 60px;
@@ -501,6 +631,58 @@ onMounted(() => {
 .right {
   right: 20%;
 }
+
+/* [MỚI] Style cho Filter Bar */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.search-box,
+.filter-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #5d4037;
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.3s;
+}
+.search-box:focus-within,
+.filter-box:hover {
+  border-color: var(--gold);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(255, 236, 179, 0.1);
+}
+.search-box i,
+.filter-box i {
+  color: var(--text-dim);
+}
+.search-box input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  width: 200px;
+  outline: none;
+}
+.filter-box select {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+.filter-box select option {
+  background: #3e2723;
+  color: #fff;
+}
+
+/* Tabs */
 .market-tabs {
   display: flex;
   justify-content: center;
@@ -511,7 +693,6 @@ onMounted(() => {
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-family: inherit;
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
@@ -519,11 +700,11 @@ onMounted(() => {
   transition: 0.3s;
   border-bottom: 2px solid transparent;
 }
-.tab-btn:hover {
+.tab-btn:hover,
+.tab-btn.active {
   color: var(--gold);
 }
 .tab-btn.active {
-  color: var(--gold);
   border-bottom-color: var(--gold);
   text-shadow: 0 0 8px rgba(255, 236, 179, 0.4);
 }
@@ -532,15 +713,28 @@ onMounted(() => {
   height: 20px;
   background: #555;
 }
+
+/* Content & Grid */
 .market-content {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
 }
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #5d4037;
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .grid-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
 }
 .empty-state {
   grid-column: 1 / -1;
@@ -555,7 +749,10 @@ onMounted(() => {
   font-size: 3rem;
   opacity: 0.5;
   margin-bottom: 10px;
+  display: block;
 }
+
+/* Item Card */
 .item-card {
   background: var(--card-bg);
   border: 1px solid var(--wood-light);
@@ -563,17 +760,15 @@ onMounted(() => {
   padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   transition: 0.3s;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 .item-card:hover {
   transform: translateY(-5px);
   border-color: var(--gold);
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.7),
-    0 0 10px rgba(255, 236, 179, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
 }
 .card-top {
   display: flex;
@@ -582,8 +777,8 @@ onMounted(() => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 .img-frame {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background: rgba(0, 0, 0, 0.3);
   border: 2px solid #5d4037;
   display: flex;
@@ -595,15 +790,18 @@ onMounted(() => {
   max-width: 90%;
   max-height: 90%;
 }
-.placeholder-icon {
-  font-size: 2rem;
-  color: #5d4037;
-}
 .border-C {
   border-color: #bdbdbd;
 }
 .bg-C {
   background: #bdbdbd;
+}
+.border-B {
+  border-color: #42a5f5;
+}
+.bg-B {
+  background: #42a5f5;
+  color: #fff;
 }
 .border-A {
   border-color: #ab47bc;
@@ -622,7 +820,7 @@ onMounted(() => {
 .rarity-tag {
   position: absolute;
   bottom: -8px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 3px;
@@ -639,12 +837,13 @@ onMounted(() => {
   border-radius: 4px;
   font-weight: bold;
 }
+
 .card-body {
   flex: 1;
   text-align: center;
 }
 .item-name {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--text-light);
   margin-bottom: 5px;
@@ -656,15 +855,11 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 .price-row {
-  font-size: 1rem;
+  font-size: 0.95rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
-}
-.label {
-  font-size: 0.8rem;
-  color: #aaa;
 }
 .gold-text {
   color: var(--gold);
@@ -674,9 +869,10 @@ onMounted(() => {
   color: #ef5350;
   font-weight: bold;
 }
+
 .card-footer {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   margin-top: auto;
 }
 .dark-input {
@@ -686,25 +882,23 @@ onMounted(() => {
   color: var(--gold);
   text-align: center;
   font-weight: bold;
-  padding: 8px;
+  padding: 5px;
 }
 .btn-action {
   flex: 1;
   border: none;
-  font-family: inherit;
   font-weight: bold;
   cursor: pointer;
   color: #fff;
-  transition: 0.2s;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   border-radius: 4px;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+  transition: 0.2s;
 }
 .btn-action:hover {
   filter: brightness(1.2);
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
 }
 .btn-action:active {
   transform: translateY(2px);
@@ -720,14 +914,12 @@ onMounted(() => {
 }
 .btn-cancel {
   background: #4e342e;
+  padding: 8px;
   width: 100%;
-  padding: 10px;
 }
 .btn-buy-p2p {
-  background: linear-gradient(to bottom, var(--jade-light), var(--jade-green));
-  border: 1px solid var(--jade-green);
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to bottom, #4caf50, #2e7d32);
+  border: 1px solid #2e7d32;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -742,27 +934,29 @@ onMounted(() => {
   left: 0;
   right: 0;
   background: rgba(46, 125, 50, 0.2);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #a5d6a7;
   text-align: center;
   padding: 2px;
 }
 .p2p-img-top {
-  margin-top: 20px;
+  margin-top: 15px;
   border-bottom: none;
   padding-bottom: 0;
 }
 .p2p-body {
-  padding-top: 10px;
+  padding-top: 5px;
 }
 .stock-info {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #aaa;
   margin-bottom: 5px;
 }
 .highlight {
   color: #fff;
 }
+
+/* Modal & Transition */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -776,12 +970,10 @@ onMounted(() => {
 .bill-modal {
   width: 400px;
   background: #fdf5e6;
-  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
   color: #3e2723;
   border: 4px double #3e2723;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-  position: relative;
-  animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  animation: popIn 0.3s;
 }
 .bill-header {
   background: #3e2723;
@@ -794,7 +986,6 @@ onMounted(() => {
 .bill-header h3 {
   margin: 0;
   font-size: 1.4rem;
-  letter-spacing: 1px;
 }
 .bill-seal {
   position: absolute;
@@ -807,16 +998,15 @@ onMounted(() => {
   transform: rotate(-15deg);
   opacity: 0.8;
   font-size: 0.8rem;
-  background: rgba(255, 255, 255, 0.1);
 }
 .bill-body {
-  padding: 25px;
+  padding: 20px;
 }
 .item-preview-row {
   display: flex;
   gap: 15px;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   background: rgba(0, 0, 0, 0.05);
   padding: 10px;
   border-radius: 4px;
@@ -835,12 +1025,10 @@ onMounted(() => {
 }
 .preview-info .p-name {
   font-weight: bold;
-  font-size: 1.2rem;
   color: #bf360c;
 }
 .preview-info .p-type {
   font-size: 0.9rem;
-  color: #5d4037;
   font-style: italic;
 }
 .bill-calc {
@@ -851,39 +1039,28 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
-  font-size: 1rem;
 }
 .divider-dashed {
   border-bottom: 2px dashed #3e2723;
   margin: 10px 0;
 }
-.calc-row.total {
-  font-size: 1.3rem;
-  margin-top: 5px;
-}
-.total-gold {
+.total {
+  font-size: 1.2rem;
   color: #d84315;
-  font-weight: 900;
 }
 .bill-footer {
   padding: 15px;
-  background: rgba(0, 0, 0, 0.05);
-  border-top: 1px solid #ccc;
   display: flex;
-  gap: 15px;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.05);
 }
 .btn-wood {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   font-weight: bold;
-  font-family: "Noto Serif TC";
   cursor: pointer;
   border: 2px solid #3e2723;
   transition: 0.2s;
-}
-.btn-wood.cancel {
-  background: transparent;
-  color: #3e2723;
 }
 .btn-wood.cancel:hover {
   background: #d7ccc8;
@@ -895,8 +1072,8 @@ onMounted(() => {
 }
 .btn-wood.confirm:hover {
   background: #d84315;
-  box-shadow: 0 0 10px rgba(191, 54, 12, 0.4);
 }
+
 @keyframes popIn {
   from {
     transform: scale(0.8);
@@ -906,16 +1083,6 @@ onMounted(() => {
     transform: scale(1);
     opacity: 1;
   }
-}
-.custom-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #5d4037;
-  border-radius: 3px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
 }
 .fade-slide-enter-active,
 .fade-slide-leave-active {

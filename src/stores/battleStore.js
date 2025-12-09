@@ -15,7 +15,7 @@ export const useBattleStore = defineStore("battle", {
     goldEarned: 0,
     expEarned: 0,
     droppedItem: null,
-    isReady: false
+    isReady: false,
   }),
 
   actions: {
@@ -53,11 +53,16 @@ export const useBattleStore = defineStore("battle", {
         return res.data;
       } catch (e) {
         console.error("Lỗi turn:", e);
-        
-        if (e.response && (e.response.status === 403 || e.response.status === 401)) {
-            this.status = "ERROR";
-            this.combatLogs.push("Phiên đăng nhập hết hạn hoặc lỗi quyền truy cập.");
-            this.isReady = false; 
+
+        if (
+          e.response &&
+          (e.response.status === 403 || e.response.status === 401)
+        ) {
+          this.status = "ERROR";
+          this.combatLogs.push(
+            "Phiên đăng nhập hết hạn hoặc lỗi quyền truy cập.",
+          );
+          this.isReady = false;
         }
         return null;
       }
@@ -65,7 +70,9 @@ export const useBattleStore = defineStore("battle", {
 
     async sendAction(actionType) {
       try {
-        const res = await axiosClient.post("/battle/action", { action: actionType });
+        const res = await axiosClient.post("/battle/action", {
+          action: actionType,
+        });
         this.handleResult(res.data);
       } catch (e) {
         console.error(e);
@@ -79,7 +86,7 @@ export const useBattleStore = defineStore("battle", {
         this.enemy = {
           enemyId: data.enemyId,
           name: data.enemyName,
-          level: data.enemyLv || '??'
+          level: data.enemyLv || "??",
         };
       } else if (data.enemy) {
         this.enemy = data.enemy;
@@ -102,7 +109,7 @@ export const useBattleStore = defineStore("battle", {
           this.droppedItem = {
             name: data.droppedItemName,
             image: data.droppedItemImage,
-            rarity: data.droppedItemRarity
+            rarity: data.droppedItemRarity,
           };
         }
         this.isReady = false;

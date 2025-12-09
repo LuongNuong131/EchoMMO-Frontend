@@ -119,11 +119,7 @@
         @scroll="handleScroll"
       >
         <div class="page-body">
-          <router-view v-slot="{ Component }">
-            <transition name="page-fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+          <slot></slot>
         </div>
 
         <GameFooter />
@@ -148,7 +144,7 @@ const toggleSidebar = () => {
 };
 
 const handleScroll = () => {
-  // Logic xử lý khi cuộn (ví dụ hiện nút Back to Top)
+  // Logic xử lý khi cuộn
 };
 </script>
 

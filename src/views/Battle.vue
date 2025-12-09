@@ -2,14 +2,17 @@
   <div class="page-container battle-page">
     <div class="battle-bg-layer"></div>
     <div class="battle-layout">
-
       <aside class="side-panel left-panel">
-        <div class="panel-header"><i class="fas fa-trophy text-gold"></i> BẢNG XẾP HẠNG</div>
+        <div class="panel-header">
+          <i class="fas fa-trophy text-gold"></i> BẢNG XẾP HẠNG
+        </div>
         <div class="leaderboard-list custom-scroll">
           <div class="rank-item" v-for="i in 5" :key="i">
             <div class="rank-num" :class="'top-' + i">{{ i }}</div>
             <div class="rank-avatar">
-              <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" />
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              />
             </div>
             <div class="rank-info">
               <div class="rank-name">Người Chơi {{ i }}</div>
@@ -20,47 +23,94 @@
       </aside>
 
       <main class="center-panel">
-        <div class="combat-arena"
-          v-if="battleStore.enemy && battleStore.status !== 'LOADING' && battleStore.status !== 'ERROR'">
+        <div
+          class="combat-arena"
+          v-if="
+            battleStore.enemy &&
+            battleStore.status !== 'LOADING' &&
+            battleStore.status !== 'ERROR'
+          "
+        >
           <div class="vs-badge">VS</div>
 
           <div class="fighter-card enemy" :class="{ 'hit-anim': isEnemyHit }">
             <div class="fighter-visual">
               <div class="fighter-circle brown-ring">
-                <img :src="getEnemyAsset(battleStore.enemy.name)" class="fighter-img" />
+                <img
+                  :src="getEnemyAsset(battleStore.enemy.name)"
+                  class="fighter-img"
+                />
               </div>
               <div class="damage-text" v-if="isEnemyHit">-{{ lastDamage }}</div>
             </div>
             <div class="fighter-stats">
               <div class="name-tag red-tag">
-                {{ battleStore.enemy.name }} (Lv.{{ battleStore.enemy.level || '?' }})
+                {{ battleStore.enemy.name }} (Lv.{{
+                  battleStore.enemy.level || "?"
+                }})
               </div>
               <div class="stat-bar-box">
-                <div class="bar-fill hp-fill"
-                  :style="{ width: percent(battleStore.enemyHp, battleStore.enemyMaxHp) + '%' }"></div>
-                <span class="bar-text">{{ battleStore.enemyHp }} / {{ battleStore.enemyMaxHp }}</span>
+                <div
+                  class="bar-fill hp-fill"
+                  :style="{
+                    width:
+                      percent(battleStore.enemyHp, battleStore.enemyMaxHp) +
+                      '%',
+                  }"
+                ></div>
+                <span class="bar-text"
+                  >{{ battleStore.enemyHp }} /
+                  {{ battleStore.enemyMaxHp }}</span
+                >
               </div>
             </div>
           </div>
 
-          <div class="fighter-card player" :class="{ 'hit-anim': isPlayerHit, attacking: isPlayerAttacking }">
+          <div
+            class="fighter-card player"
+            :class="{ 'hit-anim': isPlayerHit, attacking: isPlayerAttacking }"
+          >
             <div class="fighter-visual">
               <div class="fighter-circle green-ring">
                 <img :src="getPlayerAsset()" class="fighter-img" />
               </div>
-              <div class="damage-text player-dmg" v-if="isPlayerHit">-{{ lastDamageTaken }}</div>
+              <div class="damage-text player-dmg" v-if="isPlayerHit">
+                -{{ lastDamageTaken }}
+              </div>
             </div>
             <div class="fighter-stats">
-              <div class="name-tag blue-tag">{{ authStore.user?.username }}</div>
+              <div class="name-tag blue-tag">
+                {{ authStore.user?.username }}
+              </div>
               <div class="stat-bar-box">
-                <div class="bar-fill hp-fill"
-                  :style="{ width: percent(battleStore.playerHp, battleStore.playerMaxHp) + '%' }"></div>
-                <span class="bar-text">{{ battleStore.playerHp }} / {{ battleStore.playerMaxHp }}</span>
+                <div
+                  class="bar-fill hp-fill"
+                  :style="{
+                    width:
+                      percent(battleStore.playerHp, battleStore.playerMaxHp) +
+                      '%',
+                  }"
+                ></div>
+                <span class="bar-text"
+                  >{{ battleStore.playerHp }} /
+                  {{ battleStore.playerMaxHp }}</span
+                >
               </div>
               <div class="stat-bar-box energy-box">
-                <div class="bar-fill energy-fill"
-                  :style="{ width: percent(charStore.character?.energy, charStore.character?.maxEnergy) + '%' }"></div>
-                <span class="bar-text"><i class="fas fa-bolt"></i> {{ charStore.character?.energy || 0 }}</span>
+                <div
+                  class="bar-fill energy-fill"
+                  :style="{
+                    width:
+                      percent(
+                        charStore.character?.energy,
+                        charStore.character?.maxEnergy,
+                      ) + '%',
+                  }"
+                ></div>
+                <span class="bar-text"
+                  ><i class="fas fa-bolt"></i>
+                  {{ charStore.character?.energy || 0 }}</span
+                >
               </div>
             </div>
           </div>
@@ -72,12 +122,21 @@
               </button>
             </div>
 
-            <div v-else-if="battleStore.status === 'ONGOING'" class="ongoing-actions">
+            <div
+              v-else-if="battleStore.status === 'ONGOING'"
+              class="ongoing-actions"
+            >
               <div class="auto-fight-btn">
-                <div class="spinner"></div> AUTO FIGHT
+                <div class="spinner"></div>
+                AUTO FIGHT
               </div>
-              <button class="btn-skill" @click="activateBuff"
-                :disabled="nextAttackBuffed || (charStore.character?.energy || 0) < 5">
+              <button
+                class="btn-skill"
+                @click="activateBuff"
+                :disabled="
+                  nextAttackBuffed || (charStore.character?.energy || 0) < 5
+                "
+              >
                 <span v-if="!nextAttackBuffed">🔥 TỤ LỰC (5⚡)</span>
                 <span v-else>SẴN SÀNG!</span>
               </button>
@@ -85,14 +144,21 @@
 
             <div v-else class="result-actions">
               <div class="result-text" :class="battleStore.status">
-                {{ battleStore.status === 'VICTORY' ? 'CHIẾN THẮNG!' : 'THẤT BẠI...' }}
+                {{
+                  battleStore.status === "VICTORY"
+                    ? "CHIẾN THẮNG!"
+                    : "THẤT BẠI..."
+                }}
               </div>
               <div v-if="battleStore.droppedItem" class="loot-display">
                 🎁 Nhặt được: {{ battleStore.droppedItem.name }}
               </div>
-              
+
               <div class="btn-group">
-                <button class="btn-nav forest-btn" @click="$router.push('/explore')">
+                <button
+                  class="btn-nav forest-btn"
+                  @click="$router.push('/explore')"
+                >
                   🌲 Về Rừng
                 </button>
                 <button class="btn-nav" @click="$router.push('/village')">
@@ -106,15 +172,20 @@
         <div v-else class="loading-arena">
           <div v-if="battleStore.status === 'ERROR'" class="error-box">
             <h2 class="text-red">⚠️ LỖI GAME</h2>
-            <p v-for="(err, idx) in battleStore.combatLogs" :key="idx">{{ err }}</p>
-            
+            <p v-for="(err, idx) in battleStore.combatLogs" :key="idx">
+              {{ err }}
+            </p>
+
             <div class="btn-group">
-                <button class="btn-nav forest-btn" @click="$router.push('/explore')">
-                  🌲 Thử Lại
-                </button>
-                <button @click="$router.push('/village')" class="btn-nav">
-                  🏠 Về Làng
-                </button>
+              <button
+                class="btn-nav forest-btn"
+                @click="$router.push('/explore')"
+              >
+                🌲 Thử Lại
+              </button>
+              <button @click="$router.push('/village')" class="btn-nav">
+                🏠 Về Làng
+              </button>
             </div>
           </div>
           <div v-else>
@@ -126,7 +197,9 @@
         <div class="chat-section">
           <div class="chat-header">KÊNH THẾ GIỚI</div>
           <div class="chat-messages custom-scroll">
-            <div class="chat-msg system"><span class="sender">[Hệ thống]:</span> Chào mừng đại hiệp!</div>
+            <div class="chat-msg system">
+              <span class="sender">[Hệ thống]:</span> Chào mừng đại hiệp!
+            </div>
           </div>
           <div class="chat-input-area">
             <input type="text" placeholder="Nhập tin nhắn..." />
@@ -138,20 +211,35 @@
       <aside class="side-panel right-panel">
         <div class="char-detail-card">
           <div class="panel-header">THÔNG TIN</div>
-          <div class="detail-row"><span><i class="fas fa-fist-raised"></i> Tấn Công</span><span class="val">{{
-            charStore.character?.baseAtk || 0 }}</span></div>
-          <div class="detail-row"><span><i class="fas fa-shield-alt"></i> Phòng Thủ</span><span class="val">{{
-            charStore.character?.baseDef || 0 }}</span></div>
-          <div class="detail-row"><span><i class="fas fa-wind"></i> Thân Pháp</span><span class="val">{{
-            charStore.character?.baseSpeed || 0 }}</span></div>
-          <div class="detail-row"><span><i class="fas fa-bolt"></i> Chí Mạng</span><span class="val">{{
-            charStore.character?.baseCritRate || 0 }}%</span></div>
+          <div class="detail-row">
+            <span><i class="fas fa-fist-raised"></i> Tấn Công</span
+            ><span class="val">{{ charStore.character?.baseAtk || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span><i class="fas fa-shield-alt"></i> Phòng Thủ</span
+            ><span class="val">{{ charStore.character?.baseDef || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span><i class="fas fa-wind"></i> Thân Pháp</span
+            ><span class="val">{{ charStore.character?.baseSpeed || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span><i class="fas fa-bolt"></i> Chí Mạng</span
+            ><span class="val"
+              >{{ charStore.character?.baseCritRate || 0 }}%</span
+            >
+          </div>
         </div>
 
         <div class="combat-log-panel">
           <div class="panel-header">NHẬT KÝ TRẬN ĐẤU</div>
           <div class="logs-container custom-scroll" ref="logContainer">
-            <div v-for="(log, idx) in battleStore.combatLogs" :key="idx" class="log-entry" :class="getLogClass(log)">
+            <div
+              v-for="(log, idx) in battleStore.combatLogs"
+              :key="idx"
+              class="log-entry"
+              :class="getLogClass(log)"
+            >
               {{ formatLog(log) }}
             </div>
           </div>
@@ -162,11 +250,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { useBattleStore } from '@/stores/battleStore';
-import { useCharacterStore } from '@/stores/characterStore';
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useBattleStore } from "@/stores/battleStore";
+import { useCharacterStore } from "@/stores/characterStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 import { getEnemyImage, getCurrentSkin } from "@/utils/assetHelper";
 
 const battleStore = useBattleStore();
@@ -189,7 +277,7 @@ let autoInterval = null;
 
 // --- HELPERS ---
 const percent = (cur, max) => (max > 0 ? (cur / max) * 100 : 0);
-const getEnemyAsset = (name) => getEnemyImage(name, 'idle');
+const getEnemyAsset = (name) => getEnemyImage(name, "idle");
 const getPlayerAsset = () => {
   const skin = getCurrentSkin(authStore.user?.avatarUrl);
   return isPlayerAttacking.value ? skin.sprites.attack : skin.sprites.idle;
@@ -201,7 +289,7 @@ const getLogClass = (log) => {
   if (log.includes("Thắng") || log.includes("EXP")) return "log-win";
   return "log-normal";
 };
-const formatLog = (log) => log ? log.replace(/<[^>]*>/g, "") : "";
+const formatLog = (log) => (log ? log.replace(/<[^>]*>/g, "") : "");
 
 // --- LOGIC ---
 const startBattle = async () => {
@@ -222,10 +310,11 @@ const activateBuff = () => {
 };
 
 const runAutoTurn = async () => {
-  if (!battleStore.isReady || battleStore.status !== 'ONGOING' || showQTE.value) return;
+  if (!battleStore.isReady || battleStore.status !== "ONGOING" || showQTE.value)
+    return;
 
   isPlayerAttacking.value = true;
-  setTimeout(() => isPlayerAttacking.value = false, 500);
+  setTimeout(() => (isPlayerAttacking.value = false), 500);
 
   const prevEnemyHp = battleStore.enemyHp;
   const prevPlayerHp = battleStore.playerHp;
@@ -237,7 +326,7 @@ const runAutoTurn = async () => {
     return;
   }
 
-  if (res.status === 'QTE_ACTION' || res.qteTriggered) {
+  if (res.status === "QTE_ACTION" || res.qteTriggered) {
     triggerQTE();
     return;
   }
@@ -246,15 +335,17 @@ const runAutoTurn = async () => {
 
   const dmgDealt = prevEnemyHp - res.enemyHp;
   if (dmgDealt > 0) {
-    lastDamage.value = dmgDealt; isEnemyHit.value = true;
-    setTimeout(() => isEnemyHit.value = false, 300);
+    lastDamage.value = dmgDealt;
+    isEnemyHit.value = true;
+    setTimeout(() => (isEnemyHit.value = false), 300);
   }
 
   const dmgTaken = prevPlayerHp - res.playerHp;
   if (dmgTaken > 0) {
     setTimeout(() => {
-      lastDamageTaken.value = dmgTaken; isPlayerHit.value = true;
-      setTimeout(() => isPlayerHit.value = false, 300);
+      lastDamageTaken.value = dmgTaken;
+      isPlayerHit.value = true;
+      setTimeout(() => (isPlayerHit.value = false), 300);
     }, 600);
   }
 };
@@ -270,33 +361,46 @@ const triggerQTE = () => {
 };
 
 const handleBlock = async () => {
-  clearInterval(qteInterval); showQTE.value = false;
-  await battleStore.sendAction('BLOCK');
+  clearInterval(qteInterval);
+  showQTE.value = false;
+  await battleStore.sendAction("BLOCK");
   startAutoLoop();
 };
 
 const failQTE = async () => {
-  clearInterval(qteInterval); showQTE.value = false;
-  isPlayerHit.value = true; setTimeout(() => isPlayerHit.value = false, 500);
-  await battleStore.sendAction('IGNORE_QTE');
+  clearInterval(qteInterval);
+  showQTE.value = false;
+  isPlayerHit.value = true;
+  setTimeout(() => (isPlayerHit.value = false), 500);
+  await battleStore.sendAction("IGNORE_QTE");
   startAutoLoop();
 };
 
-watch(() => battleStore.combatLogs, () => {
-  nextTick(() => { if (logContainer.value) logContainer.value.scrollTop = logContainer.value.scrollHeight; });
-}, { deep: true });
+watch(
+  () => battleStore.combatLogs,
+  () => {
+    nextTick(() => {
+      if (logContainer.value)
+        logContainer.value.scrollTop = logContainer.value.scrollHeight;
+    });
+  },
+  { deep: true },
+);
 
-watch(() => battleStore.status, (st) => {
-  if (st !== 'ONGOING') {
-    clearInterval(autoInterval);
-    if (qteInterval) clearInterval(qteInterval);
-  }
-});
+watch(
+  () => battleStore.status,
+  (st) => {
+    if (st !== "ONGOING") {
+      clearInterval(autoInterval);
+      if (qteInterval) clearInterval(qteInterval);
+    }
+  },
+);
 
 onMounted(async () => {
   await charStore.fetchCharacter();
   if (!battleStore.enemy) await startBattle();
-  else if (battleStore.status === 'ONGOING') startAutoLoop();
+  else if (battleStore.status === "ONGOING") startAutoLoop();
 });
 
 onUnmounted(() => {
@@ -333,7 +437,7 @@ onUnmounted(() => {
 .battle-bg-layer {
   position: absolute;
   inset: 0;
-  background-image: url('@/assets/Background/b_doanhtrai.png');
+  background-image: url("@/assets/Background/b_doanhtrai.png");
   background-size: cover;
   background-position: center;
   opacity: 0.15;
@@ -732,7 +836,7 @@ onUnmounted(() => {
 .forest-btn {
   background: #2e7d32;
   border-color: #1b5e20;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .forest-btn:hover {

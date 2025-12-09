@@ -122,17 +122,27 @@ export const useCharacterStore = defineStore("character", {
 
   getters: {
     xpPercent: (state) => {
-      if (!state.character || typeof state.character === 'string') return 0;
+      if (!state.character || typeof state.character === "string") return 0;
       // Tính nextLevelExp giả định: 100 * lv^2
       const needed = 100 * Math.pow(state.character.lv, 2);
       return Math.min((state.character.exp / needed) * 100, 100);
     },
     hpPercent: (state) => {
-      if (!state.character || typeof state.character === 'string' || state.character.maxHp === 0) return 0;
+      if (
+        !state.character ||
+        typeof state.character === "string" ||
+        state.character.maxHp === 0
+      )
+        return 0;
       return Math.min((state.character.hp / state.character.maxHp) * 100, 100);
     },
     energyPercent: (state) => {
-      if (!state.character || typeof state.character === 'string' || state.character.maxEnergy === 0) return 0;
+      if (
+        !state.character ||
+        typeof state.character === "string" ||
+        state.character.maxEnergy === 0
+      )
+        return 0;
       return Math.min(
         (state.character.energy / state.character.maxEnergy) * 100,
         100,
@@ -145,19 +155,18 @@ export const useCharacterStore = defineStore("character", {
       this.isLoading = true;
       try {
         const res = await axiosClient.get("/character/me");
-        
+
         // --- [FIX LỖI QUAN TRỌNG] ---
         // Nếu API trả về chuỗi JSON thay vì Object, ta phải parse nó
         let data = res.data;
-        if (typeof data === 'string') {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                console.error("Lỗi parse JSON character:", e);
-            }
+        if (typeof data === "string") {
+          try {
+            data = JSON.parse(data);
+          } catch (e) {
+            console.error("Lỗi parse JSON character:", e);
+          }
         }
         this.character = data;
-        
       } catch (error) {
         if (error.response && [401, 403].includes(error.response.status)) {
           router.push("/login");
@@ -176,14 +185,14 @@ export const useCharacterStore = defineStore("character", {
         if (this.character) {
           // --- [FIX LỖI QUAN TRỌNG] ---
           // Kiểm tra lại lần nữa phòng trường hợp character bị biến thành string
-          if (typeof this.character === 'string') {
-             this.character = JSON.parse(this.character);
+          if (typeof this.character === "string") {
+            this.character = JSON.parse(this.character);
           }
 
           this.character.energy = data.currentEnergy;
           this.character.exp = data.currentExp;
           this.character.lv = data.currentLv;
-          
+
           // Nếu lên cấp, tải lại đầy đủ để lấy maxHp mới
           if (data.newLevel) await this.fetchCharacter();
         }
