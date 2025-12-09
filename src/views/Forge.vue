@@ -15,31 +15,29 @@
             <i class="fas fa-box-open"></i> HÀNH TRANG
           </div>
           <div class="item-grid custom-scroll">
-            <div
-              v-for="item in equipableItems"
-              :key="item.userItemId"
-              class="item-slot"
-              :class="{
-                selected: selectedItem?.userItemId === item.userItemId,
-              }"
-              @click="selectItem(item)"
-            >
+            <div v-for="item in equipableItems" :key="item.userItemId" class="item-slot" :class="{
+              selected: selectedItem?.userItemId === item.userItemId,
+              'border-mythic': item.isMythic,
+              [getRarityClass(item)]: true
+            }" @click="selectItem(item)">
               <div class="slot-img-box">
-                <img :src="item.item.imageUrl" />
-                <div class="level-badge" v-if="item.level > 0">
-                  +{{ item.level }}
+                <img :src="getIconUrl(item.item.imageUrl)" />
+
+                <div class="equipped-badge" v-if="item.isEquipped">
+                  <i class="fas fa-check"></i>
                 </div>
-              </div>
-              <div class="slot-info">
-                <div class="name" :class="'rarity-' + item.item.rarity">
-                  {{ item.item.name }}
+
+                <div class="level-badge" v-if="item.isMythic">
+                  M{{ item.mythicLevel }}
                 </div>
-                <div class="type">{{ translateType(item.item.type) }}</div>
+                <div class="level-badge" v-else-if="item.enhanceLevel > 0">
+                  +{{ item.enhanceLevel }}
+                </div>
               </div>
             </div>
 
             <div v-if="equipableItems.length === 0" class="empty-msg">
-              Không có trang bị để rèn
+              Không có trang bị
             </div>
           </div>
         </div>
@@ -48,9 +46,9 @@
           <div class="anvil-zone">
             <div class="fire-particles"></div>
 
-            <div class="main-slot-container" :class="{ shaking: isForging }">
+            <div class="main-slot-container" :class="{ shaking: isForging, 'mythic-glow': selectedItem?.isMythic }">
               <div class="main-slot" v-if="selectedItem">
-                <img :src="selectedItem.item.imageUrl" />
+                <img :src="getIconUrl(selectedItem.item.imageUrl)" />
                 <div class="glow-ring"></div>
               </div>
               <div class="empty-anvil" v-else>
@@ -61,55 +59,88 @@
 
             <transition name="fade">
               <div v-if="selectedItem" class="upgrade-info">
-                <h3
-                  class="item-title-large"
-                  :class="'rarity-' + selectedItem.item.rarity"
-                >
+
+                <h3 class="item-title-large" :class="getRarityTextClass(selectedItem)">
                   {{ selectedItem.item.name }}
-                  <span class="curr-lv" v-if="selectedItem.level > 0"
-                    >+{{ selectedItem.level }}</span
-                  >
-                  <i class="fas fa-arrow-right arrow"></i>
-                  <span class="next-lv"
-                    >+{{ (selectedItem.level || 0) + 1 }}</span
-                  >
+
+                  <template v-if="selectedItem.isMythic">
+                    <span class="mythic-tag">[Thần Lv{{ selectedItem.mythicLevel }}]</span>
+                    <i class="fas fa-arrow-right arrow"></i>
+                    <span class="next-lv mythic-text">Lv{{ selectedItem.mythicLevel + 1 }}</span>
+                  </template>
+                  <template v-else>
+                    <span class="curr-lv">+{{ selectedItem.enhanceLevel }}</span>
+                    <i class="fas fa-arrow-right arrow"></i>
+                    <span class="next-lv">+{{ selectedItem.enhanceLevel + 1 }}</span>
+                  </template>
                 </h3>
 
-                <div class="stats-preview">
-                  <div class="stat-row">
-                    <span>Công Lực:</span>
-                    <span class="val">{{
-                      calculateStat(selectedItem.item.atk, selectedItem.level)
-                    }}</span>
-                    <span class="boost">(+{{ itemStep }})</span>
+                <div class="stats-preview custom-scroll">
+                  <div class="stat-row main-stat">
+                    <span>{{ getStatLabel(selectedItem.mainStatType) }}</span>
+                    <span class="val">{{ formatNumber(selectedItem.mainStatValue) }}</span>
+                    <span v-if="selectedItem.isMythic" class="orig-val">
+                      (Gốc: {{ formatNumber(selectedItem.originalMainStatValue) }})
+                    </span>
+                    <span v-else class="boost">(+{{ estimatedBoost }})</span>
                   </div>
-                  <div class="stat-row">
-                    <span>Tỉ lệ thành công:</span>
-                    <span class="rate" :class="getRateColor(successRate)"
-                      >{{ successRate }}%</span
-                    >
+
+                  <div v-for="(sub, idx) in parsedSubStats" :key="idx" class="stat-row sub-stat">
+                    <span class="sub-dot">•</span>
+                    <span>{{ getStatLabel(sub.code) }}:</span>
+                    <span class="val">
+                      +{{ formatNumber(sub.value) }}{{ sub.isPercent ? '%' : '' }}
+                    </span>
+                    <span v-if="selectedItem.isMythic" class="orig-val-small">
+                      (Base: {{ formatNumber(sub.originalValue) }})
+                    </span>
+                  </div>
+
+                  <div v-if="!selectedItem.isMythic && parsedSubStats.length < getMaxSlots(selectedItem.rarity)"
+                    class="stat-row empty-slot">
+                    [???] Dòng thuộc tính ẩn
                   </div>
                 </div>
 
-                <div class="cost-box">
-                  <span>Chi phí:</span>
-                  <div class="cost-val">
-                    <i class="fas fa-coins text-gold"></i>
-                    {{ formatNumber(upgradeCost) }}
+                <div class="info-row">
+                  <div class="cost-box">
+                    <span>Chi phí:</span>
+                    <div class="cost-val">
+                      <i class="fas fa-coins text-gold"></i>
+                      {{ formatNumber(upgradeCost.gold) }} Vàng + {{ upgradeCost.matQty }} {{ upgradeCost.matName }}
+                    </div>
+                  </div>
+
+                  <div class="rate-box" v-if="!selectedItem.isMythic">
+                    Tỉ lệ: <span :class="getRateColor(successRate)">{{ successRate }}%</span>
                   </div>
                 </div>
 
-                <button
-                  class="btn-forge"
-                  @click="handleForge"
-                  :disabled="isForging || !canAfford"
-                  :class="{ disabled: !canAfford }"
-                >
-                  <span v-if="!isForging">CƯỜNG HÓA</span>
-                  <span v-else>ĐANG RÈN...</span>
-                </button>
-                <div v-if="!canAfford" class="error-text">
-                  Không đủ ngân lượng!
+                <div class="actions-group">
+                  <button v-if="!selectedItem.isMythic && selectedItem.enhanceLevel < 30" class="btn-forge"
+                    @click="handleUpgrade" :disabled="isForging">
+                    <span v-if="!isForging">CƯỜNG HÓA</span>
+                    <span v-else>ĐANG RÈN...</span>
+                  </button>
+
+                  <button v-if="canEvolve" class="btn-evolve glitch-effect" @click="handleEvolve" :disabled="isForging">
+                    ☠️ ĐỘT PHÁ THẦN (5%) ☠️
+                  </button>
+
+                  <button v-if="selectedItem.isMythic" class="btn-mythic-upgrade" @click="handleMythicUpgrade"
+                    :disabled="isForging || selectedItem.mythicLevel >= 30">
+                    <span v-if="!isForging">THĂNG CẤP THẦN</span>
+                    <span v-else>ĐANG HẤP THỤ...</span>
+                  </button>
+
+                  <button v-if="selectedItem.enhanceLevel >= 30 && !selectedItem.isMythic" class="btn-forge disabled"
+                    disabled>
+                    Cấp cường hóa MAX
+                  </button>
+                </div>
+
+                <div v-if="errorMessage" class="error-text">
+                  {{ errorMessage }}
                 </div>
               </div>
             </transition>
@@ -120,27 +151,13 @@
 
     <transition name="pop-up">
       <div v-if="showResult" class="result-overlay" @click="closeResult">
-        <div class="result-scroll" :class="forgeSuccess ? 'success' : 'fail'">
+        <div class="result-scroll" :class="resultType">
           <div class="result-icon">
-            <i
-              :class="
-                forgeSuccess ? 'fas fa-check-circle' : 'fas fa-heart-broken'
-              "
-            ></i>
+            <i :class="resultIcon"></i>
           </div>
-          <h2 class="result-title">
-            {{ forgeSuccess ? "THÀNH CÔNG!" : "THẤT BẠI!" }}
-          </h2>
-          <p class="result-desc">
-            {{
-              forgeSuccess
-                ? "Trang bị đã được nâng cấp sức mạnh."
-                : "Lần rèn này không như ý muốn."
-            }}
-          </p>
-          <div class="item-result-display" v-if="forgeSuccess">
-            {{ selectedItem?.item.name }} <b>+{{ selectedItem?.level || 0 }}</b>
-          </div>
+          <h2 class="result-title">{{ resultTitle }}</h2>
+          <p class="result-desc">{{ resultMessage }}</p>
+
           <button class="btn-confirm" @click.stop="closeResult">
             XÁC NHẬN
           </button>
@@ -152,99 +169,231 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useInventoryStore } from "../stores/inventoryStore";
-import { useAuthStore } from "../stores/authStore";
-// import axiosClient from '../api/axiosClient'; // Dùng khi có API thật
+import axios from 'axios';
+// import { useInventoryStore } from "../stores/inventoryStore"; 
+// import { useAuthStore } from "../stores/authStore";
 
-const inventoryStore = useInventoryStore();
-const authStore = useAuthStore();
-
+// --- STATE ---
+const inventoryItems = ref([]);
 const selectedItem = ref(null);
 const isForging = ref(false);
 const showResult = ref(false);
-const forgeSuccess = ref(false);
+const resultType = ref('success');
+const resultMessage = ref('');
+const errorMessage = ref('');
+const userId = ref(1); // MOCK USER ID - Cần lấy từ AuthStore thật
 
-// Lọc các item có thể trang bị (Weapon, Armor...)
+// --- COMPUTED LOGIC ---
+
 const equipableItems = computed(() => {
-  return inventoryStore.items.filter((i) =>
-    ["WEAPON", "ARMOR", "HELMET", "BOOTS"].includes(i.item.type),
+  // [FIXED] Thêm check Array.isArray() để tránh TypeError khi dữ liệu chưa load
+  if (!Array.isArray(inventoryItems.value)) {
+    return [];
+  }
+
+  // FINAL FILTER: Chỉ hiển thị các loại có thể trang bị/cường hóa
+  return inventoryItems.value.filter((i) =>
+    i.item && ["WEAPON", "ARMOR", "HELMET", "BOOTS", "RING", "NECKLACE"].includes(i.item.type)
   );
 });
 
-// Giả lập tính toán chỉ số
-const itemStep = 10; // Mỗi cấp tăng 10 chỉ số
-const calculateStat = (base, lv = 0) => base + lv * itemStep;
+const parsedSubStats = computed(() => {
+  if (!selectedItem.value || !selectedItem.value.subStats) return [];
+  try {
+    const data = selectedItem.value.subStats;
+    // Đảm bảo parsing an toàn
+    return typeof data === 'string'
+      ? JSON.parse(data)
+      : data;
+  } catch (e) {
+    console.error("Lỗi parse SubStats:", e);
+    return [];
+  }
+});
 
-// Tính chi phí: Cơ bản 100 + (Level * 50)
+const getMaxSlots = (rarity) => {
+  const map = { COMMON: 1, UNCOMMON: 2, RARE: 3, EPIC: 4, LEGENDARY: 4, MYTHIC: 4 };
+  return map[rarity] || 1;
+}
+
+const canEvolve = computed(() => {
+  if (!selectedItem.value) return false;
+  // Điều kiện: LEGENDARY và Enhance Level MAX (>= 30)
+  return selectedItem.value.rarity === 'LEGENDARY' && selectedItem.value.enhanceLevel >= 30;
+});
+
 const upgradeCost = computed(() => {
-  if (!selectedItem.value) return 0;
-  return 100 + (selectedItem.value.level || 0) * 50;
-});
+  if (!selectedItem.value) return { gold: 0, matQty: 0, matName: '' };
 
-// Tính tỉ lệ thành công: Giảm dần theo cấp
-const successRate = computed(() => {
-  if (!selectedItem.value) return 0;
-  const lv = selectedItem.value.level || 0;
-  return Math.max(10, 100 - lv * 10); // Min 10%, giảm 10% mỗi cấp
-});
+  const level = selectedItem.value.isMythic ? selectedItem.value.mythicLevel : selectedItem.value.enhanceLevel;
+  const matName = level < 10 ? 'Gỗ' : (level < 20 ? 'Sắt' : (level < 30 ? 'Bạch Kim' : 'Kim Cương'));
 
-const canAfford = computed(() => {
-  return (authStore.wallet?.gold || 0) >= upgradeCost.value;
-});
-
-const getRateColor = (rate) => {
-  if (rate >= 80) return "high-rate";
-  if (rate >= 50) return "mid-rate";
-  return "low-rate";
-};
-
-const formatNumber = (n) => n.toLocaleString();
-
-const translateType = (type) => {
-  const map = {
-    WEAPON: "Vũ Khí",
-    ARMOR: "Y Phục",
-    HELMET: "Mũ",
-    BOOTS: "Giày",
+  return {
+    gold: selectedItem.value.isMythic ? 5000 * (level + 1) : 100 + level * 50,
+    matQty: selectedItem.value.isMythic ? 1 : Math.floor(level / 5) + 1,
+    matName: selectedItem.value.isMythic ? 'Kim Cương' : matName
   };
-  return map[type] || type;
+});
+
+const successRate = computed(() => {
+  if (!selectedItem.value || selectedItem.value.isMythic) return 100;
+  return Math.max(10, 100 - (selectedItem.value.enhanceLevel || 0) * 3);
+});
+
+const estimatedBoost = computed(() => 10); // Placeholder
+
+const resultTitle = computed(() => {
+  if (resultType.value === 'mythic') return "THẦN KHÍ GIÁNG LÂM!";
+  return resultType.value === 'success' ? "THÀNH CÔNG!" : "THẤT BẠI!";
+});
+
+const resultIcon = computed(() => {
+  if (resultType.value === 'mythic') return "fas fa-dragon";
+  return resultType.value === 'success' ? "fas fa-check-circle" : "fas fa-heart-broken";
+});
+
+// --- ACTIONS ---
+
+const fetchInventory = async () => {
+  try {
+    // API để lấy kho đồ và cập nhật Vàng/Nguyên liệu
+    const res = await axios.get(`/api/game/inventory/${userId.value}`);
+    inventoryItems.value = res.data;
+
+    // Giữ item đã chọn (nếu nó vẫn còn trong kho)
+    if (selectedItem.value) {
+      selectedItem.value = inventoryItems.value.find(i => i.userItemId === selectedItem.value.userItemId) || null;
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải kho đồ:", error);
+    errorMessage.value = "Không thể tải kho đồ. Vui lòng kiểm tra API /api/game/inventory/{userId}";
+    inventoryItems.value = [];
+  }
 };
+
+const updateItemInInventory = (updatedItem) => {
+  selectedItem.value = updatedItem;
+  const index = inventoryItems.value.findIndex(i => i.userItemId === updatedItem.userItemId);
+  if (index !== -1) {
+    inventoryItems.value[index] = updatedItem;
+  }
+};
+
 
 const selectItem = (item) => {
   if (isForging.value) return;
   selectedItem.value = item;
+  errorMessage.value = '';
 };
 
-const handleForge = async () => {
-  if (isForging.value || !selectedItem.value) return;
+// 1. NÂNG CẤP THƯỜNG (Endpoint: /api/game/item/enhance/{itemId})
+const handleUpgrade = async () => {
+  if (!selectedItem.value || isForging.value) return;
+  isForging.value = true;
+  errorMessage.value = '';
 
-  // Trừ tiền (Giả lập FE)
-  // authStore.wallet.gold -= upgradeCost.value;
+  try {
+    const url = `/api/game/item/enhance/${selectedItem.value.userItemId}?userId=${userId.value}`;
+    const res = await axios.post(url);
+
+    // Backend trả về updated UserItem
+    updateItemInInventory(res.data);
+    showResultModal('success', `Cường hóa thành công lên +${selectedItem.value.enhanceLevel}!`);
+
+  } catch (err) {
+    // Lấy thông báo lỗi từ Backend (ví dụ: "Không đủ Vàng!")
+    errorMessage.value = err.response?.data || "Lỗi hệ thống hoặc thiếu nguyên liệu.";
+    showResultModal('fail', errorMessage.value);
+  } finally {
+    isForging.value = false;
+    await fetchInventory(); // Cần refresh Inventory để cập nhật Vàng/Nguyên liệu đã trừ
+  }
+};
+
+// 2. TIẾN HÓA MYTHIC (Endpoint: /api/items/{itemId}/evolve-mythic)
+const handleEvolve = async () => {
+  if (!selectedItem.value || !confirm("Tỉ lệ 5%. Thất bại sẽ mất nguyên liệu. Chắc chắn?")) return;
 
   isForging.value = true;
+  errorMessage.value = '';
 
-  // Giả lập gọi API delay 2s
-  setTimeout(() => {
-    const isSuccess = Math.random() * 100 < successRate.value;
-    forgeSuccess.value = isSuccess;
+  try {
+    const url = `/api/items/${selectedItem.value.userItemId}/evolve-mythic?userId=${userId.value}`;
+    const res = await axios.post(url);
 
-    if (isSuccess) {
-      // Update logic giả lập
-      selectedItem.value.level = (selectedItem.value.level || 0) + 1;
+    // Backend trả về String message ("THÀNH CÔNG" hoặc "Thất bại...")
+    if (res.data.includes("THÀNH CÔNG")) {
+      showResultModal('mythic', res.data);
+      await fetchInventory(); // Refresh để item chuyển từ Legendary -> Mythic
+      // Cập nhật lại selectedItem sau khi fetch
+      selectedItem.value = inventoryItems.value.find(i => i.userItemId === selectedItem.value.userItemId);
+    } else {
+      errorMessage.value = res.data;
+      showResultModal('fail', res.data);
     }
-
+  } catch (err) {
+    errorMessage.value = err.response?.data || "Lỗi kết nối hoặc không đủ điều kiện.";
+    showResultModal('fail', errorMessage.value);
+  } finally {
     isForging.value = false;
-    showResult.value = true;
-  }, 2000);
+    await fetchInventory(); // Refresh Vàng/nguyên liệu
+  }
+};
+
+// 3. NÂNG CẤP MYTHIC (Endpoint: /api/items/{itemId}/upgrade-mythic)
+const handleMythicUpgrade = async () => {
+  if (!selectedItem.value || isForging.value) return;
+  isForging.value = true;
+  errorMessage.value = '';
+
+  try {
+    const url = `/api/items/${selectedItem.value.userItemId}/upgrade-mythic`;
+    const res = await axios.post(url);
+
+    updateItemInInventory(res.data);
+    showResultModal('success', `Sức mạnh thần thánh đã tăng lên Lv${selectedItem.value.mythicLevel}!`);
+  } catch (err) {
+    errorMessage.value = err.response?.data || "Lỗi nâng cấp Mythic.";
+    showResultModal('fail', errorMessage.value);
+  } finally {
+    isForging.value = false;
+    await fetchInventory(); // Refresh Vàng/nguyên liệu
+  }
+}
+
+const showResultModal = (type, msg) => {
+  resultType.value = type;
+  resultMessage.value = msg;
+  showResult.value = true;
 };
 
 const closeResult = () => {
   showResult.value = false;
 };
 
+// --- UTILS ---
+const formatNumber = (n) => {
+  if (n === null || isNaN(Number(n))) return '0';
+  return Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+};
+const getIconUrl = (name) => `/assets/items/${name}.png`;
+const getStatLabel = (code) => {
+  const map = { ATK_FLAT: "Tấn Công", ATK_PERCENT: "Tấn Công %", HP_FLAT: "Máu", CRIT_RATE: "Chí Mạng", CRIT_DMG: "Sát thương CM", SPEED: "Tốc Độ", DEF_FLAT: "Thủ", DEF_PERCENT: "Thủ %" };
+  return map[code] || code;
+};
+const getRarityClass = (item) => {
+  if (item.isMythic) return 'mythic';
+  return item.rarity ? item.rarity.toLowerCase() : 'common';
+};
+const getRarityTextClass = (item) => {
+  if (item.isMythic) return 'text-mythic';
+  return item.rarity ? `text-${item.rarity.toLowerCase()}` : 'text-common';
+};
+const getRateColor = (r) => r >= 80 ? 'high-rate' : (r >= 50 ? 'mid-rate' : 'low-rate');
+
+
 onMounted(() => {
-  inventoryStore.fetchInventory();
-  if (authStore.token) authStore.fetchProfile();
+  fetchInventory();
 });
 </script>
 
@@ -256,10 +405,122 @@ onMounted(() => {
   --wood-dark: #3e2723;
   --wood-light: #8d6e63;
   --gold: #ffc107;
-  --red-seal: #b71c1c;
+  --mythic-red: #ff1744;
+  --mythic-glow: #d50000;
   --text-primary: #eaddcf;
 }
 
+/* --- ADDED MYTHIC STYLES --- */
+.border-mythic {
+  border-color: var(--mythic-red) !important;
+  box-shadow: 0 0 10px var(--mythic-glow);
+  animation: pulse-red 2s infinite;
+}
+
+.mythic-glow {
+  border-color: var(--mythic-red) !important;
+  box-shadow: 0 0 30px var(--mythic-glow) !important;
+}
+
+.text-mythic {
+  color: var(--mythic-red) !important;
+  text-shadow: 0 0 10px var(--mythic-glow) !important;
+}
+
+.mythic-tag {
+  color: var(--mythic-red);
+  font-size: 0.6em;
+  border: 1px solid var(--mythic-red);
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.orig-val {
+  font-size: 0.7em;
+  color: #888;
+  margin-left: 5px;
+}
+
+.orig-val-small {
+  font-size: 0.6em;
+  color: #666;
+  margin-left: 5px;
+  font-style: italic;
+}
+
+/* BUTTONS */
+.btn-evolve {
+  background: #000;
+  color: var(--mythic-red);
+  border: 2px solid var(--mythic-red);
+  padding: 12px 20px;
+  font-weight: bold;
+  font-family: "Noto Serif TC";
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--mythic-glow);
+  margin-top: 10px;
+  width: 100%;
+}
+
+.btn-evolve:hover {
+  background: var(--mythic-red);
+  color: #000;
+}
+
+.btn-mythic-upgrade {
+  background: linear-gradient(180deg, #b71c1c, #7f0000);
+  color: #fff;
+  border: 2px solid #ff5252;
+  padding: 12px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Glitch Effect cho nút Evolve */
+.glitch-effect {
+  animation: glitch-skew 3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-skew {
+  0% {
+    transform: skew(0deg);
+  }
+
+  20% {
+    transform: skew(-2deg);
+  }
+
+  40% {
+    transform: skew(2deg);
+  }
+
+  60% {
+    transform: skew(0deg);
+  }
+
+  100% {
+    transform: skew(0deg);
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 5px var(--mythic-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 15px var(--mythic-glow);
+  }
+
+  100% {
+    box-shadow: 0 0 5px var(--mythic-glow);
+  }
+}
+
+/* --- EXISTING STYLES (Phần nền & Layout) --- */
 .forge-page.ancient-theme {
   background-color: var(--bg-dark);
   height: 100vh;
@@ -269,7 +530,6 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
-/* Background & Effects */
 .wood-bg-layer {
   position: absolute;
   inset: 0;
@@ -284,11 +544,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 60%;
-  background: radial-gradient(
-    circle at bottom,
-    rgba(255, 87, 34, 0.15) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at bottom, rgba(255, 87, 34, 0.15) 0%, transparent 70%);
   pointer-events: none;
   animation: fire-pulse 4s infinite alternate;
   z-index: 1;
@@ -299,6 +555,7 @@ onMounted(() => {
     opacity: 0.6;
     transform: scale(1);
   }
+
   100% {
     opacity: 1;
     transform: scale(1.05);
@@ -317,7 +574,6 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-/* Header */
 .forge-header {
   text-align: center;
   margin-bottom: 20px;
@@ -326,21 +582,22 @@ onMounted(() => {
   justify-content: center;
   gap: 15px;
 }
+
 .title-ancient {
   font-size: 2.5em;
   color: var(--gold);
-  text-shadow:
-    0 0 10px rgba(255, 193, 7, 0.5),
-    2px 2px 0 #000;
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.5), 2px 2px 0 #000;
   margin: 0;
   letter-spacing: 3px;
 }
+
 .header-ornament {
   width: 50px;
   height: 2px;
   background: var(--wood-light);
   position: relative;
 }
+
 .header-ornament::after {
   content: "♦";
   position: absolute;
@@ -350,7 +607,6 @@ onMounted(() => {
   color: var(--gold);
 }
 
-/* Layout Grid */
 .forge-layout {
   display: flex;
   gap: 20px;
@@ -358,7 +614,6 @@ onMounted(() => {
   min-height: 0;
 }
 
-/* Panels Common */
 .wood-panel {
   background: rgba(44, 24, 16, 0.85);
   border: 2px solid var(--wood-light);
@@ -369,11 +624,11 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* LEFT PANEL: INVENTORY */
 .inventory-panel {
   flex: 1;
   max-width: 350px;
 }
+
 .panel-title {
   background: var(--wood-dark);
   padding: 10px;
@@ -382,6 +637,7 @@ onMounted(() => {
   border-bottom: 2px solid var(--wood-light);
   color: var(--gold);
 }
+
 .item-grid {
   flex: 1;
   overflow-y: auto;
@@ -391,6 +647,7 @@ onMounted(() => {
   gap: 10px;
   align-content: start;
 }
+
 .item-slot {
   aspect-ratio: 1;
   background: rgba(0, 0, 0, 0.3);
@@ -404,39 +661,42 @@ onMounted(() => {
   justify-content: center;
   transition: 0.2s;
 }
+
 .item-slot:hover {
   border-color: var(--gold);
   background: rgba(255, 193, 7, 0.1);
 }
+
 .item-slot.selected {
   border-color: var(--gold);
   box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
   background: rgba(255, 193, 7, 0.15);
 }
+
 .slot-img-box {
   width: 80%;
   height: 80%;
   position: relative;
 }
+
 .slot-img-box img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
+
 .level-badge {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: var(--red-seal);
+  background: #b71c1c;
   color: #fff;
   font-size: 0.7em;
   padding: 1px 3px;
   border-radius: 2px;
   font-weight: bold;
 }
-.slot-info {
-  display: none; /* Ẩn info chi tiết ở grid nhỏ */
-}
+
 .empty-msg {
   grid-column: 1/-1;
   text-align: center;
@@ -445,7 +705,6 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-/* RIGHT PANEL: ANVIL */
 .anvil-panel {
   flex: 2;
   position: relative;
@@ -497,12 +756,12 @@ onMounted(() => {
   text-align: center;
   opacity: 0.5;
 }
+
 .empty-anvil i {
   font-size: 2.5em;
   margin-bottom: 5px;
 }
 
-/* Upgrade Info Box */
 .upgrade-info {
   width: 100%;
   background: rgba(0, 0, 0, 0.4);
@@ -521,13 +780,16 @@ onMounted(() => {
   justify-content: center;
   gap: 10px;
 }
+
 .curr-lv {
   color: #aaa;
 }
+
 .next-lv {
   color: #4caf50;
   font-weight: bold;
 }
+
 .arrow {
   font-size: 0.8em;
   color: #666;
@@ -541,33 +803,39 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.05);
   padding: 15px;
   border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
 }
+
 .stat-row {
   display: flex;
   justify-content: space-between;
   font-size: 1.1em;
 }
+
 .boost {
   color: #4caf50;
 }
+
 .high-rate {
   color: #4caf50;
 }
+
 .mid-rate {
   color: #ff9800;
 }
+
 .low-rate {
   color: #f44336;
 }
 
 .cost-box {
-  margin-bottom: 20px;
   font-size: 1.2em;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
 }
+
 .text-gold {
   color: var(--gold);
 }
@@ -586,60 +854,39 @@ onMounted(() => {
   transition: 0.2s;
   width: 100%;
 }
+
 .btn-forge:hover:not(:disabled) {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(255, 87, 34, 0.6);
 }
+
 .btn-forge:disabled {
   background: #555;
   border-color: #333;
   cursor: not-allowed;
   opacity: 0.7;
 }
+
 .error-text {
   color: #f44336;
   margin-top: 10px;
   font-style: italic;
 }
 
-/* Animations */
 @keyframes shake-anvil {
   0% {
     transform: translate(1px, 1px) rotate(0deg);
   }
+
   10% {
     transform: translate(-1px, -2px) rotate(-1deg);
   }
-  20% {
-    transform: translate(-3px, 0px) rotate(1deg);
-  }
-  30% {
-    transform: translate(3px, 2px) rotate(0deg);
-  }
-  40% {
-    transform: translate(1px, -1px) rotate(1deg);
-  }
-  50% {
-    transform: translate(-1px, 2px) rotate(-1deg);
-  }
-  60% {
-    transform: translate(-3px, 1px) rotate(0deg);
-  }
-  70% {
-    transform: translate(3px, 1px) rotate(-1deg);
-  }
-  80% {
-    transform: translate(-1px, -1px) rotate(1deg);
-  }
-  90% {
-    transform: translate(1px, 2px) rotate(0deg);
-  }
+
   100% {
     transform: translate(1px, -2px) rotate(-1deg);
   }
 }
 
-/* Result Modal */
 .result-overlay {
   position: fixed;
   inset: 0;
@@ -649,9 +896,10 @@ onMounted(() => {
   justify-content: center;
   z-index: 1000;
 }
+
 .result-scroll {
   width: 350px;
-  background: #eaddcf; /* Giấy */
+  background: #eaddcf;
   color: #3e2723;
   text-align: center;
   padding: 30px;
@@ -663,13 +911,16 @@ onMounted(() => {
   align-items: center;
   animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .result-icon {
   font-size: 4em;
   margin-bottom: 15px;
 }
+
 .success .result-icon {
   color: #2e7d32;
 }
+
 .fail .result-icon {
   color: #c62828;
 }
@@ -680,19 +931,13 @@ onMounted(() => {
   margin-bottom: 10px;
   font-family: "Playfair Display";
 }
+
 .success .result-title {
   color: #2e7d32;
 }
+
 .fail .result-title {
   color: #c62828;
-}
-
-.item-result-display {
-  background: rgba(0, 0, 0, 0.1);
-  padding: 10px 20px;
-  border-radius: 4px;
-  margin: 15px 0;
-  font-size: 1.2em;
 }
 
 .btn-confirm {
@@ -710,29 +955,31 @@ onMounted(() => {
     transform: scale(0.8);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-/* Custom Scroll */
 .custom-scroll::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scroll::-webkit-scrollbar-thumb {
   background: var(--wood-light);
   border-radius: 3px;
 }
+
 .custom-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* Fade Trans */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -742,13 +989,36 @@ onMounted(() => {
   .forge-layout {
     flex-direction: column;
   }
+
   .inventory-panel {
     max-width: 100%;
     height: 200px;
   }
+
   .anvil-panel {
     height: auto;
     padding: 20px;
   }
+}
+
+.text-common {
+  color: #bdbdbd;
+}
+
+.text-uncommon {
+  color: #66bb6a;
+}
+
+.text-rare {
+  color: #42a5f5;
+}
+
+.text-epic {
+  color: #ab47bc;
+}
+
+.text-legendary {
+  color: #ffca28;
+  text-shadow: 0 0 5px #ffca28;
 }
 </style>
