@@ -1,0 +1,339 @@
+/* --- IMPORTS --- */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
+
+/* --- KHAI BÁO FONT TỪ GITHUB --- */
+@font-face {
+  font-family: "UTM Thu Phap Thien An";
+  src:
+    url("https://htkhang111.github.io/fonts/UTM-Thu-Phap-Thien-An.woff2")
+      format("woff2"),
+    url("https://htkhang111.github.io/fonts/UTM-Thu-Phap-Thien-An.woff")
+      format("woff"),
+    url("https://htkhang111.github.io/fonts/UTM-Thu-Phap-Thien-An.ttf")
+      format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "MTD Dartangnon ITC";
+  src:
+    url("https://htkhang111.github.io/fonts/MTD.woff2") format("woff2"),
+    url("https://htkhang111.github.io/fonts/MTD.woff") format("woff"),
+    url("https://htkhang111.github.io/fonts/MTD.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- ROOT VARIABLES (CYBER SYSTEM) --- */
+:root {
+  /* Core Colors */
+  --bg-void: #020617;
+  --bg-panel: rgba(10, 15, 30, 0.75);
+
+  /* Neon Palette */
+  --primary: #00f3ff;
+  --primary-glow: rgba(0, 243, 255, 0.5);
+  --secondary: #7000ff;
+  --accent: #ff0055;
+  --success: #00ff9d;
+  --warning: #ffbe0b;
+
+  --text-main: #e2e8f0;
+  --text-dim: #94a3b8;
+
+  /* Borders & Radius */
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --neon-border: 1px solid var(--primary);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* Typography */
+  --font-display: "Orbitron", sans-serif;
+  --font-body: "Rajdhani", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+
+  /* Layout */
+  --header-height: 80px;
+  --sidebar-width: 280px;
+  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Rarity Colors */
+  --neon-c: #00ff9d;
+  --neon-b: #0099ff;
+  --neon-a: #b700ff;
+  --neon-s: #ffd700;
+}
+
+/* --- BASE RESET --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-void);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+  font-family: var(--font-display);
+}
+
+/* --- UTILITY CLASSES --- */
+.glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+}
+
+.text-gradient {
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, #fff 20%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
+}
+
+.page-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* --- GLOBAL COMPONENTS --- */
+.btn-3d {
+  padding: 12px 24px;
+  background: rgba(0, 243, 255, 0.05);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 1px solid var(--primary);
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-3d:hover:not(:disabled) {
+  background: var(--primary);
+  color: #000;
+  box-shadow: 0 0 20px var(--primary-glow);
+  transform: translateY(-2px);
+}
+.btn-3d:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.btn-danger-3d {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 0, 85, 0.05);
+}
+.btn-danger-3d:hover:not(:disabled) {
+  background: var(--accent);
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+}
+
+/* --- TRANSITIONS --- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* --- KEYFRAMES --- */
+@keyframes glitch-skew {
+  0% {
+    transform: skew(0deg);
+  }
+  20% {
+    transform: skew(-2deg);
+  }
+  40% {
+    transform: skew(2deg);
+  }
+  60% {
+    transform: skew(-1deg);
+  }
+  80% {
+    transform: skew(1deg);
+  }
+  100% {
+    transform: skew(0deg);
+  }
+}
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --header-height: 60px;
+  }
+  .page-container {
+    padding-bottom: 80px;
+  }
+}
+
+/* Rarity Styles Override */
+.grid-slot.rarity-C,
+.grid-slot.rarity-B,
+.grid-slot.rarity-A,
+.grid-slot.rarity-S {
+  border-bottom: none !important;
+  transition: all 0.3s ease;
+}
+.rarity-C {
+  border: 1px solid var(--neon-c) !important;
+  box-shadow:
+    0 0 5px rgba(0, 255, 157, 0.3),
+    inset 0 0 10px rgba(0, 255, 157, 0.1);
+}
+.rarity-B {
+  border: 1px solid var(--neon-b) !important;
+  box-shadow:
+    0 0 8px rgba(0, 153, 255, 0.5),
+    inset 0 0 15px rgba(0, 153, 255, 0.15);
+}
+.rarity-A {
+  border: 1px solid var(--neon-a) !important;
+  box-shadow:
+    0 0 10px var(--neon-a),
+    inset 0 0 20px rgba(183, 0, 255, 0.2);
+}
+.rarity-S {
+  border: 1px solid var(--neon-s) !important;
+  box-shadow: inset 0 0 5px var(--neon-s);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent 60%);
+}
+
+.text-rarity-C {
+  color: var(--neon-c) !important;
+  text-shadow: 0 0 5px var(--neon-c);
+}
+.text-rarity-B {
+  color: var(--neon-b) !important;
+  text-shadow: 0 0 8px var(--neon-b);
+}
+.text-rarity-A {
+  color: var(--neon-a) !important;
+  text-shadow: 0 0 10px var(--neon-a);
+}
+.text-rarity-S {
+  color: var(--neon-s) !important;
+  text-shadow: 0 0 15px var(--neon-s);
+  font-weight: 800;
+}
